@@ -1,3 +1,35 @@
+# Budget Buddy
+
+Budget Buddy is an academic project for the COMP6905 — Software Engineering course.
+
+- **Course**: COMP6905 — Software Engineering
+- **Purpose**: Educational/academic use; demonstrates software engineering practices
+- **Tech Stack**: React (Create React App), React Router, Chart.js, Firebase, date-fns, Framer Motion
+
+---
+
+## Team
+
+- **Group**: 6
+- **Team Lead**: Jasleen Minhas — ID: 202481225 — jminhas@mun.ca
+- **Team Members**:
+  - Sumaiya Khan — ID: 202480995 — sumaiyak@mun.ca
+  - Kaustubh Patil — ID: 202580621 — kspatil@mun.ca
+  - Joel George Sam — ID: 202483190 — jgeorgesam@mun.ca
+  - Mashroor Rahman — ID: 202482239 — masroorr@mun.ca
+  - Ronit Gajjar — ID: 202488048 — rhgajjar@mun.ca
+
+
+### Team Responsibilities
+
+- **Jasleen Minhas** — Project Lead / Full-Stack: Leads sprints, manages GitHub/CI, and develops authentication & security modules.
+- **Sumaiya Khan** — Frontend (UI/UX): Designs the page layout and ensures user-friendly interfaces.
+- **Mashroor Rahman** — Backend/Database: Manages Firestore structure, CRUD logic, and data validation.
+- **Kaustubh Patil** — Frontend (Expenses): Builds expense management UI and integrates categories/filters.
+- **Joel George Sam** — QA/Testing: Creates test cases, runs automated/system testing, and ensures V&V compliance.
+- **Ronit Gajjar** — Reporting/Features: Develops charts, PDF export.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
