@@ -1,21 +1,5 @@
----
-name: Story
-about: Story purpose
-title: ''
-labels: ''
-assignees: ''
 
----
-
----
-Name: "User Story"
-About: "Template for writing user stories with all required details"
-Title: "[Story] <short name here>"
-Labels: []
-Assignees: []
----
-
-## 🏷️ Short Name
+## 📌 Short Name
 <!-- A short, clear name for the story -->
 e.g., User Login
 
@@ -39,28 +23,25 @@ Points:
 - [ ] Medium  
 - [ ] Low  
 
-## 🏷️ Feature / Label
-<!-- Select one or more: Authentication, Expense Management, Dashboard, etc. -->
+## 🏷️ Feature (Label)  
+<!-- Example: Authentication, Expense Management, Documentation, Firebase Setup -->
 
-## ⏳ Iteration / Milestone
-<!-- Assign to Iteration 1, 2, 3, etc. -->
+## 📅 Milestone (Iteration)  
+<!-- Example: Iteration 1 (Sprint 1) -->
 
-## ⏱️ Time Estimate
-Ideal time: ___ hours  
+## ⏱️ Estimated Time  
+<!-- Example: 2–3 days -->
 
-## 🔗 Related Artifacts
-- [ ] Linked commits (use `#issue-number`)  
-- [ ] UML diagrams / discussions  
-- [ ] Architecture notes  
+## 🔗 Links / References  
+- Related commits: #  
+- Diagrams / Docs:  
 
 ## ✅ Unit Tests
-- [ ] Valid case  
-- [ ] Invalid case  
-- [ ] Edge case  
+<!-- Describe or link the unit tests written for this story -->
 
 ## 🎬 Demo Steps
-1. Open app at login page  
-2. Enter valid credentials  
-3. Redirected to dashboard  
+1. …  
+2. …  
+3. …  
 
 ---
