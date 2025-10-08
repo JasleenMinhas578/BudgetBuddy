@@ -42,8 +42,8 @@ Unlike many market apps that become paid after trial, Budget Buddy focuses on **
 - Mashroor Rahman — ID: 202482239 — masroorr@mun.ca  
 - Ronit Gajjar — ID: 202488048 — rhgajjar@mun.ca  
 
-### 🛠️ Team Responsibilities
-- **Jasleen Minhas** — Project Lead / Full-Stack: Leads sprints, manages GitHub/CI, authentication & security modules.  
+### 🛠️ Team Responsibilities 
+- **Jasleen Minhas** — Project Lead / Full-Stack: Leads sprints, manages GitHub, authentication & security modules.  
 - **Sumaiya Khan** — Frontend (UI/UX): Page layout and user-friendly interface design.  
 - **Mashroor Rahman** — Backend/Database: Firestore structure, CRUD logic, and data validation.  
 - **Kaustubh Patil** — Frontend (Expenses): Expense management UI and category integration.  
