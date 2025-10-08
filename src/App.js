@@ -1,5 +1,6 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import "./App.css";
+import TestFirebase from "./testFirebase";
 
 function App() {
   return (
@@ -18,6 +19,11 @@ function App() {
           Learn React
         </a>
       </header>
+
+      {/* Firebase test area */}
+      <div style={{ background: "#111", padding: 24, textAlign: "left" }}>
+        <TestFirebase />
+      </div>
     </div>
   );
 }
