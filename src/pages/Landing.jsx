@@ -100,8 +100,91 @@ export default function Landing() {
           </motion.div>
         </motion.div>
         
-        
-        
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="features"
+        >
+          <div className="features-header">
+            <h2>Why Choose BudgetBuddy?</h2>
+            <p>Everything you need to take control of your finances</p>
+          </div>
+          
+          <div className="features-grid">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+              <div className="feature-icon">📊</div>
+              <h3>Smart Expense Tracking</h3>
+              <p>Log and categorize every transaction with intelligent auto-suggestions and smart categorization.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+            <div className="feature-icon">📈</div>
+              <h3>Beautiful Analytics</h3>
+              <p>Understand your spending patterns with stunning charts, graphs, and detailed financial reports.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+              <div className="feature-icon">🎯</div>
+              <h3>Goal Setting</h3>
+              <p>Set financial goals and track your progress with personalized insights and recommendations.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+              <div className="feature-icon">📱</div>
+              <h3>Mobile First</h3>
+              <p>Access your finances anywhere with our responsive design that works perfectly on all devices.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+              <div className="feature-icon">🔒</div>
+              <h3>Secure & Private</h3>
+              <p>Your financial data is protected with bank-level security and complete privacy controls.</p>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              viewport={{ once: true }}
+              className="feature-card"
+            >
+              <div className="feature-icon">⚡</div>
+              <h3>Lightning Fast</h3>
+              <p>Experience blazing fast performance with instant updates and real-time synchronization.</p>
+            </motion.div>
+          </div>
+        </motion.div>
       </main>
     </div>
   );
