@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { 
-  createUserWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,  
   onAuthStateChanged 
 } from 'firebase/auth';
 
@@ -27,6 +28,10 @@ export function AuthProvider({ children }) {
     return createUserWithEmailAndPassword(auth, email, password);
   }
 
+  function login(email, password) {
+    return signInWithEmailAndPassword(auth, email, password);
+  }
+
 
   /**
    * Listen for authentication state changes
@@ -49,6 +54,7 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,  // Current user object (null if not logged in)
     signup,       // Function to register new users
+    login,        // Function to log in users
   };
 
   return (
