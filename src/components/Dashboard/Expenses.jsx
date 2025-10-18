@@ -11,14 +11,14 @@ import Modal from '../Modal';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
-  const [setCategories] = useState([]);
-  const [newExpense] = useState({
+  const [categories, setCategories] = useState([]);
+  const [newExpense, setNewExpense] = useState({
     title: '',
     amount: '',
     category: '',
     date: format(new Date(), 'yyyy-MM-dd')
   });
-  const [setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
   const { currentUser } = useAuth();
