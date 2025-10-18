@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link} from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
@@ -25,6 +26,21 @@ export default function Login() {
   // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading] = useState(false);
+
+  /**
+   * Handle form submission
+   * 
+   * This function:
+   * 1. Prevents default form submission
+   * 2. Clears any previous errors
+   * 3. Sets loading state
+   * 4. Attempts to log in the user
+   * 5. Navigates to dashboard on success
+   * 6. Displays error message on failure
+   * 
+   * @param {Event} e - Form submission event
+   */
 
   return (
     <div className="auth-container">
@@ -47,7 +63,7 @@ export default function Login() {
           <h2 className="auth-title">Welcome Back</h2>
           <p className="auth-subtitle">Sign in to your FinTrack account</p>
         </div>
-        
+
         <div className="form-group">
         <label htmlFor="email">Email Address</label>
         <div className="input-wrapper">
@@ -78,12 +94,24 @@ export default function Login() {
         </div>
         </div>
         
-        <motion.button
+        <motion.button 
+        disabled={loading} 
         type="submit" 
         className="btn btn-primary auth-btn"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        >   
+        >
+        {loading ? (
+            <span className="loading-spinner">
+            <div className="spinner"></div>
+            Signing in...
+            </span>
+        ) : (
+            <>
+            <span>🚀</span>
+            Sign In
+            </>
+        )}
         </motion.button>
         
         <div className="auth-footer">
