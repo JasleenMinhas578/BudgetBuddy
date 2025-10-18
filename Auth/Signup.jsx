@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
+import { db } from '../../firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+
 export default function Signup() {
   // Form state management
   const [email, setEmail] = useState('');
