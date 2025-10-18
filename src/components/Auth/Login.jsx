@@ -113,7 +113,7 @@ export default function Login() {
         <div className="auth-brand">
           <div className="auth-logo">💰</div>
           <h2 className="auth-title">Welcome Back</h2>
-          <p className="auth-subtitle">Sign in to your FinTrack account</p>
+          <p className="auth-subtitle">Sign in to your BudgetBuddy account</p>
         </div>
 
         {error && (
