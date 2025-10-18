@@ -2,26 +2,29 @@ import { useState, useEffect } from 'react';
 import { collection, addDoc, query, onSnapshot, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import { format } from 'date-fns';
 import Toast from '../UI/Toast';
 import '../../styles/main.css';
-import { format } from 'date-fns';
 import '../../styles/modal-forms.css';
 import ExpenseForm from '../Expense/ExpenseForm';
 import Modal from '../Modal';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
-  const [setCategories] = useState([]);
-  const [newExpense] = useState({
+  const [categories, setCategories] = useState([]);
+  const [newExpense, setNewExpense] = useState({
     title: '',
     amount: '',
-    category: ''
+    category: '',
+    date: format(new Date(), 'yyyy-MM-dd')
   });
-  const [setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  
+
   const { currentUser } = useAuth();
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
+  const [isEditExpenseFormOpen, setIsEditExpenseFormOpen] = useState(false);
+  const [expenseToEdit, setExpenseToEdit] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -164,6 +167,43 @@ export default function Expenses() {
     }
   };
 
+  const handleEditExpense = (expense) => {
+    setExpenseToEdit({
+      id: expense.id,
+      title: expense.title,
+      amount: expense.amount.toString(),
+      category: expense.category,
+      date: expense.date
+    });
+    setIsEditExpenseFormOpen(true);
+  };
+
+  const handleUpdateExpense = async (updatedExpense) => {
+    setIsLoading(true);
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid, 'expenses', updatedExpense.id), {
+        title: updatedExpense.title,
+        amount: parseFloat(updatedExpense.amount),
+        category: updatedExpense.category,
+        date: updatedExpense.date,
+        updatedAt: new Date()
+      });
+      setToast({
+        message: `Expense "${updatedExpense.title}" updated successfully!`,
+        type: 'success'
+      });
+      setIsEditExpenseFormOpen(false);
+      setExpenseToEdit(null);
+    } catch (error) {
+      setToast({
+        message: 'Failed to update expense. Please try again.',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getCategoryIcon = (category) => {
     const icons = {
       'Food': '🍕',
@@ -180,6 +220,12 @@ export default function Expenses() {
 
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
+    // Optionally, refresh expenses here if needed
+  };
+
+  const handleExpenseEdited = () => {
+    setIsEditExpenseFormOpen(false);
+    setExpenseToEdit(null);
     // Optionally, refresh expenses here if needed
   };
 
@@ -265,6 +311,24 @@ export default function Expenses() {
                   <td>
                     <span className="date-cell">{formatDate(expense.date)}</span>
                   </td>
+                <td>
+                    <div className="action-buttons">
+                      <button 
+                        onClick={() => handleEditExpense(expense)}
+                        className="btn btn-secondary btn-sm edit-btn"
+                        title="Edit expense"
+                      >
+                        <span className="edit-icon">✏️</span>
+                      </button>
+                  <button 
+                    onClick={() => handleDeleteExpense(expense.id)}
+                        className="btn btn-danger btn-sm delete-btn"
+                        title="Delete expense"
+                  >
+                        <span className="delete-icon">🗑️</span>
+                  </button>
+                    </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -284,6 +348,14 @@ export default function Expenses() {
       {/* Expense Form Modal */}
       <Modal isOpen={isExpenseFormOpen} onClose={() => setIsExpenseFormOpen(false)}>
         <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+      </Modal>
+      {/* Edit Expense Form Modal */}
+      <Modal isOpen={isEditExpenseFormOpen} onClose={() => setIsEditExpenseFormOpen(false)}>
+        <ExpenseForm
+          onExpenseEdited={handleUpdateExpense}
+          initialExpense={expenseToEdit}
+          isEditMode={true}
+        />
       </Modal>
     </div>
   );
