@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/database';
 import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { db } from '../../firebase';
 import '../../styles/main.css';
 
 /**
@@ -25,7 +25,7 @@ import '../../styles/main.css';
  * - Date validation (no future dates)
  * - Amount formatting and validation
  */
-export default function ExpenseForm({ onExpenseAdded, initialExpense = null, isEditMode = false }) {
+export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialExpense = null, isEditMode = false }) {
   // Form state management
   const [amount, setAmount] = useState(initialExpense ? initialExpense.amount : '');
   const [title, setTitle] = useState(initialExpense ? initialExpense.title : '');
@@ -153,6 +153,20 @@ export default function ExpenseForm({ onExpenseAdded, initialExpense = null, isE
     return { isValid: true, message: '' };
   };
 
+  /**
+   * Handle form submission
+   * 
+   * This function:
+   * 1. Prevents default form submission
+   * 2. Validates all form inputs
+   * 3. Creates expense object with user data
+   * 4. Saves expense to Firebase database
+   * 5. Shows success message and resets form
+   * 6. Calls callback to refresh expense list
+   * 7. Handles errors and displays appropriate messages
+   * 
+   * @param {Event} e - Form submission event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -167,33 +181,60 @@ export default function ExpenseForm({ onExpenseAdded, initialExpense = null, isE
       setMessageType('error');
       return;
     }
-
-    // Set loading state to show spinner/disable form
-    setLoading(true);
-
-    // Create expense object with all necessary data
-    const expenseData = {
-    amount: parseFloat(amount),
-        title: title.trim(),
-    category,
-        date
-    };
-    // Save expense to Firebase database
-    await addExpense(currentUser.uid, expenseData);
-    // Show success message
-    setMessage('Expense added successfully!');
-    setMessageType('success');
-    // Reset form to initial state
-    setAmount('');
-    setTitle('');
-    setCategory('Food');
-    setDate(new Date().toISOString().split('T')[0]);
-    // Call callback to refresh expense list in parent component
-    if (onExpenseAdded) {
-    onExpenseAdded();
+    
+    try {
+      // Set loading state to show spinner/disable form
+      setLoading(true);
+      
+      if (isEditMode && initialExpense) {
+        // Update existing expense (you may need to import and use updateExpense from your service)
+        // For now, just call the callback
+        if (onExpenseEdited) onExpenseEdited({
+          id: initialExpense.id,
+          amount: parseFloat(amount),
+          title: title.trim(),
+          category,
+          date
+        });
+      } else {
+      // Create expense object with all necessary data
+      const expenseData = {
+        amount: parseFloat(amount),
+          title: title.trim(),
+        category,
+          date
+      };
+      // Save expense to Firebase database
+        await addExpense(currentUser.uid, expenseData);
+      // Show success message
+      setMessage('Expense added successfully!');
+      setMessageType('success');
+      // Reset form to initial state
+      setAmount('');
+        setTitle('');
+      setCategory('Food');
+      setDate(new Date().toISOString().split('T')[0]);
+      // Call callback to refresh expense list in parent component
+      if (onExpenseAdded) {
+        onExpenseAdded();
+        }
+      }
+      
+    } catch (error) {
+      // Display error message
+      setMessage('Failed to add expense: ' + error.message);
+      setMessageType('error');
+    } finally {
+      // Always reset loading state
+      setLoading(false);
     }
   };
 
+  /**
+   * Format amount input to ensure proper number format
+   * 
+   * @param {string} value - Raw input value
+   */
   const handleAmountChange = (value) => {
     // Remove any non-numeric characters except decimal point
     const cleanValue = value.replace(/[^0-9.]/g, '');
@@ -211,7 +252,6 @@ export default function ExpenseForm({ onExpenseAdded, initialExpense = null, isE
     
     setAmount(cleanValue);
   };
-
 
   return (
     <div className="expense-form-container">
