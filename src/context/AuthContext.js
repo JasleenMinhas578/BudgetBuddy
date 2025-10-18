@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
 import { 
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,  
+  signInWithEmailAndPassword,
+  signOut,   
   onAuthStateChanged 
 } from 'firebase/auth';
 
@@ -15,7 +16,6 @@ import {
 
 // Create the context
 const AuthContext = createContext();
-
 
 export function AuthProvider({ children }) {
   // State to track the currently logged-in user
@@ -30,6 +30,10 @@ export function AuthProvider({ children }) {
 
   function login(email, password) {
     return signInWithEmailAndPassword(auth, email, password);
+  }
+
+  function logout() {
+    return signOut(auth);
   }
 
 
@@ -55,6 +59,7 @@ export function AuthProvider({ children }) {
     currentUser,  // Current user object (null if not logged in)
     signup,       // Function to register new users
     login,        // Function to log in users
+    logout        // Function to log out users
   };
 
   return (
