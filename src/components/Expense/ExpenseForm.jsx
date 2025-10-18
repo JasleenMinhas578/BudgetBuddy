@@ -2,29 +2,9 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/database';
 import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../../firebaseConfig';
 import '../../styles/main.css';
 
-/**
- * ExpenseForm Component
- * 
- * This component provides a form for users to add new expenses with:
- * - Amount, description, category, and date inputs
- * - Form validation and error handling
- * - Category selection with predefined options
- * - Date picker with current date as default
- * - Loading states and success feedback
- * - Integration with Firebase database
- * 
- * Features:
- * - Real-time form validation
- * - Category management with color coding
- * - Responsive design with animations
- * - Success/error message display
- * - Form reset after successful submission
- * - Date validation (no future dates)
- * - Amount formatting and validation
- */
 export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialExpense = null, isEditMode = false }) {
   // Form state management
   const [amount, setAmount] = useState(initialExpense ? initialExpense.amount : '');
@@ -153,20 +133,6 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
     return { isValid: true, message: '' };
   };
 
-  /**
-   * Handle form submission
-   * 
-   * This function:
-   * 1. Prevents default form submission
-   * 2. Validates all form inputs
-   * 3. Creates expense object with user data
-   * 4. Saves expense to Firebase database
-   * 5. Shows success message and resets form
-   * 6. Calls callback to refresh expense list
-   * 7. Handles errors and displays appropriate messages
-   * 
-   * @param {Event} e - Form submission event
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -230,11 +196,6 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
     }
   };
 
-  /**
-   * Format amount input to ensure proper number format
-   * 
-   * @param {string} value - Raw input value
-   */
   const handleAmountChange = (value) => {
     // Remove any non-numeric characters except decimal point
     const cleanValue = value.replace(/[^0-9.]/g, '');
