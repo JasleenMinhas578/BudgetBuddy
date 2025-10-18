@@ -13,7 +13,7 @@ export default function Dashboard() {
   const overlayRef = useRef(null);
   
   // Check if we're on mobile
-  const isMobile = () => window.innerWidth <= 768;
+  const isMobile = useCallback(() => window.innerWidth <= 768, []);
   
   // Initialize sidebar state based on screen size
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function Dashboard() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isMobile]);
   
   const handleOverlayClick = (e) => {
     // Don't close sidebar if clicking on sidebar itself
@@ -132,7 +132,7 @@ export default function Dashboard() {
         document.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, [isDragging, sidebarOpen, dragStartX, handleMouseMove, handleTouchMove]);
+  }, [isDragging, sidebarOpen, dragStartX, handleMouseMove, handleTouchMove, isMobile]);
 
   // Add touch/mouse event listeners to the page edges (mobile only)
   useEffect(() => {
@@ -179,7 +179,7 @@ export default function Dashboard() {
       document.removeEventListener('mousedown', handleEdgeMouse);
       document.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isMobile]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
