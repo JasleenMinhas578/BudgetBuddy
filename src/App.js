@@ -4,6 +4,7 @@ import Landing from './pages/Landing';
 import Signup from './components/Auth/Signup';
 import Login from './components/Auth/Login';
 import Dashboard from './pages/Dashboard';
+import Expenses from './components/Dashboard/Expenses';
 import PrivateRoute from './pages/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import './styles/main.css';
@@ -38,6 +39,7 @@ function App() {
            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
 
             {/* Nested routes within dashboard */}
+            <Route path="expenses" element={<Expenses />} />
 
             {/* <Route index element={<DashboardOverview />} />
             <Route path="expenses" element={<Expenses />} />
