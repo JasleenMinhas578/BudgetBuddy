@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
-import { format } from 'date-fns';
 import Toast from '../UI/Toast';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
@@ -11,14 +10,6 @@ import Modal from '../Modal';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [newExpense, setNewExpense] = useState({
-    title: '',
-    amount: '',
-    category: '',
-    date: format(new Date(), 'yyyy-MM-dd')
-  });
-  const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
   const { currentUser } = useAuth();
@@ -30,7 +21,6 @@ export default function Expenses() {
     if (!currentUser) return;
   
     let unsubscribeExpenses = () => {};
-    let unsubscribeCategories = () => {};
   
     try {
       // Fetch expenses
@@ -58,18 +48,6 @@ export default function Expenses() {
         setExpenses(sortedExpenses);
       });
   
-      // Fetch categories
-      const qCategories = query(
-        collection(db, 'users', currentUser.uid, 'categories')
-      );
-      
-      unsubscribeCategories = onSnapshot(qCategories, (querySnapshot) => {
-        const categoriesData = [];
-        querySnapshot.forEach((doc) => {
-          categoriesData.push({ id: doc.id, ...doc.data() });
-        });
-        setCategories(categoriesData);
-      });
   
     } catch (error) {
       console.error("Error setting up listeners:", error);
@@ -83,7 +61,6 @@ export default function Expenses() {
       // Safely unsubscribe
       try {
         unsubscribeExpenses();
-        unsubscribeCategories();
       } catch (error) {
         console.error("Error unsubscribing:", error);
       }
@@ -91,62 +68,6 @@ export default function Expenses() {
   }, [currentUser]);
 
 
-  const handleAddExpense = async (e) => {
-    e.preventDefault();
-    console.log('handleAddExpense called', newExpense);
-    
-    // Check if Firebase is configured
-    if (!db) {
-      console.error('Firebase not configured');
-      setToast({
-        message: 'Firebase not configured. Please set up your Firebase project.',
-        type: 'error'
-      });
-      return;
-    }
-    
-    // Check if user is authenticated
-    if (!currentUser) {
-      console.error('User not authenticated');
-      setToast({
-        message: 'Please log in to add expenses.',
-        type: 'error'
-      });
-      return;
-    }
-    
-    // Store the expense data before resetting
-    const expenseData = { ...newExpense };
-    
-    setIsLoading(true);
-    
-    try {
-      console.log('Attempting to add expense to Firebase...');
-      // Add the expense to the database
-      await addDoc(collection(db, 'users', currentUser.uid, 'expenses'), {
-        ...expenseData,
-        amount: parseFloat(expenseData.amount),
-        createdAt: new Date()
-      });
-      
-      console.log('Expense added successfully');
-      // Show success toast with date information
-      setToast({
-        message: `Expense "${expenseData.title}" added for ${format(new Date(expenseData.date), 'MMM dd, yyyy')}`,
-        type: 'success'
-      });
-      
-    } catch (error) {
-      console.error('Error adding expense: ', error);
-      // Show error toast
-      setToast({
-        message: 'Failed to add expense. Please try again.',
-        type: 'error'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleDeleteExpense = async (id) => {
     const expense = expenses.find(exp => exp.id === id);
@@ -179,7 +100,6 @@ export default function Expenses() {
   };
 
   const handleUpdateExpense = async (updatedExpense) => {
-    setIsLoading(true);
     try {
       await updateDoc(doc(db, 'users', currentUser.uid, 'expenses', updatedExpense.id), {
         title: updatedExpense.title,
@@ -199,8 +119,6 @@ export default function Expenses() {
         message: 'Failed to update expense. Please try again.',
         type: 'error'
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -223,11 +141,6 @@ export default function Expenses() {
     // Optionally, refresh expenses here if needed
   };
 
-  const handleExpenseEdited = () => {
-    setIsEditExpenseFormOpen(false);
-    setExpenseToEdit(null);
-    // Optionally, refresh expenses here if needed
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
