@@ -1,88 +1,14 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot} from 'firebase/firestore';
-import { db } from '../../firebase';
-import { useAuth } from '../../context/AuthContext';
 import Modal from '../UI/Modal';
 import Toast from '../UI/Toast';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
 export default function Categories() {
-  const [categories, setCategories] = useState([]);
-  const [expenses, setExpenses] = useState([]);
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState(null);
   const [menuOpen, setMenuOpen] = useState(null);
-  const { currentUser } = useAuth();
-  
-  useEffect(() => {
-    if (!currentUser) return;
-  
-    let unsubscribeExpenses = () => {};
-    let unsubscribeCategories = () => {};
-  
-    const setupListeners = async () => {
-      try {
-        // Expenses listener
-        const qExpenses = query(
-          collection(db, 'users', currentUser.uid, 'expenses')
-        );
-        
-        unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
-          const expensesData = [];
-          querySnapshot.forEach((doc) => {
-            expensesData.push({ id: doc.id, ...doc.data() });
-          });
-          
-          const sortedExpenses = expensesData.sort((a, b) => {
-            if (a.createdAt && b.createdAt) {
-              return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
-            }
-            if (a.date && b.date) {
-              return new Date(b.date).getTime() - new Date(a.date).getTime();
-            }
-            return 0;
-          });
-          
-          setExpenses(sortedExpenses);
-        });
-  
-        // Categories listener
-        const qCategories = query(
-          collection(db, 'users', currentUser.uid, 'categories')
-        );
-        
-        unsubscribeCategories = onSnapshot(qCategories, (querySnapshot) => {
-          const categoriesData = [];
-          querySnapshot.forEach((doc) => {
-            categoriesData.push({ id: doc.id, ...doc.data() });
-          });
-          setCategories(categoriesData);
-        });
-  
-      } catch (error) {
-        console.error("Error setting up listeners:", error);
-        setToast({
-          message: 'Error loading data. Please refresh the page.',
-          type: 'error'
-        });
-      }
-    };
-  
-    setupListeners();
-  
-    return () => {
-      // Cleanup function
-      try {
-        if (typeof unsubscribeExpenses === 'function') unsubscribeExpenses();
-        if (typeof unsubscribeCategories === 'function') unsubscribeCategories();
-      } catch (error) {
-        console.error("Error during cleanup:", error);
-      }
-    };
-  }, [currentUser]);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -102,10 +28,6 @@ export default function Categories() {
     setIsModalOpen(false);
     // Reset form when closing modal
     setNewCategory('');
-  };
-
-  const toggleMenu = (categoryId) => {
-    setMenuOpen(menuOpen === categoryId ? null : categoryId);
   };
 
   const handleAddCategory = async (e) => {
