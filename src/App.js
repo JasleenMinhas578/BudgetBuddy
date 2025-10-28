@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Expenses from './components/Dashboard/Expenses';
 import PrivateRoute from './pages/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
+import Categories from './components/Dashboard/Categories';
 import './styles/main.css';
 
 /**
@@ -40,11 +41,7 @@ function App() {
 
             {/* Nested routes within dashboard */}
             <Route path="expenses" element={<Expenses />} />
-
-            {/* <Route index element={<DashboardOverview />} />
-            <Route path="expenses" element={<Expenses />} />
             <Route path="categories" element={<Categories />} />
-            <Route path="reports" element={<Reports />} /> */}
           </Route>
 
         </Routes>
