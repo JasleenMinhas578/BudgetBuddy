@@ -6,7 +6,7 @@ import Toast from '../UI/Toast';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 import ExpenseForm from '../Expense/ExpenseForm';
-import Modal from '../Modal';
+import Modal from '../UI/Modal';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
