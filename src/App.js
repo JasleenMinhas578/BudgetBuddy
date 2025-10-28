@@ -8,6 +8,7 @@ import Expenses from './components/Dashboard/Expenses';
 import PrivateRoute from './pages/PrivateRoute';
 import { AuthProvider } from './context/AuthContext';
 import Categories from './components/Dashboard/Categories';
+import DashboardOverview from './components/Dashboard/DashboardOverview';
 import './styles/main.css';
 
 /**
@@ -32,6 +33,7 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes - accessible without authentication */}
+          <Route index element={<DashboardOverview />} />
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
@@ -42,6 +44,7 @@ function App() {
             {/* Nested routes within dashboard */}
             <Route path="expenses" element={<Expenses />} />
             <Route path="categories" element={<Categories />} />
+            
           </Route>
 
         </Routes>
