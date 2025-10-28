@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, onSnapshot} from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import Modal from '../UI/Modal';
 import Toast from '../UI/Toast';
