@@ -1,9 +1,14 @@
 import { useState, useEffect} from 'react';
+import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/main.css';
 
+
 export default function DashboardOverview() {
   // State management for data
+  const [expenses, setExpenses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [recentExpenses, setRecentExpenses] = useState([]);
   
   // Get current user from authentication context
@@ -15,6 +20,10 @@ export default function DashboardOverview() {
     console.log('Firestore path:', `users/${currentUser.uid}/expenses`);
   }
 
+  /**
+   * Set up real-time data listeners for expenses and categories
+   * This effect runs when the component mounts and when currentUser changes
+   */
   useEffect(() => {
     if (currentUser) {
       console.log('Firestore path:', `users/${currentUser.uid}/expenses`);
@@ -39,17 +48,22 @@ export default function DashboardOverview() {
           return 0;
         });
         
+        setExpenses(sortedExpenses);
         // Get the 5 most recent expenses for the recent activity section
         setRecentExpenses(sortedExpenses.slice(0, 5));
       });
 
-      
+      // Set up real-time listener for categories
+      const qCategories = query(
+        collection(db, 'users', currentUser.uid, 'categories')
+      );
       
       const unsubscribeCategories = onSnapshot(qCategories, (querySnapshot) => {
         const categoriesData = [];
         querySnapshot.forEach((doc) => {
           categoriesData.push({ id: doc.id, ...doc.data() });
         });
+        setCategories(categoriesData);
       });
 
       // Cleanup function to remove listeners when component unmounts
@@ -59,6 +73,33 @@ export default function DashboardOverview() {
       };
     }
   }, [currentUser]);
+
+  // Calculate summary statistics from expenses data
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  
+  // Calculate this month's expenses
+  const thisMonthExpenses = expenses
+    .filter(expense => {
+      const expenseDate = new Date(expense.date);
+      const now = new Date();
+      return expenseDate.getMonth() === now.getMonth() && 
+             expenseDate.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum, expense) => sum + expense.amount, 0);
+  
+  // Calculate average expense amount
+  const averageExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
+  
+  // Calculate top spending category
+  const topCategory = expenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {});
+
+  const topCategoryName = Object.keys(topCategory).length > 0 
+    ? Object.entries(topCategory).sort(([,a], [,b]) => b - a)[0][0]
+    : 'None';
+
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -85,6 +126,52 @@ export default function DashboardOverview() {
         </div>
       </div>
 
+      {/* Summary Cards - Key financial metrics */}
+      <div className="summary-cards">
+        <div className="summary-card">
+          <div className="card-icon">
+            <span>📊</span>
+          </div>
+          <div className="card-content">
+            <h3>Total Expenses</h3>
+            <p className="card-amount">${totalExpenses.toFixed(2)}</p>
+            <p className="card-subtitle">All time</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="card-icon">
+            <span>📅</span>
+          </div>
+          <div className="card-content">
+            <h3>This Month</h3>
+            <p className="card-amount">${thisMonthExpenses.toFixed(2)}</p>
+            <p className="card-subtitle">Current month spending</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="card-icon">
+            <span>📈</span>
+          </div>
+          <div className="card-content">
+            <h3>Average</h3>
+            <p className="card-amount">${averageExpense.toFixed(2)}</p>
+            <p className="card-subtitle">Per transaction</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="card-icon">
+            <span>🏆</span>
+          </div>
+          <div className="card-content">
+            <h3>Top Category</h3>
+            <p className="card-amount">{topCategoryName}</p>
+            <p className="card-subtitle">Most spent category</p>
+          </div>
+        </div>
+      </div>
 
       {/* Recent Activity Section */}
       <div className="recent-activity">
