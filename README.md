@@ -166,7 +166,7 @@ Our comprehensive test suite ensures reliability and maintainability of the Budg
 - **Overall Coverage**: 24.6%
 - **Status**: All tests passing ✅
 
-![Test Cases Passing](TestCasesPassing.png)
+![Test Cases Passing](Documents/TestCasesPassing.png)
 *Screenshot showing all 99 tests passing across 5 test suites*
 
 ### 🔬 Test Files Breakdown (More to be added for other components in coming Iterations)
