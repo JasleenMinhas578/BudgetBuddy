@@ -168,7 +168,7 @@ We use GitHub **Labels** for tracking features and tasks:
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
-   cd budget-buddy
+   cd BudgetBuddy
    ```
 
 2. **Install Dependencies**
