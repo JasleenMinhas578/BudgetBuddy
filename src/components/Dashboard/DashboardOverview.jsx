@@ -8,7 +8,6 @@ import '../../styles/main.css';
 export default function DashboardOverview() {
   // State management for data
   const [expenses, setExpenses] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [recentExpenses, setRecentExpenses] = useState([]);
   
   // Get current user from authentication context
@@ -53,23 +52,10 @@ export default function DashboardOverview() {
         setRecentExpenses(sortedExpenses.slice(0, 5));
       });
 
-      // Set up real-time listener for categories
-      const qCategories = query(
-        collection(db, 'users', currentUser.uid, 'categories')
-      );
-      
-      const unsubscribeCategories = onSnapshot(qCategories, (querySnapshot) => {
-        const categoriesData = [];
-        querySnapshot.forEach((doc) => {
-          categoriesData.push({ id: doc.id, ...doc.data() });
-        });
-        setCategories(categoriesData);
-      });
 
       // Cleanup function to remove listeners when component unmounts
       return () => {
         unsubscribeExpenses();
-        unsubscribeCategories();
       };
     }
   }, [currentUser]);
