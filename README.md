@@ -156,6 +156,122 @@ We use GitHub **Labels** for tracking features and tasks:
 
 ---
 
+## 🧪 Test Cases Summary (Till Now)
+
+Our comprehensive test suite ensures reliability and maintainability of the Budget Buddy application. We follow industry best practices with **Jest** and **React Testing Library** for unit testing.
+
+### 📊 Test Coverage Overview (Till Iteration 3)
+- **Total Test Files**: 5
+- **Total Tests**: 99 tests
+- **Overall Coverage**: 24.6%
+- **Status**: All tests passing ✅
+
+![Test Cases Passing](TestCasesPassing.png)
+*Screenshot showing all 99 tests passing across 5 test suites*
+
+### 🔬 Test Files Breakdown (More to be added for other components in coming Iterations)
+
+#### **1. Categories.test.jsx** (26 tests)
+**Component**: Categories management with charts and CRUD operations
+- **Basic Rendering** (2 tests) - Component structure and UI elements
+- **Modal Interactions** (3 tests) - Add category modal open/close functionality
+- **Form Interactions** (3 tests) - Input handling and form validation
+- **Category Addition** (4 tests) - CRUD operations and success feedback
+- **Error Handling** (4 tests) - Firebase errors and edge cases
+- **Firebase Integration** (3 tests) - Database operations and real-time sync
+- **Data Loading** (2 tests) - Categories and expenses data fetching
+- **Form Validation** (2 tests) - Input validation and requirements
+- **Toast Notifications** (1 test) - User feedback system
+- **Component Lifecycle** (2 tests) - Mount/unmount and re-render handling
+
+#### **2. Login.test.jsx** (16 tests)
+**Component**: User authentication login
+- **Rendering** (3 tests) - UI elements and accessibility
+- **Form Interactions** (2 tests) - Input field updates and loading states
+- **Navigation** (3 tests) - Route changes and redirects
+- **Error Handling** (4 tests) - Authentication error scenarios
+- **Form Validation** (2 tests) - Input validation and submission
+- **Loading States** (2 tests) - Button states and spinners
+
+#### **3. Signup.test.jsx** (23 tests)
+**Component**: User registration
+- **Rendering** (3 tests) - UI elements and accessibility
+- **Form Interactions** (4 tests) - Input handling and password visibility
+- **Password Validation** (4 tests) - Password strength requirements
+- **Navigation** (3 tests) - Route changes and redirects
+- **Error Handling** (4 tests) - Registration error scenarios
+- **Form Validation** (1 test) - Input validation and submission
+- **Loading States** (2 tests) - Button states and spinners
+- **Password Visibility Toggle** (2 tests) - UI interaction testing
+
+#### **4. Expenses.test.jsx** (7 tests)
+**Component**: Expense management and display
+- **Basic Rendering** (3 tests) - Component structure and empty states
+- **Add Expense** (2 tests) - Modal opening and form interaction
+- **Error Handling** (1 test) - Firebase connection errors
+- **Component Integration** (2 tests) - Summary statistics and data display
+
+#### **5. AuthFlow.test.jsx** (27 tests)
+**Component**: Complete authentication flow integration
+- **End-to-End Authentication Flow** - Complete login/signup integration
+- **User Session Management** - Authentication state handling
+- **Route Protection** - Private route access control
+
+### 🛠️ Testing Strategy
+
+#### **Mocking Strategy**
+- **Firebase**: Complete mocking of Auth and Firestore services
+- **Charts**: Mocked Chart.js components to prevent DOM errors
+- **Animations**: Framer Motion components mocked for test stability
+- **Navigation**: React Router mocked for route testing
+- **UI Components**: Modal and Toast components mocked
+
+#### **Test Quality Features**
+- ✅ **Comprehensive Coverage**: Authentication, CRUD operations, UI interactions
+- ✅ **Error Handling**: Firebase errors, validation errors, edge cases
+- ✅ **Accessibility**: ARIA attributes and keyboard navigation testing
+- ✅ **Loading States**: Button states, spinners, and async operations
+- ✅ **Form Validation**: Input validation and submission testing
+- ✅ **Component Lifecycle**: Mount/unmount and re-render testing
+
+### 📈 Coverage Analysis
+
+| Component | Coverage | Status |
+|-----------|----------|--------|
+| **Authentication** | 96.55% | ✅ Excellent |
+| **Categories** | 69.04% | ✅ Good |
+| **Charts** | 60% | ✅ Good |
+| **Expenses** | 45.71% | 🔄 Needs Improvement |
+| **Dashboard Overview** | 0% | 🔄 Needs Testing |
+| **UI Components** | 0% | 🔄 Needs Testing |
+
+### 🎯 Testing Commands
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage --watchAll=false
+
+# Run specific test file
+npm test -- --testPathPattern=Categories.test.jsx
+
+# Run tests in watch mode
+npm test -- --watch
+```
+
+### 🔧 Test Configuration
+
+Our test setup includes:
+- **Jest** as the testing framework
+- **React Testing Library** for component testing
+- **@testing-library/jest-dom** for custom matchers
+- **@testing-library/user-event** for user interaction simulation
+- **jsdom** environment for DOM testing
+
+---
+
 ## 📂 Deliverables
 - Requirements and Design Documentation  
 - UML diagrams (use case, class, sequence)  
