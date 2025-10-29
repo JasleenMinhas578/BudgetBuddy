@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot} from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import PieChart from '../Charts/PieChart';
+import BarChart from '../Charts/BarChart';
 import Modal from '../UI/Modal';
 import Toast from '../UI/Toast';
 import '../../styles/main.css';
@@ -16,7 +19,8 @@ export default function Categories() {
   const [toast, setToast] = useState(null);
   const [menuOpen, setMenuOpen] = useState(null);
   const { currentUser } = useAuth();
-  
+ 
+
   useEffect(() => {
     if (!currentUser) return;
   
@@ -104,9 +108,6 @@ export default function Categories() {
     setNewCategory('');
   };
 
-  const toggleMenu = (categoryId) => {
-    setMenuOpen(menuOpen === categoryId ? null : categoryId);
-  };
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
@@ -128,6 +129,123 @@ export default function Categories() {
       setIsLoading(false);
     }
   };
+
+  const handleDeleteCategory = async (categoryId, categoryName) => {
+    if (!db) { 
+      setToast({ message: 'Firebase not configured. Please set up your Firebase project.', type: 'error' }); 
+      return; 
+    }
+    if (!currentUser) { 
+      setToast({ message: 'Please log in to delete categories.', type: 'error' }); 
+      return; 
+    }
+
+    // Check if this is a default category
+    const defaultCategories = [
+      'food', 'transport', 'entertainment', 'utilities', 'rent', 'other'
+    ];
+    if (defaultCategories.includes(categoryId)) {
+      setToast({ message: 'Cannot delete default categories.', type: 'error' });
+      return;
+    }
+
+    // Confirm deletion
+    if (!window.confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await deleteDoc(doc(db, 'users', currentUser.uid, 'categories', categoryId));
+      setToast({ message: `Category "${categoryName}" deleted successfully!`, type: 'success' });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setToast({ message: 'Failed to delete category. Please try again.', type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Default categories that are always available
+  const defaultCategories = [
+    { id: 'food', name: 'Food', icon: '🍕' },
+    { id: 'transport', name: 'Transport', icon: '🚗' },
+    { id: 'entertainment', name: 'Entertainment', icon: '🎬' },
+    { id: 'utilities', name: 'Utilities', icon: '💡' },
+    { id: 'rent', name: 'Rent', icon: '🏠' },
+    { id: 'other', name: 'Other', icon: '📦' }
+  ];
+
+
+  // Combine default and custom categories
+  const allCategories = [
+    ...defaultCategories,
+    ...categories.filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
+      .map(cat => ({ ...cat, icon: '📊' }))
+  ];
+
+  // Prepare data for charts
+  const getCategoryData = () => {
+    const categoryMap = {};
+    
+    // Initialize all categories (default + custom) with 0
+    allCategories.forEach(cat => {
+      if (cat.name && cat.name !== 'undefined' && cat.name !== 'null') {
+        categoryMap[cat.name] = 0;
+      }
+    });
+    
+    // Sum expenses by category - filter out expenses with invalid categories
+    expenses.forEach(expense => {
+      if (expense && 
+          expense.category && 
+          expense.category !== 'undefined' && 
+          expense.category !== 'null' && 
+          typeof expense.category === 'string' &&
+          expense.category.trim() !== '' &&
+          categoryMap.hasOwnProperty(expense.category)) {
+        categoryMap[expense.category] += (expense.amount || 0);
+      }
+    });
+    
+    // Filter out categories with zero values and undefined/null keys
+    const filteredLabels = [];
+    const filteredData = [];
+    const filteredColors = [];
+    
+    Object.entries(categoryMap).forEach(([label, value], index) => {
+      if (value > 0 && 
+          label && 
+          label !== 'undefined' && 
+          label !== 'null' && 
+          typeof label === 'string' &&
+          label.trim() !== '') {
+        filteredLabels.push(label);
+        filteredData.push(value);
+        filteredColors.push([
+          '#4fd1c5', '#f687b3', '#f6ad55', '#68d391', '#63b3ed', '#b794f4',
+          '#fc8181', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb7185'
+        ][index % 12]);
+      }
+    });
+    
+    return {
+      labels: filteredLabels,
+      datasets: [{
+        data: filteredData,
+        backgroundColor: filteredColors
+      }]
+    };
+  };
+
+  const categoryData = getCategoryData();
+  
+  // Debug logging to help identify undefined values
+  console.log('Category Data:', categoryData);
+  console.log('Labels:', categoryData.labels);
+  console.log('Data:', categoryData.datasets[0].data);
+  
+  const totalSpent = Object.values(categoryData.datasets[0].data).reduce((sum, val) => sum + val, 0);
 
   return (
     <div className="categories-container">
@@ -152,6 +270,112 @@ export default function Categories() {
           <span>➕</span>
           Add Category
         </button>
+      </div>
+      
+      {/* Summary Stats */}
+      <div className="categories-summary">
+        <div className="summary-stat">
+          <span className="stat-label">Total Categories</span>
+          <span className="stat-value">{allCategories.length}</span>
+        </div>
+        <div className="summary-stat">
+          <span className="stat-label">Total Spent</span>
+          <span className="stat-value">${totalSpent.toFixed(2)}</span>
+        </div>
+        <div className="summary-stat">
+          <span className="stat-label">Active Categories</span>
+          <span className="stat-value">
+            {Object.values(categoryData.datasets[0].data).filter(val => val > 0).length}
+          </span>
+        </div>
+      </div>
+      
+      {/* Charts Section */}
+      <div className="charts-section">
+        <div className="chart-container">
+        <div className="chart-card">
+          <h3>Spending by Category</h3>
+            <div className="chart-wrapper">
+          <PieChart data={categoryData} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="chart-container">
+        <div className="chart-card">
+          <h3>Category Breakdown</h3>
+            <div className="chart-wrapper">
+          <BarChart data={categoryData} />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Categories List */}
+      <div className="categories-list-section">
+        <div className="section-subheader">
+          <h3>All Categories</h3>
+          <p>Detailed breakdown of your spending by category (default and custom)</p>
+        </div>
+        
+        {allCategories.length > 0 ? (
+          <div className="categories-grid">
+            {allCategories.map((category) => {
+              const categoryAmount = categoryData.datasets[0].data[categoryData.labels.indexOf(category.name)] || 0;
+              const percentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
+              const isDefaultCategory = defaultCategories.some(dc => dc.name === category.name);
+              
+              return (
+                <div key={category.id} className="category-card">
+                  <div className="category-card-header">
+                    <div className="category-icon-large">
+                      <span>{category.icon}</span>
+                    </div>
+                    <div className="category-info">
+                      <h4>{category.name}</h4>
+                      <p className="category-amount">${categoryAmount.toFixed(2)}</p>
+                    </div>
+                    {!isDefaultCategory && (
+                      <div className="category-actions">
+                        <button
+                          onClick={() => handleDeleteCategory(category.id, category.name)}
+                          className="btn-delete"
+                          disabled={isLoading}
+                          title="Delete category"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3,6 5,6 21,6"></polyline>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="category-progress">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill" 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="progress-text">{percentage.toFixed(1)}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <div className="empty-icon">📊</div>
+            <h4>No categories available</h4>
+            <p>Add custom categories to start organizing your expenses</p>
+            <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+              Add First Category
+            </button>
+          </div>
+        )}
       </div>
       
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Add New Category">
