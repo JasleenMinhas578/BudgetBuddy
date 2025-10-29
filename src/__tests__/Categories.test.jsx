@@ -22,6 +22,26 @@ jest.mock('../firebaseConfig', () => ({
   db: {},
 }));
 
+// Mock Chart.js components to prevent DOM errors
+jest.mock('react-chartjs-2', () => ({
+  Pie: () => <div data-testid="pie-chart">Pie Chart</div>,
+  Bar: () => <div data-testid="bar-chart">Bar Chart</div>,
+}));
+
+// Mock Chart.js
+jest.mock('chart.js', () => ({
+  Chart: {
+    register: jest.fn(),
+  },
+  CategoryScale: jest.fn(),
+  LinearScale: jest.fn(),
+  BarElement: jest.fn(),
+  Title: jest.fn(),
+  Tooltip: jest.fn(),
+  Legend: jest.fn(),
+  ArcElement: jest.fn(),
+}));
+
 // Mock Toast component
 jest.mock('../components/UI/Toast', () => {
   return function MockToast({ message, type, onClose }) {
