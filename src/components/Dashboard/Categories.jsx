@@ -292,39 +292,23 @@ export default function Categories() {
       
       {/* Charts Section */}
       <div className="charts-section">
-        {categoryData.labels.length > 0 ? (
-          <>
-            <div className="chart-container">
-              <div className="chart-card">
-                <h3>Spending by Category</h3>
-                <div className="chart-wrapper">
-                  <PieChart data={categoryData} />
-                </div>
-              </div>
-            </div>
-            
-            <div className="chart-container">
-              <div className="chart-card">
-                <h3>Category Breakdown</h3>
-                <div className="chart-wrapper">
-                  <BarChart data={categoryData} />
-                </div>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="charts-empty-state">
-            <div className="empty-charts-content">
-              <div className="empty-charts-icon">📊</div>
-              <h3>No Spending Data Yet</h3>
-              <p>Start tracking your expenses to see beautiful charts and insights about your spending habits.</p>
-              <a href="/dashboard/expenses" className="btn btn-primary">
-                <span>➕</span>
-                Add Your First Expense
-              </a>
+        <div className="chart-container">
+        <div className="chart-card">
+          <h3>Spending by Category</h3>
+            <div className="chart-wrapper">
+          <PieChart data={categoryData} />
             </div>
           </div>
-        )}
+        </div>
+        
+        <div className="chart-container">
+        <div className="chart-card">
+          <h3>Category Breakdown</h3>
+            <div className="chart-wrapper">
+          <BarChart data={categoryData} />
+            </div>
+          </div>
+        </div>
       </div>
       
       {/* Categories List */}
