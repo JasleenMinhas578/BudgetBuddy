@@ -6,20 +6,11 @@ import { db } from '../../firebaseConfig';
 import '../../styles/main.css';
 
 export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialExpense = null, isEditMode = false }) {
-  // Helper function to get today's date in YYYY-MM-DD format
-  const getTodayDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   // Form state management
   const [amount, setAmount] = useState(initialExpense ? initialExpense.amount : '');
   const [title, setTitle] = useState(initialExpense ? initialExpense.title : '');
   const [category, setCategory] = useState(initialExpense ? initialExpense.category : 'Food');
-  const [date, setDate] = useState(initialExpense ? initialExpense.date : getTodayDate());
+  const [date, setDate] = useState(initialExpense ? initialExpense.date : '');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
@@ -87,7 +78,8 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
    */
   useEffect(() => {
     if (!initialExpense && !date) {
-      setDate(getTodayDate());
+    const today = new Date().toISOString().split('T')[0];
+    setDate(today);
     }
   }, [initialExpense, date]);
 
@@ -185,9 +177,9 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
       setMessageType('success');
       // Reset form to initial state
       setAmount('');
-      setTitle('');
+        setTitle('');
       setCategory('Food');
-      setDate(getTodayDate());
+      setDate(new Date().toISOString().split('T')[0]);
       // Call callback to refresh expense list in parent component
       if (onExpenseAdded) {
         onExpenseAdded();
@@ -299,7 +291,7 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
           className="btn btn-primary"
           disabled={loading}
         >
-          {loading ? (isEditMode ? 'Updating Expense...' : 'Adding Expense...') : (isEditMode ? 'Edit Expense' : 'Add Expense')}
+          {loading ? 'Adding Expense...' : 'Add Expense'}
         </button>
       </form>
     </div>
