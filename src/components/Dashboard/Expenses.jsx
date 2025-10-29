@@ -260,10 +260,16 @@ export default function Expenses() {
       
       {/* Expense Form Modal */}
       <Modal isOpen={isExpenseFormOpen} onClose={() => setIsExpenseFormOpen(false)}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add New Expense</h2>
+        </div>
         <ExpenseForm onExpenseAdded={handleExpenseAdded} />
       </Modal>
       {/* Edit Expense Form Modal */}
       <Modal isOpen={isEditExpenseFormOpen} onClose={() => setIsEditExpenseFormOpen(false)}>
+        <div className="modal-header">
+          <h2 className="modal-title">Edit Expense</h2>
+        </div>
         <ExpenseForm
           onExpenseEdited={handleUpdateExpense}
           initialExpense={expenseToEdit}

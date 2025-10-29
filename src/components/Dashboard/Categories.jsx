@@ -378,7 +378,10 @@ export default function Categories() {
         )}
       </div>
       
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Add New Category">
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add New Category</h2>
+        </div>
         <form onSubmit={handleAddCategory} className="category-form">
           <div className="form-group">
             <label htmlFor="categoryName">Category Name</label>

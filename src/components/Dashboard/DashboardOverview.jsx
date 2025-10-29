@@ -86,6 +86,8 @@ export default function DashboardOverview() {
     ? Object.entries(topCategory).sort(([,a], [,b]) => b - a)[0][0]
     : 'None';
 
+  // Check if this is a first-time user (no expenses yet)
+  const isFirstTimeUser = expenses.length === 0;
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -102,8 +104,13 @@ export default function DashboardOverview() {
       {/* Welcome Section */}
       <div className="welcome-section">
         <div className="welcome-content">
-          <h1>Welcome back!</h1>
-          <p className="welcome-subtitle">Here's what's happening with your finances today.</p>
+          <h1>{isFirstTimeUser ? 'Welcome!' : 'Welcome back!'}</h1>
+          <p className="welcome-subtitle">
+            {isFirstTimeUser 
+              ? 'Let\'s start tracking your expenses and take control of your finances.' 
+              : 'Here\'s what\'s happening with your finances today.'
+            }
+          </p>
         </div>
         <div className="welcome-illustration">
           <div className="illustration-circle">
