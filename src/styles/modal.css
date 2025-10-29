@@ -15,6 +15,25 @@
   position: relative;
   box-shadow: none;
 }
+.modal-header {
+  padding: 1.5rem 2rem 0 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
 .modal-close {
   position: absolute;
   top: 8px; right: 8px;
@@ -22,4 +41,6 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  color: #ffffff;
+  z-index: 10;
 } 
