@@ -102,7 +102,6 @@ export default function Categories() {
   }, [menuOpen]);
 
   const handleCloseModal = () => {
-    console.log('handleCloseModal called');
     setIsModalOpen(false);
     // Reset form when closing modal
     setNewCategory('');
@@ -239,12 +238,6 @@ export default function Categories() {
   };
 
   const categoryData = getCategoryData();
-  
-  // Debug logging to help identify undefined values
-  console.log('Category Data:', categoryData);
-  console.log('Labels:', categoryData.labels);
-  console.log('Data:', categoryData.datasets[0].data);
-  
   const totalSpent = Object.values(categoryData.datasets[0].data).reduce((sum, val) => sum + val, 0);
 
   return (
@@ -263,10 +256,7 @@ export default function Categories() {
         <h2>Categories</h2>
           <p className="section-subtitle">Analyze your spending by category</p>
         </div>
-        <button onClick={() => {
-          console.log('Add Category button clicked');
-          setIsModalOpen(true);
-        }} className="btn btn-primary">
+        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
           <span>➕</span>
           Add Category
         </button>
