@@ -224,8 +224,6 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
 
   return (
     <div className="expense-form-container">
-      <h3>{isEditMode ? 'Edit Expense' : 'Add New Expense'}</h3>
-      
       {/* Display success/error messages */}
       {message && (
         <div className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
