@@ -156,6 +156,100 @@ We use GitHub **Labels** for tracking features and tasks:
 
 ---
 
+## 🚀 How to Run the Project
+
+### Prerequisites
+- **Node.js** (version 16 or higher)
+- **npm** (comes with Node.js)
+- **Git** (for cloning the repository)
+
+### Installation & Setup
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
+   cd budget-buddy
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   - ✅ **The `.env` file is already included in this private repository**
+   - ✅ **Firebase configuration is pre-configured**
+   - ✅ **No additional environment setup required**
+
+4. **Start the Development Server**
+   ```bash
+   npm start
+   ```
+
+5. **Access the Application**
+   - Open your browser and navigate to `http://localhost:3000`
+   - The application will automatically reload when you make changes
+
+### Available Scripts
+
+```bash
+# Start development server
+npm start
+
+# Run tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage --watchAll=false
+
+# Build for production
+npm run build
+
+# Run specific test file
+npm test -- --testPathPattern=Categories.test.jsx
+```
+
+### Project Structure
+```
+budget-buddy/
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── Auth/          # Login, Signup components
+│   │   ├── Dashboard/     # Categories, Expenses, Reports
+│   │   ├── Charts/        # PieChart, BarChart, LineChart
+│   │   ├── Expense/       # ExpenseForm, ExpenseList
+│   │   ├── Layout/        # Navbar, Sidebar, Navigation
+│   │   └── UI/            # Modal, Toast components
+│   ├── context/           # AuthContext
+│   ├── services/          # Database services
+│   ├── styles/            # CSS files
+│   ├── __tests__/         # Test files
+│   └── firebaseConfig.js  # Firebase configuration
+├── .env                   # Environment variables (included)
+├── package.json
+└── README.md
+```
+
+### Firebase Configuration
+- **Authentication**: Email/Password authentication enabled
+- **Firestore**: Real-time database for expenses and categories
+
+### Troubleshooting
+
+**Common Issues:**
+- **Port 3000 in use**: The app will automatically suggest using a different port
+- **Dependencies issues**: Run `npm install` again
+- **Firebase errors**: Ensure you have internet connection
+- **Test failures**: Run `npm test -- --watchAll=false` to see detailed error messages
+
+**Need Help?**
+- Check the console for error messages
+- Ensure all dependencies are installed: `npm install`
+- Verify Node.js version: `node --version` (should be 16+)
+
+---
+
 ## 🧪 Test Cases Summary (Till Now)
 
 Our comprehensive test suite ensures reliability and maintainability of the Budget Buddy application. We follow industry best practices with **Jest** and **React Testing Library** for unit testing.
