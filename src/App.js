@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Signup from './components/Auth/Signup';
 import Login from './components/Auth/Login';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import ResetPassword from './components/Auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Expenses from './components/Dashboard/Expenses';
 import PrivateRoute from './pages/PrivateRoute';
@@ -37,6 +39,8 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
            {/* Protected routes - require authentication */}
            <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>}>
