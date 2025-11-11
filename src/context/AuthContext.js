@@ -4,7 +4,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,   
-  onAuthStateChanged 
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  confirmPasswordReset
 } from 'firebase/auth';
 
 /**
@@ -36,6 +38,14 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  function resetPassword(email, actionCodeSettings) {
+    return sendPasswordResetEmail(auth, email, actionCodeSettings);
+  }
+
+  function updatePassword(oobCode, newPassword) {
+    return confirmPasswordReset(auth, oobCode, newPassword);
+  }
+
 
   /**
    * Listen for authentication state changes
@@ -59,7 +69,9 @@ export function AuthProvider({ children }) {
     currentUser,  // Current user object (null if not logged in)
     signup,       // Function to register new users
     login,        // Function to log in users
-    logout        // Function to log out users
+    logout,       // Function to log out users
+    resetPassword, // Function to send password reset email
+    updatePassword // Function to confirm password reset with code
   };
 
   return (
