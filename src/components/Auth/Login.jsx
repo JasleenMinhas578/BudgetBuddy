@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
@@ -27,6 +27,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   
   // Get authentication functions from context
@@ -34,6 +35,16 @@ export default function Login() {
   
   // Navigation hook for redirecting after successful login
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check for success message from password reset
+  useEffect(() => {
+    if (location.state?.message) {
+      setMessage(location.state.message);
+      // Clear the message from location state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   /**
    * Handle form submission
@@ -126,6 +137,27 @@ export default function Login() {
             {error}
           </motion.div>
         )}
+
+        {message && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="auth-success"
+            style={{
+              backgroundColor: '#d1fae5',
+              color: '#065f46',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <span>✅</span>
+            {message}
+          </motion.div>
+        )}
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -144,7 +176,12 @@ export default function Login() {
           </div>
           
           <div className="form-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <label htmlFor="password">Password</label>
+              <Link to="/forgot-password" className="auth-link" style={{ fontSize: '0.875rem', textDecoration: 'none' }}>
+                Forgot Password?
+              </Link>
+            </div>
             <div className="input-wrapper">
               {/* <span className="input-icon">🔒</span> */}
             <input 
