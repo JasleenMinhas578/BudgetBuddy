@@ -3,10 +3,10 @@ import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears, parseISO } from 'date-fns';
-import { PieChart, LineChart } from '../Charts';
+import PieChart from '../Charts/PieChart';
+import LineChart from '../Charts/LineChart';
 import jsPDF from 'jspdf';
 import '../../styles/main.css';
-import '../../styles/dashboard-fixes.css';
 
 export default function Reports() {
   const [expenses, setExpenses] = useState([]);
@@ -224,7 +224,7 @@ export default function Reports() {
       pdf.setTextColor(15, 23, 42);
       pdf.setFontSize(24);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('FinTrack Expense Report', margin, 25);
+      pdf.text('BudgetBuddy Expense Report', margin, 25);
       
       pdf.setFontSize(12);
       pdf.setFont('helvetica', 'normal');
