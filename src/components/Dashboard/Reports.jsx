@@ -17,6 +17,8 @@ export default function Reports() {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const { currentUser } = useAuth();
 
+
+
   useEffect(() => {
     if (!currentUser) return;
   
@@ -138,59 +140,83 @@ export default function Reports() {
     });
     
     return {
+      labels: Object.keys(categoryMap),
+      datasets: [{
+        data: Object.values(categoryMap),
+        backgroundColor: [
+          '#4fd1c5', '#f687b3', '#f6ad55', '#68d391', '#63b3ed', '#b794f4',
+          '#fc8181', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb7185'
+        ]
+      }]
     };
   };
+
+  const getMonthlyData = () => {
+    const monthlyMap = {};
+    
+    filteredExpenses.forEach(expense => {
+      const month = format(parseISO(expense.date), 'MMM yyyy');
+      if (monthlyMap[month]) {
+        monthlyMap[month] += expense.amount;
+      } else {
+        monthlyMap[month] = expense.amount;
+      }
+    });
+    
+    const sortedMonths = Object.keys(monthlyMap).sort((a, b) => {
+      return new Date(a) - new Date(b);
+    });
     
     return {
+      labels: sortedMonths,
+      datasets: [{
+        label: 'Monthly Spending',
+        data: sortedMonths.map(month => monthlyMap[month]),
+        borderColor: '#4fd1c5',
+        backgroundColor: 'rgba(79, 209, 197, 0.1)',
+        tension: 0.4
+      }]
     };
-  }
+  };
 
-        {/* Detailed Expenses Table */}
-        <div className="expenses-table-section">
-          <div className="section-subheader">
-            <h3>Detailed Expenses</h3>
-            <p>Complete breakdown of all transactions in the selected period</p>
-          </div>
-          
-          {filteredExpenses.length > 0 ? (
-            <div className="expenses-table-container">
-              <table className="expenses-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Title</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredExpenses.map((expense) => (
-                    <tr key={expense.id}>
-                      <td>
-                        <span className="date-cell">
-                          {format(parseISO(expense.date), 'MMM dd, yyyy')}
-                        </span>
-                      </td>
-                      <td>
-                        <span className="expense-title">{expense.title}</span>
-                      </td>
-                      <td>
-                        <span className="amount-cell">${expense.amount.toFixed(2)}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <div className="empty-icon">📊</div>
-              <h4>No expenses found</h4>
-              <p>No expenses match the selected date range</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `expenses-${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const generatePDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - (2 * margin);
+      
+      let yPosition = margin;
+      
+      // Add header with proper colors
+      pdf.setFillColor(79, 209, 197);
+      pdf.rect(0, 0, pageWidth, 40, 'F');
+      
+      // Header text in dark color
+      pdf.setTextColor(15, 23, 42);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('FinTrack Expense Report', margin, 25);
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Generated on: ${format(new Date(), 'MMMM dd, yyyy')}`, margin, 35);
+      
+      yPosition = 50;
+      
+
   );
 }
