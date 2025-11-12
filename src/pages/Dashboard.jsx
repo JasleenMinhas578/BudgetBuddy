@@ -4,6 +4,7 @@ import Sidebar from '../components/Layout/Sidebar';
 import Navbar from '../components/Layout/Navbar';
 import '../styles/main.css';
 
+
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
   const [isDragging, setIsDragging] = useState(false);
