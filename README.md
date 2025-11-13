@@ -366,6 +366,305 @@ Our test setup includes:
 
 ---
 
+## 🎭 E2E Testing with Cypress
+
+Budget Buddy includes comprehensive end-to-end (E2E) testing using **Cypress** to ensure all critical user flows work correctly in a real browser environment.
+
+### 📦 Cypress Setup
+
+Cypress is already installed and configured in the project. The E2E tests verify:
+- ✅ User signup and registration
+- ✅ User login and authentication
+- ✅ Dashboard display and navigation
+- ✅ Adding and managing expenses
+- ✅ Creating and managing categories
+- ✅ Viewing charts and visualizations
+- ✅ Generating and exporting reports
+- ✅ User logout and session management
+
+### 🚀 Running Cypress Tests
+
+#### **Interactive Mode (Recommended for Development)**
+Open Cypress Test Runner with a visual interface:
+
+```bash
+# Open Cypress in interactive mode
+npm run cypress:open
+
+# Or with the app already running
+npm run test:e2e:dev
+```
+
+This will:
+1. Open the Cypress Test Runner GUI
+2. Allow you to select and run individual test files
+3. Watch tests execute in a real browser
+4. Enable debugging and step-through
+
+#### **Headless Mode (For CI/CD)**
+Run all tests in the terminal without GUI:
+
+```bash
+# Run all tests in headless mode
+npm run cypress:run
+
+# Run with specific browser
+npm run cypress:run:chrome
+
+# Run with visible browser (headed mode)
+npm run cypress:run:headed
+
+# Run with server start and tests
+npm run test:e2e
+```
+
+#### **Run Specific Test File**
+```bash
+# Run a specific test file
+npx cypress run --spec "cypress/e2e/01-signup.cy.js"
+
+# Run tests matching a pattern
+npx cypress run --spec "cypress/e2e/*-login.cy.js"
+```
+
+### 📁 Test File Structure
+
+```
+cypress/
+├── e2e/
+│   ├── smoke.cy.js           # Smoke tests for basic functionality
+│   ├── 01-signup.cy.js        # User signup flow tests
+│   ├── 02-login.cy.js         # User login flow tests
+│   ├── 03-dashboard.cy.js     # Dashboard display tests
+│   ├── 04-expenses.cy.js      # Add expense flow tests
+│   ├── 05-categories.cy.js    # Add categories flow tests
+│   ├── 06-reports.cy.js       # Export reports flow tests
+│   ├── 07-charts.cy.js        # View charts flow tests
+│   └── 08-logout.cy.js        # User logout flow tests
+├── fixtures/
+│   ├── users.json            # Test user data
+│   ├── expenses.json         # Test expense data
+│   └── categories.json       # Test category data
+├── support/
+│   ├── commands.js           # Custom Cypress commands
+│   └── e2e.js                # Global test configuration
+├── screenshots/              # Auto-captured on test failure
+└── videos/                   # Recorded test runs
+```
+
+### 🧪 Test Coverage Overview
+
+| Test Suite | # Tests | Coverage |
+|------------|---------|----------|
+| **Smoke Tests** | 10 | Basic application functionality |
+| **Signup Flow** | 12 | User registration and validation |
+| **Login Flow** | 14 | Authentication and error handling |
+| **Dashboard** | 15 | Navigation and data display |
+| **Expenses** | 13 | CRUD operations for expenses |
+| **Categories** | 15 | Category management |
+| **Reports** | 15 | Report generation and export |
+| **Charts** | 20 | Data visualization |
+| **Logout** | 18 | Session management |
+| **Total** | **132** | **Complete E2E coverage** |
+
+### 🎯 Custom Cypress Commands
+
+We've created custom commands to simplify test writing:
+
+```javascript
+// Login command
+cy.login('user@example.com', 'password123');
+
+// Signup command
+cy.signup('newuser@example.com', 'password123');
+
+// Add expense command
+cy.addExpense({
+  description: 'Groceries',
+  amount: 150.50,
+  category: 'Food',
+  date: '2024-11-10'
+});
+
+// Add category command
+cy.addCategory({
+  name: 'Transportation',
+  budget: 300
+});
+
+// Logout command
+cy.logout();
+```
+
+### 📊 Test Results and Artifacts
+
+After running tests, Cypress generates:
+
+#### **Screenshots**
+- Automatically captured on test failures
+- Location: `cypress/screenshots/`
+- Helps identify what went wrong
+
+#### **Videos**
+- Recorded for all test runs
+- Location: `cypress/videos/`
+- Complete playback of test execution
+
+#### **Access Artifacts**
+```bash
+# View screenshots
+open cypress/screenshots/
+
+# View videos
+open cypress/videos/
+```
+
+### 🔄 CI/CD Integration
+
+Cypress tests run automatically on:
+- Push to `main` or `develop` branches
+- Pull requests to `main` or `develop`
+- Manual workflow dispatch
+
+#### **GitHub Actions Workflow**
+
+The `.github/workflows/e2e.yml` workflow:
+- Runs tests on multiple browsers (Chrome, Firefox, Edge)
+- Executes tests in parallel for faster feedback
+- Uploads screenshots and videos as artifacts
+- Generates test summary reports
+
+#### **View Test Results in CI**
+1. Go to the **Actions** tab in GitHub
+2. Select the **E2E Tests with Cypress** workflow
+3. Click on a specific run to see results
+4. Download artifacts (screenshots/videos) if tests fail
+
+### 🐛 Debugging Tests
+
+#### **Debug in Interactive Mode**
+```bash
+npm run cypress:open
+```
+- Click on a test file to run it
+- Use browser DevTools to inspect elements
+- Add `cy.pause()` to pause test execution
+- Use `cy.debug()` to log debug information
+
+#### **Debug Failed Tests**
+```bash
+# Run failed tests with verbose output
+npx cypress run --spec "cypress/e2e/failing-test.cy.js" --headed --no-exit
+```
+
+#### **Common Debug Commands**
+```javascript
+// Pause test execution
+cy.pause();
+
+// Print debug info
+cy.debug();
+
+// Take screenshot
+cy.screenshot('debug-screenshot');
+
+// Log to console
+cy.log('Debug message');
+```
+
+### ⚙️ Cypress Configuration
+
+Key configuration in `cypress.config.js`:
+
+```javascript
+{
+  baseUrl: 'http://localhost:3000',
+  viewportWidth: 1280,
+  viewportHeight: 720,
+  video: true,
+  screenshotOnRunFailure: true,
+  defaultCommandTimeout: 10000,
+  retries: {
+    runMode: 2,    // Retry failed tests in CI
+    openMode: 0    // No retries in interactive mode
+  }
+}
+```
+
+### 📈 Best Practices
+
+#### **Writing Tests**
+- ✅ Use descriptive test names
+- ✅ Follow AAA pattern (Arrange, Act, Assert)
+- ✅ Use custom commands for repeated actions
+- ✅ Keep tests independent and isolated
+- ✅ Use fixtures for test data
+
+#### **Running Tests**
+- ✅ Run tests locally before committing
+- ✅ Use interactive mode during development
+- ✅ Run full suite before creating PRs
+- ✅ Check CI results after pushing
+
+#### **Maintaining Tests**
+- ✅ Update tests when features change
+- ✅ Fix flaky tests immediately
+- ✅ Keep test data in fixtures
+- ✅ Document complex test scenarios
+
+### 🔧 Troubleshooting
+
+#### **Tests Timing Out**
+Increase timeout in test or config:
+```javascript
+cy.get('.element', { timeout: 15000 });
+```
+
+#### **Firebase Connection Issues**
+Ensure `.env` file has correct Firebase credentials:
+```bash
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_domain
+# ... other Firebase config
+```
+
+#### **Port Already in Use**
+Kill existing processes:
+```bash
+lsof -ti:3000 | xargs kill -9
+```
+
+#### **Tests Failing in CI but Passing Locally**
+- Check environment variables in GitHub Secrets
+- Review CI logs and artifacts
+- Ensure dependencies are correctly installed
+- Verify timeout settings
+
+### 📚 Cypress Resources
+
+- **Official Docs**: https://docs.cypress.io
+- **Best Practices**: https://docs.cypress.io/guides/references/best-practices
+- **Examples**: https://example.cypress.io
+- **API Reference**: https://docs.cypress.io/api/table-of-contents
+
+### 🎓 Learning Cypress
+
+#### **For Beginners**
+1. Run `npm run cypress:open`
+2. Explore the test files in `cypress/e2e/`
+3. Watch tests execute in the browser
+4. Try modifying simple tests
+5. Read the custom commands in `cypress/support/commands.js`
+
+#### **For Advanced Users**
+- Create custom commands for repeated patterns
+- Implement page object models for complex pages
+- Add visual regression testing
+- Integrate with test reporting tools
+- Optimize test execution time
+
+---
+
 ## 📂 Deliverables
 - Requirements and Design Documentation  
 - UML diagrams (use case, class, sequence)  

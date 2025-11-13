@@ -1,0 +1,27 @@
+{
+  "groceries": {
+    "description": "Weekly grocery shopping",
+    "amount": 150.50,
+    "category": "Food",
+    "date": "2024-11-10"
+  },
+  "rent": {
+    "description": "Monthly rent payment",
+    "amount": 1200.00,
+    "category": "Housing",
+    "date": "2024-11-01"
+  },
+  "transportation": {
+    "description": "Gas for car",
+    "amount": 45.75,
+    "category": "Transportation",
+    "date": "2024-11-12"
+  },
+  "entertainment": {
+    "description": "Movie tickets",
+    "amount": 25.00,
+    "category": "Entertainment",
+    "date": "2024-11-13"
+  }
+}
+
