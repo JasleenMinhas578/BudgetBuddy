@@ -193,7 +193,8 @@ export default function ForgotPassword() {
             <div className="input-wrapper">
               <input 
                 type="email" 
-                id="email" 
+                id="email"
+                data-testid="email-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"

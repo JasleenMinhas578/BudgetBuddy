@@ -33,8 +33,8 @@ export default function Landing() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="nav-links"
         >
-          <Link to="/login" className="nav-link">Login</Link>
-          <Link to="/signup" className="nav-link primary">Get Started</Link>
+          <Link to="/login" className="nav-link" data-testid="login-link">Login</Link>
+          <Link to="/signup" className="nav-link primary" data-testid="signup-link">Get Started</Link>
         </motion.div>
       </nav>
       
@@ -55,11 +55,11 @@ export default function Landing() {
               achieve your financial goals.
             </p>
           <div className="hero-cta">
-              <Link to="/signup" className="btn btn-primary btn-hero">
+              <Link to="/signup" className="btn btn-primary btn-hero" data-testid="signup-link-hero">
                 <span>🚀</span>
                 Start Your Journey
               </Link>
-              <Link to="/login" className="btn btn-secondary btn-hero">
+              <Link to="/login" className="btn btn-secondary btn-hero" data-testid="login-link-hero">
                 <span>🔐</span>
                 Sign In
               </Link>

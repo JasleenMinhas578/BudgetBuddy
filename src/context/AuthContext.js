@@ -76,8 +76,8 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Only render children when authentication is not loading */}
-      {!loading && children}
+      {/* Render children immediately - loading state is handled by individual components */}
+      {children}
     </AuthContext.Provider>
   );
 }

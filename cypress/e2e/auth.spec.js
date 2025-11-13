@@ -23,10 +23,13 @@ describe('Authentication Flow', () => {
     it('should successfully sign up a new user', () => {
       cy.visit('/signup');
       
-      // Fill in signup form
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input#password').type(testPassword);
-      cy.get('input#confirmPassword').type(testConfirmPassword);
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      // Fill in signup form - wait for elements to be visible
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(testPassword);
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type(testConfirmPassword);
       
       // Submit form
       cy.get('form').submit();
@@ -42,9 +45,12 @@ describe('Authentication Flow', () => {
     it('should show error for invalid email format', () => {
       cy.visit('/signup');
       
-      cy.get('input[type="email"]').type('invalid-email');
-      cy.get('input#password').type(testPassword);
-      cy.get('input#confirmPassword').type(testConfirmPassword);
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type('invalid-email');
+      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(testPassword);
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type(testConfirmPassword);
       
       cy.get('form').submit();
       
@@ -57,9 +63,12 @@ describe('Authentication Flow', () => {
     it('should show error for weak password', () => {
       cy.visit('/signup');
       
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input#password').type('weak');
-      cy.get('input#confirmPassword').type('weak');
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type('weak');
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type('weak');
       
       cy.get('form').submit();
       
@@ -75,9 +84,12 @@ describe('Authentication Flow', () => {
     it('should show error when passwords do not match', () => {
       cy.visit('/signup');
       
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input#password').type(testPassword);
-      cy.get('input#confirmPassword').type('DifferentPassword123');
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(testPassword);
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type('DifferentPassword123');
       
       cy.get('form').submit();
       
@@ -94,9 +106,13 @@ describe('Authentication Flow', () => {
       
       // Try to signup again with same email
       cy.visit('/signup');
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input#password').type(testPassword);
-      cy.get('input#confirmPassword').type(testConfirmPassword);
+      
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(testPassword);
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type(testConfirmPassword);
       
       cy.get('form').submit();
       
@@ -117,9 +133,12 @@ describe('Authentication Flow', () => {
     it('should successfully log in with valid credentials', () => {
       cy.visit('/login');
       
-      // Fill in login form
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input[type="password"]').type(testPassword);
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      // Fill in login form - wait for elements to be visible
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible').type(testPassword);
       
       // Submit form
       cy.get('form').submit();
@@ -134,8 +153,11 @@ describe('Authentication Flow', () => {
     it('should show error for incorrect password', () => {
       cy.visit('/login');
       
-      cy.get('input[type="email"]').type(testEmail);
-      cy.get('input[type="password"]').type('WrongPassword123');
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(testEmail);
+      cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible').type('WrongPassword123');
       
       cy.get('form').submit();
       
@@ -213,8 +235,12 @@ describe('Authentication Flow', () => {
 
     it('should display forgot password form', () => {
       cy.visit('/forgot-password');
-      cy.get('input[type="email"]').should('be.visible');
-      cy.get('button[type="submit"]').should('be.visible');
+      
+      // Wait for page to load
+      cy.get('body').should('be.visible');
+      
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible');
+      cy.get('button[type="submit"]', { timeout: 10000 }).should('be.visible');
     });
 
     // it('should submit forgot password form', () => {

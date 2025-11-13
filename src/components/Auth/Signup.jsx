@@ -205,7 +205,8 @@ export default function Signup() {
               {/* <span className="input-icon">📧</span> */}
               <input 
                 type="email" 
-                id="email" 
+                id="email"
+                data-testid="email-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
@@ -220,7 +221,8 @@ export default function Signup() {
               {/* <span className="input-icon">🔒</span> */}
               <input 
                 type={showPassword ? "text" : "password"}
-                id="password" 
+                id="password"
+                data-testid="password-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a strong password"
@@ -246,7 +248,8 @@ export default function Signup() {
               {/* <span className="input-icon">🔒</span> */}
               <input 
                 type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword" 
+                id="confirmPassword"
+                data-testid="confirm-password-input"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your password"
