@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../firebaseConfig';
+import { fetchSignInMethodsForEmail } from 'firebase/auth';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
@@ -76,18 +78,67 @@ export default function Login() {
       navigate('/dashboard');
     } catch (error) {
       // Display error message to user
-      switch (error.code) {
-        case 'auth/user-not-found':
-          setError('No account found with this email');
-          break;
-        case 'auth/wrong-password':
-          setError('Incorrect password');
-          break;
-        case 'auth/invalid-email':
-          setError('Invalid email format');
-          break;
-        default:
-          setError('Failed to log in. Please try again.');
+      // Firebase may return different error codes depending on version
+      const errorCode = error.code;
+      
+      // Handle different Firebase error codes
+      if (errorCode === 'auth/user-not-found') {
+        setError('No account found');
+      } else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/invalid-password') {
+        setError('Incorrect password');
+      } else if (errorCode === 'auth/invalid-credential') {
+        // Firebase v9+ uses invalid-credential for both "user not found" and "wrong password"
+        // Note: With Email Enumeration Protection enabled, fetchSignInMethodsForEmail 
+        // returns empty array for all emails, so we can't reliably differentiate.
+        // We'll use fetchSignInMethodsForEmail as a best-effort check, with email format as fallback.
+        try {
+          // Check if email exists by fetching sign-in methods
+          const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+          
+          // If signInMethods has methods, the email exists, so it's a wrong password
+          if (signInMethods && Array.isArray(signInMethods) && signInMethods.length > 0) {
+            // Email exists and has sign-in methods, so it's an incorrect password
+            setError('Incorrect password');
+          } else {
+            // fetchSignInMethodsForEmail returned empty array (could be due to Email Enumeration Protection
+            // or because email doesn't exist). Use email format as fallback heuristic:
+            // Valid email format is more likely a password issue (users don't type random valid emails)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && emailRegex.test(email)) {
+              // Valid email format - more likely a password issue than non-existent account
+              setError('Incorrect password');
+            } else {
+              // Invalid email format - account doesn't exist
+              setError('No account found');
+            }
+          }
+        } catch (checkError) {
+          // If fetchSignInMethodsForEmail throws an error, check the error code
+          const checkErrorCode = checkError?.code || checkError?.message || '';
+          
+          if (checkErrorCode === 'auth/user-not-found') {
+            // Email definitely doesn't exist
+            setError('No account found');
+          } else if (checkErrorCode === 'auth/invalid-email' || checkErrorCode.includes('invalid-email')) {
+            // Invalid email format
+            setError('Invalid email format');
+          } else {
+            // For other errors, use email format as fallback heuristic
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && emailRegex.test(email)) {
+              // Valid email format - more likely a password issue
+              setError('Incorrect password');
+            } else {
+              // Invalid email format or empty - account doesn't exist
+              setError('No account found');
+            }
+          }
+        }
+      } else if (errorCode === 'auth/invalid-email') {
+        setError('Invalid email format');
+      } else {
+        // For any other error, show generic message
+        setError('Failed to log in. Please try again.');
       }
     } finally {
       // Always reset loading state

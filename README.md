@@ -207,6 +207,11 @@ npm run build
 
 # Run specific test file
 npm test -- --testPathPattern=Categories.test.jsx
+
+# Cypress E2E Testing
+npm run cypress:open          # Open Cypress Test Runner (interactive)
+npm run cypress:run           # Run Cypress tests in headless mode
+npm run cypress:run:headless  # Run Cypress tests in headless mode (explicit)
 ```
 
 ### Project Structure
@@ -363,6 +368,144 @@ Our test setup includes:
 - **@testing-library/jest-dom** for custom matchers
 - **@testing-library/user-event** for user interaction simulation
 - **jsdom** environment for DOM testing
+
+---
+
+## 🧪 End-to-End (E2E) Testing with Cypress
+
+We use **Cypress** for comprehensive end-to-end testing to verify critical user flows work correctly in a real browser environment.
+
+### 📊 E2E Test Coverage
+
+Our Cypress test suite covers:
+
+#### **1. Smoke Tests** (`smoke.spec.js`)
+- Application health check
+- Basic page loading and navigation
+- Form element visibility
+
+#### **2. Authentication Flow** (`auth.spec.js`)
+- **Signup Flow**: New user registration, validation, error handling
+- **Login Flow**: User authentication, error scenarios
+- **Logout Flow**: Session termination and redirect
+- **Forgot Password Flow**: Password reset functionality
+
+#### **3. Expense Management** (`expense.spec.js`)
+- Adding new expenses
+- Expense form validation
+- Expense list display
+
+#### **4. Dashboard Display** (`dashboard.spec.js`)
+- Dashboard overview and widgets
+- Navigation between sections (Expenses, Categories, Reports)
+- Route protection for authenticated users
+
+### 🚀 Running Cypress Tests
+
+#### **Interactive Mode (Recommended for Development)**
+```bash
+# Start the development server in one terminal
+npm start
+
+# Open Cypress Test Runner in another terminal
+npm run cypress:open
+```
+
+This opens the Cypress Test Runner where you can:
+- Select and run individual test files
+- Watch tests execute in real-time
+- Debug tests with browser DevTools
+- See screenshots and videos of test runs
+
+#### **Headless Mode (CI/CD)**
+```bash
+# Run all tests in headless mode
+npm run cypress:run
+
+# Or explicitly
+npm run cypress:run:headless
+```
+
+### 🔄 CI/CD Integration
+
+Cypress tests run automatically on:
+- **Push to main/develop branches**
+- **Pull requests to main/develop**
+- **Manual workflow dispatch**
+
+The GitHub Actions workflow (`.github/workflows/e2e.yml`) will:
+1. Build the application
+2. Start the development server
+3. Run all Cypress tests
+4. Upload screenshots and videos as artifacts (on failure/always)
+
+### 📁 Test Artifacts
+
+Test artifacts (screenshots, videos, test results) are automatically uploaded to GitHub Actions and can be found in:
+- **GitHub Actions**: Workflow run → Artifacts section
+- **Local runs**: `cypress/screenshots/` and `cypress/videos/`
+
+### 🎯 Test Structure
+
+```
+cypress/
+├── e2e/
+│   ├── smoke.spec.js      # Basic health checks
+│   ├── auth.spec.js       # Authentication flows
+│   ├── expense.spec.js    # Expense management
+│   └── dashboard.spec.js   # Dashboard display
+├── support/
+│   ├── commands.js        # Custom Cypress commands
+│   └── e2e.js            # Global configuration
+├── fixtures/              # Test data fixtures
+└── screenshots/           # Screenshots on failure
+└── videos/               # Test execution videos
+```
+
+### 🛠️ Custom Commands
+
+We've created custom Cypress commands for common operations:
+
+```javascript
+// Login a user
+cy.login('user@example.com', 'password123');
+
+// Signup a new user
+cy.signup('user@example.com', 'Password123', 'Password123');
+
+// Logout
+cy.logout();
+
+// Add an expense
+cy.addExpense('Coffee', '5.50', 'Food', '2025-11-15');
+```
+
+### 📝 Writing New Tests
+
+When adding new E2E tests:
+
+1. Create a new test file in `cypress/e2e/`
+2. Follow the existing test structure and naming conventions
+3. Use custom commands when possible for consistency
+4. Test both success and error scenarios
+5. Ensure tests are independent and can run in any order
+
+### ⚠️ Important Notes
+
+- **Firebase Configuration**: Tests use the same Firebase project as development
+- **Test Data**: Tests create unique users with timestamps to avoid conflicts
+- **Cleanup**: Tests clear localStorage and cookies between runs
+- **Timeouts**: Tests have extended timeouts for Firebase operations
+
+### 🔍 Debugging Failed Tests
+
+If a test fails:
+
+1. Check the Cypress video in `cypress/videos/`
+2. Review screenshots in `cypress/screenshots/`
+3. Run the test in interactive mode: `npm run cypress:open`
+4. Use `cy.pause()` or `cy.debug()` in your test code
+5. Check browser console for errors
 
 ---
 

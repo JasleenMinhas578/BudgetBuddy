@@ -37,6 +37,22 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   /**
+   * Validate email format
+   * 
+   * Checks if email is in valid format
+   * 
+   * @param {string} email - Email to validate
+   * @returns {Object} Validation result with isValid boolean and message
+   */
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return { isValid: false, message: 'Please enter a valid email address' };
+    }
+    return { isValid: true, message: '' };
+  };
+
+  /**
    * Validate password strength
    * 
    * Checks if password meets security requirements:
@@ -87,6 +103,13 @@ export default function Signup() {
     
     // Clear any previous error messages
     setError('');
+    
+    // Validate email format
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.message);
+      return;
+    }
     
     // Validate password strength
     const passwordValidation = validatePassword(password);
