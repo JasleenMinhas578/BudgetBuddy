@@ -1,0 +1,27 @@
+{
+  "food": {
+    "name": "Food",
+    "budget": 500
+  },
+  "housing": {
+    "name": "Housing",
+    "budget": 1500
+  },
+  "transportation": {
+    "name": "Transportation",
+    "budget": 300
+  },
+  "entertainment": {
+    "name": "Entertainment",
+    "budget": 200
+  },
+  "utilities": {
+    "name": "Utilities",
+    "budget": 250
+  },
+  "healthcare": {
+    "name": "Healthcare",
+    "budget": 150
+  }
+}
+
