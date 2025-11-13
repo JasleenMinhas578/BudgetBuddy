@@ -22,9 +22,6 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   // State to track the currently logged-in user
   const [currentUser, setCurrentUser] = useState(null);
-  
-  // State to track if authentication is still loading
-  const [loading, setLoading] = useState(true);
 
   function signup(email, password) {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -57,7 +54,6 @@ export function AuthProvider({ children }) {
     // Set up the authentication state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user); // Update current user state
-      setLoading(false);    // Mark loading as complete
     });
 
     // Cleanup function to remove the listener when component unmounts
