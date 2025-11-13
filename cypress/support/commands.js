@@ -14,10 +14,13 @@
  */
 Cypress.Commands.add('login', (email, password) => {
   cy.visit('/login');
-  // Wait for page to load
+  // Wait for page to load and Firebase to initialize
+  cy.wait(2000); // Give Firebase time to initialize
   cy.get('body').should('be.visible');
-  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(email);
-  cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible').type(password);
+  // Wait for auth form to be visible with longer timeout
+  cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
+  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible').type(email);
+  cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 20000 }).should('be.visible').type(password);
   cy.get('form').submit();
   // Wait for navigation to dashboard
   cy.url().should('include', '/dashboard');
@@ -30,11 +33,14 @@ Cypress.Commands.add('login', (email, password) => {
  */
 Cypress.Commands.add('signup', (email, password, confirmPassword) => {
   cy.visit('/signup');
-  // Wait for page to load
+  // Wait for page to load and Firebase to initialize
+  cy.wait(2000); // Give Firebase time to initialize
   cy.get('body').should('be.visible');
-  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(email);
-  cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(password);
-  cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type(confirmPassword);
+  // Wait for auth form to be visible with longer timeout
+  cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
+  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible').type(email);
+  cy.get('[data-testid="password-input"], input#password', { timeout: 20000 }).should('be.visible').type(password);
+  cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 20000 }).should('be.visible').type(confirmPassword);
   cy.get('form').submit();
   
   // Wait for either success (redirect to dashboard) or error message
@@ -62,9 +68,11 @@ Cypress.Commands.add('signup', (email, password, confirmPassword) => {
         if (errorText.includes('already exists') || errorText.includes('already in use')) {
           cy.log('User already exists, attempting login instead');
           cy.visit('/login');
+          cy.wait(2000); // Give Firebase time to initialize
           cy.get('body').should('be.visible');
-          cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(email);
-          cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible').type(password);
+          cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
+          cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible').type(email);
+          cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 20000 }).should('be.visible').type(password);
           cy.get('form').submit();
           
           // Wait for login to complete
@@ -114,9 +122,13 @@ Cypress.Commands.add('logout', () => {
  */
 Cypress.Commands.add('ensureLoggedIn', (email, password) => {
   cy.visit('/login');
+  // Wait for page to load and Firebase to initialize
+  cy.wait(2000); // Give Firebase time to initialize
   cy.get('body').should('be.visible');
-  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(email);
-  cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible').type(password);
+  // Wait for auth form to be visible with longer timeout
+  cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
+  cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible').type(email);
+  cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 20000 }).should('be.visible').type(password);
   cy.get('form').submit();
   
   // Wait and check if login succeeded
@@ -126,10 +138,12 @@ Cypress.Commands.add('ensureLoggedIn', (email, password) => {
       // Login failed, try signup
       cy.log('Login failed, attempting signup');
       cy.visit('/signup');
+      cy.wait(2000); // Give Firebase time to initialize
       cy.get('body').should('be.visible');
-      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible').type(email);
-      cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible').type(password);
-      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible').type(password);
+      cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
+      cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible').type(email);
+      cy.get('[data-testid="password-input"], input#password', { timeout: 20000 }).should('be.visible').type(password);
+      cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 20000 }).should('be.visible').type(password);
       cy.get('form').submit();
       
       // Wait for signup result

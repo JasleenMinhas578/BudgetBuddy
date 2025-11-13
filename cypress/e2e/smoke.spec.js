@@ -39,23 +39,27 @@ describe('Smoke Test - Application Health Check', () => {
 
   it('should display login form elements', () => {
     cy.visit('/login');
-    // Wait for page to be ready
+    // Wait for page to be ready and Firebase to initialize
+    cy.wait(2000);
     cy.get('body').should('be.visible');
+    cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
     // Wait for form elements with timeout
-    cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible');
-    cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 10000 }).should('be.visible');
-    cy.get('button[type="submit"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible');
+    cy.get('[data-testid="password-input"], input[type="password"]', { timeout: 20000 }).should('be.visible');
+    cy.get('button[type="submit"]', { timeout: 20000 }).should('be.visible');
   });
 
   it('should display signup form elements', () => {
     cy.visit('/signup');
-    // Wait for page to be ready
+    // Wait for page to be ready and Firebase to initialize
+    cy.wait(2000);
     cy.get('body').should('be.visible');
+    cy.get('form.auth-form', { timeout: 20000 }).should('be.visible');
     // Wait for form elements with timeout
-    cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 10000 }).should('be.visible');
-    cy.get('[data-testid="password-input"], input#password', { timeout: 10000 }).should('be.visible');
-    cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 10000 }).should('be.visible');
-    cy.get('button[type="submit"]', { timeout: 10000 }).should('be.visible');
+    cy.get('[data-testid="email-input"], input[type="email"]', { timeout: 20000 }).should('be.visible');
+    cy.get('[data-testid="password-input"], input#password', { timeout: 20000 }).should('be.visible');
+    cy.get('[data-testid="confirm-password-input"], input#confirmPassword', { timeout: 20000 }).should('be.visible');
+    cy.get('button[type="submit"]', { timeout: 20000 }).should('be.visible');
   });
 });
 
