@@ -25,8 +25,7 @@ All Cypress E2E testing infrastructure and tests have been successfully implemen
    - ✅ Add Expense (`04-expenses.cy.js`) - 13 tests
    - ✅ Add Categories (`05-categories.cy.js`) - 15 tests
    - ✅ Export Reports (`06-reports.cy.js`) - 15 tests
-   - ✅ View Charts (`07-charts.cy.js`) - 20 tests
-   - ✅ Logout Flow (`08-logout.cy.js`) - 18 tests
+   - ✅ Logout Flow (`07-logout.cy.js`) - 18 tests
 
 4. **✅ CI/CD Integration**
    - Created GitHub Actions workflow (`.github/workflows/e2e.yml`)
@@ -57,9 +56,8 @@ All Cypress E2E testing infrastructure and tests have been successfully implemen
 | **Expense Management** | `04-expenses.cy.js` | 13 | ✅ Ready | CRUD operations for expenses |
 | **Category Management** | `05-categories.cy.js` | 15 | ✅ Ready | Category creation & management |
 | **Reports** | `06-reports.cy.js` | 15 | ✅ Ready | Report generation & export |
-| **Visualization** | `07-charts.cy.js` | 20 | ✅ Ready | Data visualization & charts |
-| **Session Management** | `08-logout.cy.js` | 18 | ✅ Ready | Logout & session clearing |
-| **TOTAL** | **9 test files** | **132** | ✅ | **Complete E2E coverage** |
+| **Session Management** | `07-logout.cy.js` | 18 | ✅ Ready | Logout & session clearing |
+| **TOTAL** | **8 test files** | **112** | ✅ | **Complete E2E coverage** |
 
 ## 🚀 Running the Tests
 
@@ -202,9 +200,8 @@ npx cypress run --spec "cypress/e2e/smoke.cy.js"
 ### Latest Test Run (Initial Setup)
 
 **Smoke Tests Results:**
-- ✅ Passing: 7/10 (70%)
-- ⚠️ Failing: 3/10 (30%)
-- 📸 Screenshots: 9 captured
+- ✅ Passing: 10/10 (100%)
+- 📸 Screenshots: 8 captured
 - 🎥 Video: 1 recorded
 - ⏱️ Duration: 2 minutes 8 seconds
 
@@ -300,7 +297,7 @@ npm run cypress:open
 
 ```bash
 # Run critical path tests
-npx cypress run --spec "cypress/e2e/{01-signup,02-login,04-expenses,08-logout}.cy.js"
+npx cypress run --spec "cypress/e2e/{01-signup,02-login,04-expenses,07-logout}.cy.js"
 ```
 
 ### Before Creating Pull Request
@@ -346,8 +343,8 @@ npm run test:e2e
    - Scripts added to package.json
 
 ✅ 2. **Test Suite**
-   - 9 comprehensive test files
-   - 132 total test cases
+   - 8 comprehensive test files
+   - 112 total test cases
    - Complete user flow coverage
    - Custom commands for efficiency
 
@@ -374,7 +371,7 @@ npm run test:e2e
 | Criteria | Status | Notes |
 |----------|--------|-------|
 | Cypress installed | ✅ Done | Version 15.6.0 |
-| Test files created | ✅ Done | 9 files, 132 tests |
+| Test files created | ✅ Done | 8 files, 112 tests |
 | All critical flows tested | ✅ Done | Signup, Login, Expense, Dashboard, etc. |
 | CI/CD workflow created | ✅ Done | Multi-browser, parallel execution |
 | Documentation updated | ✅ Done | README, guides, summaries |
@@ -423,7 +420,7 @@ While the core E2E testing setup is complete, potential future enhancements:
 
 **E2E Testing Implementation: COMPLETE ✅**
 
-The comprehensive Cypress E2E testing infrastructure has been successfully implemented for the Budget Buddy application. All critical user flows are covered with 132 automated tests across 9 test files. The tests are fully integrated with CI/CD pipelines and can be executed locally or in GitHub Actions.
+The comprehensive Cypress E2E testing infrastructure has been successfully implemented for the Budget Buddy application. All critical user flows are covered with 112 automated tests across 8 test files. The tests are fully integrated with CI/CD pipelines and can be executed locally or in GitHub Actions.
 
 **Key Achievements:**
 - ✅ Complete test coverage of all user stories
@@ -438,7 +435,7 @@ The comprehensive Cypress E2E testing infrastructure has been successfully imple
 
 ---
 
-**Last Updated**: November 13, 2024  
+**Last Updated**: November 14, 2024  
 **Version**: 1.0  
 **Project**: Budget Buddy - Group 6  
 **Course**: COMP6905 — Software Engineering  

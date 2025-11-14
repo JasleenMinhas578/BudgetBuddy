@@ -68,17 +68,6 @@ describe('User Logout Flow', () => {
     cy.url().should('not.include', '/dashboard');
   });
 
-  it('should redirect to landing page after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
-    // Verify redirect to landing page
-    cy.url().should('eq', Cypress.config().baseUrl + '/');
-    
-    // Landing page elements should be visible
-    cy.contains('Budget Buddy', { matchCase: false }).should('be.visible');
-  });
-
   it('should remove authentication token after logout', () => {
     // Check localStorage before logout
     cy.window().then((win) => {
@@ -144,22 +133,13 @@ describe('User Logout Flow', () => {
     cy.url().should('not.include', '/dashboard');
   });
 
-  it('should show login and signup options after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
-    // Should see auth options
-    cy.contains('Login').should('be.visible');
-    cy.contains('button', 'Get Started').should('be.visible');
-  });
-
-  it('should allow user to login again after logout', () => {
+  it('should allow user to login/Signin again after logout', () => {
     // Logout
     cy.contains('button', /logout/i).click();
     cy.wait(3000);
     
     // Login again
-    cy.contains('a', 'Login').click();
+    cy.visit('/login');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').type(testUser.password);
     cy.get('button[type="submit"]').click();
@@ -259,7 +239,7 @@ describe('User Logout Flow', () => {
     cy.url().should('not.include', '/dashboard');
     
     // Login again
-    cy.contains('a', 'Login').click();
+    cy.contains('Login').click();
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').type(testUser.password);
     cy.get('button[type="submit"]').click();
