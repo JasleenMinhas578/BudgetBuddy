@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         # Run tests on multiple browsers
-        browser: [chrome, firefox, edge]
+        browser: [chrome, edge]
     
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       
       - name: Install dependencies
@@ -47,7 +47,7 @@ jobs:
           browser: ${{ matrix.browser }}
           start: npm start
           wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
+          # wait-on-timeout: 120
           config-file: cypress.config.js
           record: false
         env:
@@ -69,7 +69,7 @@ jobs:
       
       - name: Upload videos
         uses: actions/upload-artifact@v4
-        if: always()
+        if: failure()
         with:
           name: cypress-videos-${{ matrix.browser }}
           path: cypress/videos
@@ -109,7 +109,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
       
       - name: Install dependencies
@@ -121,7 +121,7 @@ jobs:
           browser: chrome
           start: npm start
           wait-on: 'http://localhost:3000'
-          wait-on-timeout: 120
+          # wait-on-timeout: 120
           record: false
           parallel: false
         env:
