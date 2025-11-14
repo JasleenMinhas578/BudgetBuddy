@@ -1,4 +1,4 @@
-name: CI - Unit Tests and Build
+name: E2E testing (Using Cypress)
 
 on:
   push:
