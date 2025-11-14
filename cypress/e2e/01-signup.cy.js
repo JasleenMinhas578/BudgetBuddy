@@ -77,7 +77,7 @@ describe('User Signup Flow', () => {
   it('should successfully register a new user with valid credentials', () => {
     // Generate unique email for this test
     const timestamp = Date.now();
-    const email = `test.signup@budgetbuddy.test`;
+    const email = `test${Date.now()}@budgetbuddy.test`;
     const password = 'TestPassword123!';
     
     cy.get('input[type="email"]').type(email);
