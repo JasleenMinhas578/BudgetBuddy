@@ -159,7 +159,7 @@ We use GitHub **Labels** for tracking features and tasks:
 ## 🚀 How to Run the Project
 
 ### Prerequisites
-- **Node.js** (version 16 or higher)
+- **Node.js** (version 20 LTS or newer — required by Cypress & Joi)
 - **npm** (comes with Node.js)
 - **Git** (for cloning the repository)
 

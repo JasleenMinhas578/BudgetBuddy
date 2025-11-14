@@ -239,7 +239,7 @@ describe('User Logout Flow', () => {
     cy.url().should('not.include', '/dashboard');
     
     // Login again
-    cy.contains('Login').click();
+    cy.visit('/login');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').type(testUser.password);
     cy.get('button[type="submit"]').click();
