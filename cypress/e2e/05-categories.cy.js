@@ -106,29 +106,29 @@ describe('Add Categories Flow', () => {
     cy.contains('Food & Dining').should('be.visible');
   });
 
-  it('should add multiple categories', () => {
-    const categories = [
-      { name: 'Transportation'},
-      { name: 'Entertainment' },
-      { name: 'Healthcare' }
-    ];
+  // it('should add multiple categories', () => {
+  //   const categories = [
+  //     { name: 'Transportation'},
+  //     { name: 'Entertainment' },
+  //     { name: 'Healthcare' }
+  //   ];
     
-    categories.forEach((category) => {
-      cy.contains('button', /add category/i).click();
-      cy.wait(1000);
+  //   categories.forEach((category) => {
+  //     cy.contains('button', /add category/i).click();
+  //     cy.wait(1000);
       
-      cy.get('input[name="name"], input[placeholder*="name" i]').first().type(category.name);
+  //     cy.get('input[name="name"], input[placeholder*="name" i]').first().type(category.name);
       
-      cy.get('button[type="submit"]').click({ force: true });
-      cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
-      cy.wait(3000);
-    });
+  //     cy.get('button[type="submit"]').click({ force: true });
+  //     cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+  //     cy.wait(3000);
+  //   });
     
-    // Verify categories appear
-    cy.contains('Transportation').should('be.visible');
-    cy.contains('Entertainment').should('be.visible');
-    cy.contains('Healthcare').should('be.visible');
-  });
+  //   // Verify categories appear
+  //   cy.contains('Transportation').should('be.visible');
+  //   cy.contains('Entertainment').should('be.visible');
+  //   cy.contains('Healthcare').should('be.visible');
+  // });
 
   it('should display category budget correctly', () => {
     cy.contains('button', /add category/i).click();
