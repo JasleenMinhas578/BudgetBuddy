@@ -224,24 +224,7 @@ npx cypress run --spec "cypress/e2e/05-categories.cy.js"
 npx cypress run --spec "cypress/e2e/06-reports.cy.js"
 ```
 
-### 8. Charts Tests (`07-charts.cy.js`)
-**Purpose**: Test data visualization
-
-**Tests:**
-- Chart rendering
-- Multiple chart types
-- Data accuracy
-- Interactive features
-- Responsive behavior
-
-**Expected Duration**: ~5-6 minutes
-
-**Run Command**:
-```bash
-npx cypress run --spec "cypress/e2e/07-charts.cy.js"
-```
-
-### 9. Logout Tests (`08-logout.cy.js`)
+### 8. Logout Tests (`07-logout.cy.js`)
 **Purpose**: Test logout and session management
 
 **Tests:**
@@ -254,7 +237,7 @@ npx cypress run --spec "cypress/e2e/07-charts.cy.js"
 
 **Run Command**:
 ```bash
-npx cypress run --spec "cypress/e2e/08-logout.cy.js"
+npx cypress run --spec "cypress/e2e/07-logout.cy.js"
 ```
 
 ## ⏱️ Total Test Execution Time
@@ -280,7 +263,7 @@ npx cypress run --spec "cypress/e2e/04-expenses.cy.js"
 Before committing changes:
 ```bash
 # Run critical path tests
-npx cypress run --spec "cypress/e2e/{01-signup,02-login,04-expenses,08-logout}.cy.js"
+npx cypress run --spec "cypress/e2e/{01-signup,02-login,04-expenses,07-logout}.cy.js"
 ```
 
 ### 3. Pre-PR Testing

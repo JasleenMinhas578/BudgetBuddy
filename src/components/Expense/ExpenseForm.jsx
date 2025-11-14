@@ -1,11 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/database';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import '../../styles/main.css';
 
-export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialExpense = null, isEditMode = false }) {
+export default function ExpenseForm({
+  onExpenseAdded,
+  onExpenseEdited,
+  onCancel,
+  initialExpense = null,
+  isEditMode = false
+}) {
   // Form state management
   const [amount, setAmount] = useState(initialExpense ? initialExpense.amount : '');
   const [title, setTitle] = useState(initialExpense ? initialExpense.title : '');
@@ -93,6 +99,24 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
     }
   }, [initialExpense]);
 
+  const modalButtonLabel = useMemo(() => (isEditMode ? 'Save Changes' : 'Add Expense'), [isEditMode]);
+
+  const resetForm = () => {
+    if (initialExpense) {
+      setAmount(initialExpense.amount || '');
+      setTitle(initialExpense.title || '');
+      setCategory(initialExpense.category || 'Food');
+      setDate(initialExpense.date || '');
+    } else {
+      setAmount('');
+      setTitle('');
+      setCategory('Food');
+      setDate(new Date().toISOString().split('T')[0]);
+    }
+    setMessage('');
+    setMessageType('');
+  };
+
   /**
    * Validate form inputs before submission
    * 
@@ -176,10 +200,7 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
       setMessage('Expense added successfully!');
       setMessageType('success');
       // Reset form to initial state
-      setAmount('');
-        setTitle('');
-      setCategory('Food');
-      setDate(new Date().toISOString().split('T')[0]);
+        resetForm();
       // Call callback to refresh expense list in parent component
       if (onExpenseAdded) {
         onExpenseAdded();
@@ -214,6 +235,14 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
     setAmount(cleanValue);
   };
 
+  const handleCancel = () => {
+    if (loading) return;
+    resetForm();
+    if (onCancel) {
+      onCancel();
+    }
+  };
+
   return (
     <div className="expense-form-container">
       {/* Display success/error messages */}
@@ -224,18 +253,21 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
       )}
       
       {/* Expense form */}
-      <form onSubmit={handleSubmit} className="expense-form">
+      <form onSubmit={handleSubmit} className="expense-form" noValidate>
         {/* Amount input field */}
         <div className="form-group">
           <label htmlFor="amount">Amount ($)</label>
           <input
             type="text"
             id="amount"
+            name="amount"
             value={amount}
             onChange={(e) => handleAmountChange(e.target.value)}
-            placeholder="0.00"
+            placeholder="Amount (e.g. 0.00)"
+            inputMode="decimal"
             required
             disabled={loading}
+            autoComplete="off"
           />
         </div>
         
@@ -245,11 +277,13 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
           <input
             type="text"
             id="title"
+            name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Expense title"
             required
             disabled={loading}
+            autoComplete="off"
           />
         </div>
         
@@ -258,6 +292,7 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
           <label htmlFor="category">Category</label>
           <select
             id="category"
+            name="category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             disabled={loading}
@@ -276,6 +311,7 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
           <input
             type="date"
             id="date"
+            name="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
@@ -283,14 +319,24 @@ export default function ExpenseForm({ onExpenseAdded, onExpenseEdited, initialEx
           />
         </div>
         
-        {/* Submit button with loading state */}
+        {/* Actions */}
+        <div className="form-actions">
+          <button 
+            type="button" 
+            className="btn btn-secondary"
+            onClick={handleCancel}
+            disabled={loading}
+          >
+            Cancel
+          </button>
         <button 
           type="submit" 
           className="btn btn-primary"
           disabled={loading}
         >
-          {loading ? 'Adding Expense...' : 'Add Expense'}
+            {loading ? (isEditMode ? 'Saving...' : 'Adding Expense...') : modalButtonLabel}
         </button>
+        </div>
       </form>
     </div>
   );

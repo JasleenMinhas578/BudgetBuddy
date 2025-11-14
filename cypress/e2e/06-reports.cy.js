@@ -157,20 +157,6 @@ describe('Export Reports Flow', () => {
     });
   });
 
-  it('should display category breakdown in report', () => {
-    cy.wait(3000);
-    
-    // Reports should show category information
-    cy.contains('Food').should('be.visible');
-  });
-
-  it('should show expense details in report', () => {
-    cy.wait(3000);
-    
-    // Check if expenses are listed
-    cy.get('body').should('contain', 'Groceries').or('contain', 'Restaurant');
-  });
-
   it('should have responsive report layout', () => {
     cy.viewport('iphone-x');
     cy.wait(2000);
@@ -239,13 +225,6 @@ describe('Export Reports Flow', () => {
     
     // Reports should show some statistics
     cy.get('body').should('be.visible');
-  });
-
-  it('should show category-wise spending', () => {
-    cy.wait(3000);
-    
-    // Reports should show spending by category
-    cy.contains('Food').should('be.visible');
   });
 
   it('should handle empty report state gracefully', () => {

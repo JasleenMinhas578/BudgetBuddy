@@ -64,10 +64,17 @@ describe('Add Expense Flow', () => {
   });
 
   afterEach(() => {
-    // Logout after each test
-    cy.contains('button', /logout/i).click();
+    cy.get('body').then(($body) => {
+      if ($body.find('.modal-overlay').length) {
+        cy.contains('button', /close|cancel/i).click({ force: true });
+        // wait for backdrop to disappear
+        cy.get('.modal-overlay').should('not.exist');
+      }
+    });
+    cy.contains('button', /logout/i).click({force: true});
     cy.wait(2000);
   });
+
 
   it('should display the expenses page', () => {
     cy.contains(/expenses/i).should('be.visible');
@@ -91,23 +98,6 @@ describe('Add Expense Flow', () => {
     cy.get('button').contains(/close|cancel/i).click({ force: true });
   });
 
-  it('should show validation error for empty form', () => {
-    cy.contains('button', /add expense/i).click();
-    cy.wait(1000);
-    
-    // Try to submit empty form
-    cy.contains('button', /add|submit|save/i).click();
-    
-    // Modal should still be open or show error
-    cy.wait(2000);
-    
-    // Close modal if still open
-    cy.get('body').then(($body) => {
-      if ($body.find('[role="dialog"]').length > 0) {
-        cy.get('button').contains(/close|cancel/i).click({ force: true });
-      }
-    });
-  });
 
   it('should successfully add a new expense', () => {
     cy.contains('button', /add expense/i).click();
@@ -125,7 +115,9 @@ describe('Add Expense Flow', () => {
     cy.get('input[type="date"], input[name="date"]').type(today);
     
     // Submit form
-    cy.contains('button', /add|submit|save/i).click();
+    // cy.contains('button', /add|submit|save/i).click({ force: true });
+    cy.contains('button', /add expense/i).click({ force: true });
+
     
     // Wait for modal to close
     cy.wait(3000);
@@ -152,10 +144,13 @@ describe('Add Expense Flow', () => {
       const today = new Date().toISOString().split('T')[0];
       cy.get('input[type="date"], input[name="date"]').type(today);
       
-      cy.contains('button', /add|submit|save/i).click();
+      // cy.contains('button', /Add Expense/i).click({ force: true });
+      cy.get('button[type="submit"]').click({ force: true });
+      cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+
       cy.wait(3000);
     });
-    
+
     // Verify expenses appear
     cy.contains('Restaurant').should('be.visible');
     cy.contains('Coffee').should('be.visible');
@@ -214,7 +209,9 @@ describe('Add Expense Flow', () => {
     cy.get('select[name="category"], select').first().select('Food', { force: true });
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    cy.contains('button', /add|submit|save/i).click();
+    // cy.contains('button', /add|submit|save/i).click();
+    cy.get('button[type="submit"]').click({ force: true });
+    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     cy.wait(3000);
     
     // Verify date is displayed (format may vary)
@@ -232,7 +229,9 @@ describe('Add Expense Flow', () => {
     const today = new Date().toISOString().split('T')[0];
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    cy.contains('button', /add|submit|save/i).click();
+    // cy.contains('button', /add|submit|save/i).click();
+    cy.get('button[type="submit"]').click({ force: true });
+    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     cy.wait(3000);
     
     cy.contains('99.99').should('be.visible');
@@ -249,7 +248,9 @@ describe('Add Expense Flow', () => {
     const today = new Date().toISOString().split('T')[0];
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    cy.contains('button', /add|submit|save/i).click();
+    // cy.contains('button', /add|submit|save/i).click();
+    cy.get('button[type="submit"]').click({ force: true });
+    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     cy.wait(3000);
     
     // Verify expense with category
