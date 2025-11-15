@@ -1,4 +1,4 @@
-name: E2E testing (Using Cypress)
+name: CI Unit Tests with Cypress
 
 on:
   push:

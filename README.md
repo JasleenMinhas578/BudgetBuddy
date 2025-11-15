@@ -5,7 +5,8 @@ The goal of this project is to apply **software engineering practices** (Agile, 
 
 - **Course**: COMP6905 — Software Engineering  
 - **Purpose**: Academic use; demonstrates SE process from requirements → design → implementation → testing  
-- **Tech Stack**: React, React Router, Chart.js, Firebase (Auth + Firestore), date-fns, Framer Motion, Jest  
+- **Tech Stack**: React, React Router, Chart.js, Firebase (Auth + Firestore), Jest, Cypress
+- **Live Project**: https://budget-buddy-mun.vercel.app/
 
 ---
 
@@ -18,13 +19,13 @@ Unlike many market apps that become paid after trial, Budget Buddy focuses on **
 - Secure authentication (login/signup with Firebase)  
 - Expense and category management  
 - Data visualization with charts  
-- Report generation (PDF export)  
+- Report generation (PDF export, CSV export)  
 - Responsive design for desktop, tablet, and mobile  
 
 **Extended scope: (In Future)**
 - AI-driven insights (LLMs)  
-- CSV import/export  
 - Notifications/reminders  
+- Bill reminders
 
 ---
 
@@ -58,7 +59,10 @@ We are following the **Agile Software Development** methodology, using an iterat
 - Work is divided into 5 sprints (2 weeks each), with clear milestones.  
 - GitHub Projects, Issues, and Milestones are used for sprint planning and tracking.  
 - Each feature is implemented incrementally, tested with unit/system tests, and refined based on feedback.  
-- Continuous Integration (CI) is set up to ensure all commits are validated before merging.  
+- Continuous Integration (CI) is set up to ensure all commits are validated before merging. 
+- Continous deployement (CD) is set up in vercel to insure non stop availabilty of the app. 
+- Cypress tests are used E2E testing.
+- Jest is used for Unit tesing of each functionality.
 
 ---
 
@@ -108,6 +112,7 @@ We are following the **Agile Software Development** methodology, using an iterat
 ---
 
 ### Iteration 5 (Nov 17 – Nov 30)
+- E2E Testing using Cypress
 - System testing, bug fixing, performance optimization  
 - Final documentation (report)  
 - Presentation & demo prep  
@@ -134,7 +139,7 @@ We use GitHub **Labels** for tracking features and tasks:
 - 📱 **Responsive Design** — Cross-device support  
 - 🔥 **Firebase/Database Setup** — Firestore structure, sync  
 - ✅ **Unit Test** — Component/feature-level testing  
-- 🧪 **System Test** — End-to-end testing  
+- 🧪 **E2E Test** — End-to-end testing  
 
 
 ---
@@ -144,14 +149,17 @@ We use GitHub **Labels** for tracking features and tasks:
 | **Technology / Tool**       | **Purpose**              | **Reason for Choice**                                                                 |
 |------------------------------|--------------------------|----------------------------------------------------------------------------------------|
 | **React.js**                | Frontend UI              | Popular, component-based, scalable, and supports responsive web design.                 |
-| **React Context API**       | State management         | Lightweight alternative to Redux; perfect for global state like authentication and expense data. |
+| **React Context API** + **React Router** | State management & routing | Lightweight global state + SPA routing for auth-protected pages. |
 | **Firebase Authentication** | User login/signup        | Secure, easy-to-integrate, with session handling built-in.                             |
 | **Firebase Firestore**      | Database                 | Cloud-based, real-time NoSQL DB, ideal for expense data storage and synchronization.   |
 | **Chart.js**                | Visualization            | Widely used, customizable, and integrates easily with React.                           |
 | **date-fns**                | Date handling            | Lightweight and faster than Moment.js for parsing and formatting dates.                |
 | **jsPDF + html2canvas**     | Report generation        | Allows exporting dashboard summaries into PDF easily.                                  |
-| **Jest + React Testing Library** | Testing             | Industry standard for ensuring reliability and maintainability.                        |
-| **GitHub (Projects, Issues, PRs)** | Collaboration     | Central hub for version control, Agile sprint tracking, and documentation.             |
+| **Jest + React Testing Library** | Component testing   | Industry standard for reliable, maintainable unit & integration tests.                 |
+| **Cypress**                  | E2E testing             | Real-browser coverage of signup/login, expenses, categories, reports, charts, logout. |
+| **Node.js 20 + npm**         | Runtime/tooling         | Aligns with Cypress/Joi engine requirements and CI runners.                            |
+| **Vercel and GitHub Actions**           | CI/CD                   | Automates builds, Jest coverage, Cypress suites, and artifact uploads.                 |
+| **GitHub (Projects, Issues, PRs)** | Collaboration     | Central hub for Agile planning, documentation, and code reviews.                      |
 
 
 ---
@@ -212,22 +220,38 @@ npm test -- --testPathPattern=Categories.test.jsx
 ### Project Structure
 ```
 budget-buddy/
-├── public/
+├── public/                         # CRA public assets (index.html, icons, manifest)
 ├── src/
 │   ├── components/
-│   │   ├── Auth/          # Login, Signup components
-│   │   ├── Dashboard/     # Categories, Expenses, Reports
-│   │   ├── Charts/        # PieChart, BarChart, LineChart
-│   │   ├── Expense/       # ExpenseForm, ExpenseList
-│   │   ├── Layout/        # Navbar, Sidebar, Navigation
-│   │   └── UI/            # Modal, Toast components
-│   ├── context/           # AuthContext
-│   ├── services/          # Database services
-│   ├── styles/            # CSS files
-│   ├── __tests__/         # Test files
-│   └── firebaseConfig.js  # Firebase configuration
-├── .env                   # Environment variables (included)
-├── package.json
+│   │   ├── Auth/                   # Login / Signup views
+│   │   ├── Charts/                 # PieChart, BarChart, LineChart wrappers
+│   │   ├── Dashboard/              # DashboardOverview, Reports, Categories, Expenses
+│   │   ├── Expense/                # ExpenseForm, ExpenseList
+│   │   ├── Layout/                 # Navbar, Sidebar, responsive shells
+│   │   └── UI/                     # Modal, Toast, loaders, shared UI pieces
+│   ├── context/                    # AuthContext provider
+│   ├── services/                   # Firebase CRUD helpers (database.js)
+│   ├── styles/                     # main.css, modal css, etc.
+│   ├── __tests__/                  # Jest + RTL suites (AuthFlow, Reports, Charts…)
+│   ├── firebaseConfig.js           # Firebase initialization
+│   └── setupTests.js               # RTL/Jest bootstrap & mocks
+├── cypress/
+│   ├── e2e/                        # Cypress specs (01-signup … smoke)
+│   ├── fixtures/                   # JSON fixtures for tests
+│   ├── support/                    # commands.js, e2e.js
+│   ├── screenshots/                # Auto-captured failure screenshots
+│   └── videos/                     # Recorded runs (local + CI)
+├── Documents/
+│   ├── CI_e2e_run/                 # Cypress summaries, screenshots, reports
+│   ├── Project_Progress_Files/     # PDFs & slides submitted for the course
+│   ├── Project_Proposal_Files/     # Proposal docs/slides
+│   └── UML/                        # Use case, sequence, class diagrams
+├── build/                          # Production build artifacts (generated)
+├── coverage/                       # Jest coverage reports
+├── scripts/                        # Helper scripts / utilities
+├── .github/workflows/              # CI/CD definitions (ci.yml, e2e.yml)
+├── .env                            # Firebase env vars (private repo)
+├── package.json / package-lock.json
 └── README.md
 ```
 
@@ -250,20 +274,37 @@ budget-buddy/
 
 ---
 
-## 🧪 Test Cases Summary (Till Now)
+## 🧪 Unit Test Cases Summary
 
 Our comprehensive test suite ensures reliability and maintainability of the Budget Buddy application. We follow industry best practices with **Jest** and **React Testing Library** for unit testing.
 
-### 📊 Test Coverage Overview (Till Iteration 3)
-- **Total Test Files**: 5
-- **Total Tests**: 99 tests
-- **Overall Coverage**: 24.6%
+### 📊 Test Coverage Overview
+- **Total Test Files**: 10
+- **Total Tests**: 169 tests
+- **Overall Coverage**: 100%
 - **Status**: All tests passing ✅
 
-![Test Cases Passing](Documents/TestCasesPassing.png)
-*Screenshot showing all 99 tests passing across 5 test suites*
+![Test Cases Passing](Documents/UnitTestCasesPassing.png)
+*Screenshot showing all tests passing*
 
-### 🔬 Test Files Breakdown (More to be added for other components in coming Iterations)
+### 🔬 Unit Test Cases Short Table Summary:
+
+| Test Suite (file)          | # Tests | Key Focus Areas |
+|----------------------------|:-------:|-----------------|
+| **Categories.test.jsx**    | 26 | Modal open/close, CRUD workflows, validation, Firebase listeners, toast feedback, lifecycle edge cases. |
+| **Login.test.jsx**         | 16 | Rendering/accessibility, field interactions, navigation, auth error states, validation, loading indicators. |
+| **Signup.test.jsx**        | 23 | Password rules, visibility toggles, navigation, form validation, error handling, loading states. |
+| **Expenses.test.jsx**      | 7  | List rendering, add-expense modal, summary cards, Firebase error handling. |
+| **AuthFlow.test.jsx**      | 27 | End-to-end auth, session persistence, private routes, redirect logic. |
+| **Reports.test.jsx**       | 27 | Summary metrics, charts, date filters, table empty states, PDF/CSV exports, error/loading states. |
+| **DashboardOverview.test.jsx** | 16 | Welcome messaging, summary cards, recent expenses widget, Firestore integration, navigation links. |
+| **BarChart.test.jsx**      | 10 | Chart wrapper rendering, data permutations (empty/single/multi/zero/negative), resilience with undefined props. |
+| **LineChart.test.jsx**     | 9  | Trend chart rendering, dataset permutations, Chart.js registration sanity checks. |
+| **PieChart.test.jsx**      | 8  | Category distribution rendering, multiple dataset permutations, Chart.js wiring smoke tests. |
+
+
+
+### 🔬 Unite Test Files Breakdown 
 
 #### **1. Categories.test.jsx** (26 tests)
 **Component**: Categories management with charts and CRUD operations
@@ -311,6 +352,43 @@ Our comprehensive test suite ensures reliability and maintainability of the Budg
 - **User Session Management** - Authentication state handling
 - **Route Protection** - Private route access control
 
+#### **6. Reports.test.jsx** (27 tests)
+**Component**: Analytics dashboard & export workflows
+- **Rendering & Controls** (3 tests) - Header copy, export CTA, and date filter controls
+- **Summary Metrics** (4 tests) - Total spend, transaction count, averages, top category card accuracy
+- **Chart Rendering** (3 tests) - Pie and line charts render with expected datasets
+- **Date Filtering** (6 tests) - All Time / Today / This Month / Custom range filtering logic
+- **Table & Empty States** (5 tests) - Transaction list contents, pagination, and fallbacks when no data exists
+- **Exports & Downloads** (4 tests) - PDF/CSV export buttons, jsPDF integration, and blob handling
+- **Error Handling & Loading** (2 tests) - Firebase listener failures and loading skeletons
+- **Filter Presets & Chips** (3 tests) - Category/tag filter toggles and reset behavior
+
+#### **7. DashboardOverview.test.jsx** (16 tests)
+**Component**: Landing dashboard summary cards & recent expenses widget
+- **Welcome States** (2 tests) - First-time vs returning user messaging
+- **Summary Cards** (5 tests) - Total, monthly, average spend, and top category calculations/empty state
+- **Recent Expenses List** (4 tests) - Shows latest five entries, metadata formatting, and empty-state CTA
+- **Firestore Integration** (3 tests) - Real-time snapshot wiring, unsubscribe handling, console noise suppression
+- **Routing Hooks** (2 tests) - “View All” links and button targets
+
+#### **8. BarChart.test.jsx** (10 tests)
+**Component**: Bar chart wrapper for category/month comparisons
+- **Chart Rendering** (3 tests) - Mounts, wrapper class presence, Chart.js registration sanity checks
+- **Data Permutations** (5 tests) - Empty, single, multi, zero, and negative datasets
+- **Resilience** (2 tests) - Works with undefined props and large data arrays
+
+#### **9. LineChart.test.jsx** (9 tests)
+**Component**: Line chart for monthly spending trends
+- **Rendering & Styling** (2 tests) - Ensures chart + wrapper mount
+- **Data Coverage** (5 tests) - Empty, single point, multi-month, zero, and undefined dataset handling
+- **Chart.js Wiring** (2 tests) - Registration side effects and dataset serialization
+
+#### **10. PieChart.test.jsx** (8 tests)
+**Component**: Pie chart for category distribution
+- **Rendering** (2 tests) - Chart + wrapper presence with default data
+- **Data Variants** (4 tests) - Empty, single, multi-category, and undefined datasets
+- **Chart.js Hooks** (2 tests) - Registration and serialization smoke tests
+
 ### 🛠️ Testing Strategy
 
 #### **Mocking Strategy**
@@ -327,17 +405,6 @@ Our comprehensive test suite ensures reliability and maintainability of the Budg
 - ✅ **Loading States**: Button states, spinners, and async operations
 - ✅ **Form Validation**: Input validation and submission testing
 - ✅ **Component Lifecycle**: Mount/unmount and re-render testing
-
-### 📈 Coverage Analysis
-
-| Component | Coverage | Status |
-|-----------|----------|--------|
-| **Authentication** | 96.55% | ✅ Excellent |
-| **Categories** | 69.04% | ✅ Good |
-| **Charts** | 60% | ✅ Good |
-| **Expenses** | 45.71% | 🔄 Needs Improvement |
-| **Dashboard Overview** | 0% | 🔄 Needs Testing |
-| **UI Components** | 0% | 🔄 Needs Testing |
 
 ### 🎯 Testing Commands
 
@@ -439,8 +506,7 @@ cypress/
 │   ├── 04-expenses.cy.js      # Add expense flow tests
 │   ├── 05-categories.cy.js    # Add categories flow tests
 │   ├── 06-reports.cy.js       # Export reports flow tests
-│   ├── 07-charts.cy.js        # View charts flow tests
-│   └── 08-logout.cy.js        # User logout flow tests
+│   └── 07-logout.cy.js        # User logout flow tests
 ├── fixtures/
 │   ├── users.json            # Test user data
 │   ├── expenses.json         # Test expense data
@@ -457,46 +523,26 @@ cypress/
 | Test Suite | # Tests | Coverage |
 |------------|---------|----------|
 | **Smoke Tests** | 10 | Basic application functionality |
-| **Signup Flow** | 12 | User registration and validation |
-| **Login Flow** | 14 | Authentication and error handling |
-| **Dashboard** | 15 | Navigation and data display |
-| **Expenses** | 13 | CRUD operations for expenses |
-| **Categories** | 15 | Category management |
-| **Reports** | 15 | Report generation and export |
-| **Charts** | 20 | Data visualization |
+| **Signup Flow** | 11 | User registration and validation |
+| **Login Flow** | 13 | Authentication and error handling |
+| **Dashboard** | 16 | Navigation and data display |
+| **Expenses** | 12 | CRUD operations for expenses |
+| **Categories** | 12 | Category management |
+| **Reports** | 16 | Report generation and export |
 | **Logout** | 18 | Session management |
-| **Total** | **132** | **Complete E2E coverage** |
+| **Total** | **108** | **Complete E2E coverage** |
 
-### 🎯 Custom Cypress Commands
 
-We've created custom commands to simplify test writing:
+### 🎯 Screenshot of E2E Test Cases
 
-```javascript
-// Login command
-cy.login('user@example.com', 'password123');
+![Test Cases Passing](Documents/CypressTestsAnalysis.png)
+*Screenshot showing all tests passing*
 
-// Signup command
-cy.signup('newuser@example.com', 'password123');
+![Test Cases Passing](Documents/CypressTests.png)
+*Screenshot showing all tests passing*
 
-// Add expense command
-cy.addExpense({
-  description: 'Groceries',
-  amount: 150.50,
-  category: 'Food',
-  date: '2024-11-10'
-});
 
-// Add category command
-cy.addCategory({
-  name: 'Transportation',
-  budget: 300
-});
-
-// Logout command
-cy.logout();
-```
-
-### 📊 Test Results and Artifacts
+### 📊 Test Results Artifacts
 
 After running tests, Cypress generates:
 
@@ -529,10 +575,19 @@ Cypress tests run automatically on:
 #### **GitHub Actions Workflow**
 
 The `.github/workflows/e2e.yml` workflow:
-- Runs tests on multiple browsers (Chrome, Firefox, Edge)
-- Executes tests in parallel for faster feedback
-- Uploads screenshots and videos as artifacts
-- Generates test summary reports
+- Runs the Cypress suite on Node 20 across Chrome & Edge matrices
+- Uploads screenshots/videos for failed specs along with summary artifacts
+- Uses Firebase env secrets so the dev server behaves like local
+- Emits job summaries + downloadable artifacts for every run
+
+#### **E2E Coverage Snapshot**
+- **Specs**: 8 primary flows (`01-signup` … `07-logout` + `smoke`)
+- **User journeys covered**: auth (happy/error), dashboard navigation, expenses & categories CRUD, reports/charts export, logout, smoke verification.
+- **Artifacts & Logs**:
+  - Screenshots: `cypress/screenshots/<spec>/<test>.png`
+  - Videos: `cypress/videos/<spec>.mp4`
+  - Summary docs: `Documents/CI_e2e_run/CYPRESS_TEST_SUMMARY.md`, `Cypress_Readme.md`, `E2E_TESTING_COMPLETE.md`
+  - GitHub Actions artifacts: `cypress-screenshots-*`, `cypress-videos-*`, `cypress-results-*`
 
 #### **View Test Results in CI**
 1. Go to the **Actions** tab in GitHub
@@ -591,55 +646,6 @@ Key configuration in `cypress.config.js`:
 }
 ```
 
-### 📈 Best Practices
-
-#### **Writing Tests**
-- ✅ Use descriptive test names
-- ✅ Follow AAA pattern (Arrange, Act, Assert)
-- ✅ Use custom commands for repeated actions
-- ✅ Keep tests independent and isolated
-- ✅ Use fixtures for test data
-
-#### **Running Tests**
-- ✅ Run tests locally before committing
-- ✅ Use interactive mode during development
-- ✅ Run full suite before creating PRs
-- ✅ Check CI results after pushing
-
-#### **Maintaining Tests**
-- ✅ Update tests when features change
-- ✅ Fix flaky tests immediately
-- ✅ Keep test data in fixtures
-- ✅ Document complex test scenarios
-
-### 🔧 Troubleshooting
-
-#### **Tests Timing Out**
-Increase timeout in test or config:
-```javascript
-cy.get('.element', { timeout: 15000 });
-```
-
-#### **Firebase Connection Issues**
-Ensure `.env` file has correct Firebase credentials:
-```bash
-REACT_APP_FIREBASE_API_KEY=your_api_key
-REACT_APP_FIREBASE_AUTH_DOMAIN=your_domain
-# ... other Firebase config
-```
-
-#### **Port Already in Use**
-Kill existing processes:
-```bash
-lsof -ti:3000 | xargs kill -9
-```
-
-#### **Tests Failing in CI but Passing Locally**
-- Check environment variables in GitHub Secrets
-- Review CI logs and artifacts
-- Ensure dependencies are correctly installed
-- Verify timeout settings
-
 ### 📚 Cypress Resources
 
 - **Official Docs**: https://docs.cypress.io
@@ -647,31 +653,14 @@ lsof -ti:3000 | xargs kill -9
 - **Examples**: https://example.cypress.io
 - **API Reference**: https://docs.cypress.io/api/table-of-contents
 
-### 🎓 Learning Cypress
-
-#### **For Beginners**
-1. Run `npm run cypress:open`
-2. Explore the test files in `cypress/e2e/`
-3. Watch tests execute in the browser
-4. Try modifying simple tests
-5. Read the custom commands in `cypress/support/commands.js`
-
-#### **For Advanced Users**
-- Create custom commands for repeated patterns
-- Implement page object models for complex pages
-- Add visual regression testing
-- Integrate with test reporting tools
-- Optimize test execution time
-
----
-
 ## 📂 Deliverables
 - Requirements and Design Documentation  
 - UML diagrams (use case, class, sequence)  
 - Functional web application (React + Firebase)  
-- Unit tests & system tests  
-- Final project report  
-- Presentation + Demo  
+- Unit tests & E22 tests  
+- Final project Report  
+- Presentation + Demo 
+- Live Project: https://budget-buddy-mun.vercel.app/ 
 
 ---
 

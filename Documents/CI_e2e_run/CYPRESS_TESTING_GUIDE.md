@@ -122,6 +122,11 @@ npx cypress run --browser edge
 npx cypress run --spec "cypress/e2e/smoke.cy.js"
 ```
 
+### 🎯 Test Status
+![Test Cases Passing](Documents/SmokeTest.png)
+*Screenshot showing all smoke test passing*
+
+
 ### 2. Signup Flow Tests (`01-signup.cy.js`)
 **Purpose**: Test user registration process
 
