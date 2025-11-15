@@ -141,6 +141,15 @@ export default function Expenses() {
     // Optionally, refresh expenses here if needed
   };
 
+  const closeAddExpenseModal = () => {
+    setIsExpenseFormOpen(false);
+  };
+
+  const closeEditExpenseModal = () => {
+    setIsEditExpenseFormOpen(false);
+    setExpenseToEdit(null);
+  };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -259,19 +268,23 @@ export default function Expenses() {
       </div>
       
       {/* Expense Form Modal */}
-      <Modal isOpen={isExpenseFormOpen} onClose={() => setIsExpenseFormOpen(false)}>
+      <Modal isOpen={isExpenseFormOpen} onClose={closeAddExpenseModal}>
         <div className="modal-header">
           <h2 className="modal-title">Add New Expense</h2>
         </div>
-        <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+        <ExpenseForm 
+          onExpenseAdded={handleExpenseAdded} 
+          onCancel={closeAddExpenseModal}
+        />
       </Modal>
       {/* Edit Expense Form Modal */}
-      <Modal isOpen={isEditExpenseFormOpen} onClose={() => setIsEditExpenseFormOpen(false)}>
+      <Modal isOpen={isEditExpenseFormOpen} onClose={closeEditExpenseModal}>
         <div className="modal-header">
           <h2 className="modal-title">Edit Expense</h2>
         </div>
         <ExpenseForm
           onExpenseEdited={handleUpdateExpense}
+          onCancel={closeEditExpenseModal}
           initialExpense={expenseToEdit}
           isEditMode={true}
         />
