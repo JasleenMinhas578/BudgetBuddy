@@ -114,13 +114,11 @@ describe('Add Expense Flow', () => {
     const today = new Date().toISOString().split('T')[0];
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    // Submit form
-    // cy.contains('button', /add|submit|save/i).click({ force: true });
-    cy.contains('button', /add expense/i).click({ force: true });
-
+    // Submit form from inside the modal
+    cy.get('.expense-form button[type="submit"]').click({ force: true });
     
-    // Wait for modal to close
-    cy.wait(3000);
+    // Wait for modal overlay to disappear before asserting
+    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     
     // Verify expense appears in list
     cy.contains('Grocery Shopping').should('be.visible');
@@ -144,13 +142,10 @@ describe('Add Expense Flow', () => {
       const today = new Date().toISOString().split('T')[0];
       cy.get('input[type="date"], input[name="date"]').type(today);
       
-      // cy.contains('button', /Add Expense/i).click({ force: true });
-      cy.get('button[type="submit"]').click({ force: true });
+      cy.get('.expense-form button[type="submit"]').click({ force: true });
       cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
-
-      cy.wait(3000);
     });
-
+    
     // Verify expenses appear
     cy.contains('Restaurant').should('be.visible');
     cy.contains('Coffee').should('be.visible');
