@@ -1,0 +1,15 @@
+{
+  "validUser": {
+    "email": "test.user@budgetbuddy.test",
+    "password": "TestPassword123!"
+  },
+  "newUser": {
+    "email": "new.user@budgetbuddy.test",
+    "password": "NewPassword123!"
+  },
+  "invalidUser": {
+    "email": "invalid@example.com",
+    "password": "wrongpassword"
+  }
+}
+
