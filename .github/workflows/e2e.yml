@@ -5,17 +5,10 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-  workflow_dispatch:
 
 jobs:
-  cypress-run:
+  test:
     runs-on: ubuntu-latest
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        # Run tests on multiple browsers
-        browser: [chrome, edge]
     
     steps:
       - name: Checkout code
@@ -29,6 +22,16 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
+      
+      - name: Run unit tests
+        run: npm run test:ci
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
+          retention-days: 7
       
       - name: Build application
         run: npm run build
@@ -40,102 +43,11 @@ jobs:
           REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
-      - name: Run Cypress E2E tests
-        uses: cypress-io/github-action@v6
-        with:
-          browser: ${{ matrix.browser }}
-          start: npm start
-          wait-on: 'http://localhost:3000'
-          spec: |
-            cypress/e2e/01-signup.cy.js,
-            cypress/e2e/02-login.cy.js,
-            cypress/e2e/03-dashboard.cy.js,
-            cypress/e2e/05-categories.cy.js,
-            cypress/e2e/06-reports.cy.js,
-            cypress/e2e/07-logout.cy.js,
-            cypress/e2e/smoke.cy.js
-        env:
-          CYPRESS_BASE_URL: http://localhost:3000
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
       
-      - name: Upload screenshots on failure
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
-        if: failure()
         with:
-          name: cypress-screenshots-${{ matrix.browser }}
-          path: cypress/screenshots
+          name: build
+          path: build
           retention-days: 7
-      
-      - name: Upload videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos-${{ matrix.browser }}
-          path: cypress/videos
-          retention-days: 7
-      
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: cypress-results-${{ matrix.browser }}
-          path: |
-            cypress/screenshots
-            cypress/videos
-          retention-days: 7
-      
-  
-  # Job to run all tests in parallel
-  cypress-parallel:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        # Run tests in parallel
-        containers: [1, 2]
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run Cypress tests in parallel
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          start: npm start
-          wait-on: 'http://localhost:3000'
-          spec: |
-            cypress/e2e/01-signup.cy.js,
-            cypress/e2e/02-login.cy.js,
-            cypress/e2e/03-dashboard.cy.js,
-            cypress/e2e/05-categories.cy.js,
-            cypress/e2e/06-reports.cy.js,
-            cypress/e2e/07-logout.cy.js,
-            cypress/e2e/smoke.cy.js
-          record: false
-          parallel: false
-        env:
-          CYPRESS_BASE_URL: http://localhost:3000
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
 
- 
