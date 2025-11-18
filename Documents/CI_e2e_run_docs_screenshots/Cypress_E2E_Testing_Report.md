@@ -47,7 +47,7 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 - [x] Document CI_e2e_run_docs_screenshots directory structure
 
 ### ✅ Project Setup
-- [x] Create `Documents/CI_e2e_run_docs_screenshots/` directory structure
+- [x] Create `/Documents/CI_e2e_run_docs_screenshots/` directory structure
 - [x] Set up `.gitignore` for test artifacts
 - [x] Create `.gitkeep` files for empty directories
 - [x] Configure Firebase test environment
@@ -64,18 +64,21 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 
 
 # 🎯 Test Status and Coverage
-![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
-*Screenshot showing all tests passing*
+
+#### *Screenshot showing all tests passing*
+![Test Cases Passing](/Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
+
 
 > This can be verified by running: `npm run cypress:run`
 
-![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
-*Screenshot showing all tests passing*
+#### *Screenshot showing all tests passing*
+![Test Cases Passing](/Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
 
 > This can be verified by running: `npm run cypress:run`
 
-![Cypress Test Coverage](Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
-*Screenshot showing the test Coverage of Cypress tests*
+#### *Screenshot showing the test Coverage of Cypress tests*
+
+![Cypress Test Coverage](/Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
 
 > This report can be found under the artifcats of the latest test run in Github Actions
 
