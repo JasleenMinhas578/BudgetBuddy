@@ -242,9 +242,8 @@ budget-buddy/
 │   ├── screenshots/                # Auto-captured failure screenshots
 │   └── videos/                     # Recorded runs (local + CI)
 ├── Documents/
-│   ├── CI_e2e_run_docs             # Cypress summaries, reports
-│   ├── CI_e2e_workflow_screenshots # Cypress tests screenshots
-|   ├─Jest_Unit_Tests_docs_screenshots/ # Jest Unit tests summaries, screenshots, catalog
+│   ├── CI_e2e_run_docs_screenshots/# Cypress summaries, reports, guide, screenshots
+|   ├── Jest_Unit_Tests_docs_screenshots/ # Jest Unit tests summaries, screenshots, catalog
 │   ├── Project_Progress_Files/     # PDFs & slides submitted for the course
 │   ├── Project_Proposal_Files/     # Proposal docs/slides
 │   └── UML/                        # Use case, sequence, class diagrams
@@ -448,15 +447,21 @@ cypress/
 | **Logout** | 18 | Session management |
 | **Total** | **108** | **Complete E2E coverage** |
 
-
-### 🎯 Screenshot of E2E Test Cases
-
-![Test Cases Passing](Documents/CypressTestsAnalysis.png)
+## 🎯 Screenshot of E2E Test Cases and Coverage
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
 *Screenshot showing all tests passing*
 
-![Test Cases Passing](Documents/CypressTests.png)
+> This can be verified by running: `npm run cypress:run`
+
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
 *Screenshot showing all tests passing*
 
+> This can be verified by running: `npm run cypress:run`
+
+![Cypress Test Coverage](Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
+*Screenshot showing the test Coverage of Cypress tests*
+
+> This report can be found under the artifcats of the latest test run in Github Actions
 
 ### 📊 Test Results Artifacts
 
@@ -502,7 +507,7 @@ The `.github/workflows/e2e.yml` workflow:
 - **Artifacts & Logs**:
   - Screenshots: `cypress/screenshots/<spec>/<test>.png`
   - Videos: `cypress/videos/<spec>.mp4`
-  - Summary docs: `Documents/CI_e2e_run/CYPRESS_TEST_SUMMARY.md`, `Cypress_Readme.md`, `E2E_TESTING_COMPLETE.md`
+  - Summary docs: `Documents/CI_e2e_run_docs_screenshots`, `Cypress_Testing_Guide.md`, `Cypress_E2E_Testing_Report.md`
   - GitHub Actions artifacts: `cypress-screenshots-*`, `cypress-videos-*`, `cypress-results-*`
 
 #### **View Test Results in CI**
@@ -511,71 +516,17 @@ The `.github/workflows/e2e.yml` workflow:
 3. Click on a specific run to see results
 4. Download artifacts (screenshots/videos) if tests fail
 
-### 🐛 Debugging Tests
-
-#### **Debug in Interactive Mode**
-```bash
-npm run cypress:open
-```
-- Click on a test file to run it
-- Use browser DevTools to inspect elements
-- Add `cy.pause()` to pause test execution
-- Use `cy.debug()` to log debug information
-
-#### **Debug Failed Tests**
-```bash
-# Run failed tests with verbose output
-npx cypress run --spec "cypress/e2e/failing-test.cy.js" --headed --no-exit
-```
-
-#### **Common Debug Commands**
-```javascript
-// Pause test execution
-cy.pause();
-
-// Print debug info
-cy.debug();
-
-// Take screenshot
-cy.screenshot('debug-screenshot');
-
-// Log to console
-cy.log('Debug message');
-```
-
-### ⚙️ Cypress Configuration
-
-Key configuration in `cypress.config.js`:
-
-```javascript
-{
-  baseUrl: 'http://localhost:3000',
-  viewportWidth: 1280,
-  viewportHeight: 720,
-  video: true,
-  screenshotOnRunFailure: true,
-  defaultCommandTimeout: 10000,
-  retries: {
-    runMode: 2,    // Retry failed tests in CI
-    openMode: 0    // No retries in interactive mode
-  }
-}
-```
-
-### 📚 Cypress Resources
-
-- **Official Docs**: https://docs.cypress.io
-- **Best Practices**: https://docs.cypress.io/guides/references/best-practices
-- **Examples**: https://example.cypress.io
-- **API Reference**: https://docs.cypress.io/api/table-of-contents
 
 ## 📂 Deliverables
 - Requirements and Design Documentation  
 - UML diagrams (use case, class, sequence)  
 - Functional web application (React + Firebase)  
+- CI Workflow Runs (GitHub Actions)
+- Test Coverage Reports and Screenshots under `Documents`
 - Unit tests & E2E tests  
 - Final project Report  
 - Presentation + Demo 
+- Vercel Deployment
 - Live Project: https://budget-buddy-mun.vercel.app/ 
 
 ---

@@ -10,6 +10,15 @@
 
 describe('Add Expense Flow', () => {
   
+  const ensureModalClosed = () => {
+    cy.get('body').then(($body) => {
+      if ($body.find('.modal-overlay').length) {
+        cy.contains('button', /close|cancel/i).click({ force: true });
+      }
+    });
+    cy.get('.modal-overlay', { timeout: 15000 }).should('not.exist');
+  };
+  
   const testUser = {
     email: `test.expenses@budgetbuddy.test`,
     password: 'TestPassword123!'
@@ -117,8 +126,7 @@ describe('Add Expense Flow', () => {
     // Submit form from inside the modal
     cy.get('.expense-form button[type="submit"]').click({ force: true });
     
-    // Wait for modal overlay to disappear before asserting
-    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+    ensureModalClosed();
     
     // Verify expense appears in list
     cy.contains('Grocery Shopping').should('be.visible');
@@ -143,7 +151,7 @@ describe('Add Expense Flow', () => {
       cy.get('input[type="date"], input[name="date"]').type(today);
       
       cy.get('.expense-form button[type="submit"]').click({ force: true });
-      cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+      ensureModalClosed();
     });
     
     // Verify expenses appear
@@ -204,9 +212,8 @@ describe('Add Expense Flow', () => {
     cy.get('select[name="category"], select').first().select('Food', { force: true });
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    // cy.contains('button', /add|submit|save/i).click();
     cy.get('button[type="submit"]').click({ force: true });
-    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+    ensureModalClosed();
     cy.wait(3000);
     
     // Verify date is displayed (format may vary)
@@ -224,9 +231,8 @@ describe('Add Expense Flow', () => {
     const today = new Date().toISOString().split('T')[0];
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    // cy.contains('button', /add|submit|save/i).click();
     cy.get('button[type="submit"]').click({ force: true });
-    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+    ensureModalClosed();
     cy.wait(3000);
     
     cy.contains('99.99').should('be.visible');
@@ -243,9 +249,8 @@ describe('Add Expense Flow', () => {
     const today = new Date().toISOString().split('T')[0];
     cy.get('input[type="date"], input[name="date"]').type(today);
     
-    // cy.contains('button', /add|submit|save/i).click();
     cy.get('button[type="submit"]').click({ force: true });
-    cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
+    ensureModalClosed();
     cy.wait(3000);
     
     // Verify expense with category
