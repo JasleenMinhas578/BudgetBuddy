@@ -30,11 +30,11 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [passwordError] = useState('');
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const isActivationKey = (key) => key === 'Enter' || key === ' ' || key === 'Space';
 
   /**
    * Validate password strength
@@ -210,7 +210,7 @@ export default function Signup() {
                 tabIndex={0}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 role="button"
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setShowPassword(v => !v); }}
+                onKeyDown={e => { if (isActivationKey(e.key)) setShowPassword(v => !v); }}
               >
                 {showPassword ? '🙈' : '👁️'}
               </span>
@@ -236,18 +236,12 @@ export default function Signup() {
                 tabIndex={0}
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 role="button"
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setShowConfirmPassword(v => !v); }}
+                onKeyDown={e => { if (isActivationKey(e.key)) setShowConfirmPassword(v => !v); }}
               >
                 {showConfirmPassword ? '🙈' : '👁️'}
               </span>
             </div>
           </div>
-          
-          {passwordError && (
-            <div className="auth-error" style={{marginBottom: '1rem'}}>
-              <span className="error-icon">⚠️</span> {passwordError}
-            </div>
-          )}
           
           <motion.button 
             disabled={loading} 

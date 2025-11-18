@@ -235,7 +235,9 @@ describe('DashboardOverview Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('This Month')).toBeInTheDocument();
+        const card = screen.getByText('This Month').closest('.summary-card');
+        expect(card).toBeInTheDocument();
+        expect(card?.querySelector('.card-amount')?.textContent).toBe('$175.00');
         expect(screen.getByText('Current month spending')).toBeInTheDocument();
       });
 
@@ -563,6 +565,40 @@ describe('DashboardOverview Component', () => {
         expect(newExpenseIndex).toBeLessThan(oldExpenseIndex);
       }, { timeout: 3000 });
     });
+
+    it('handles expenses with missing dates gracefully', async () => {
+      const mockExpenses = [
+        { id: '1', title: 'No Date', amount: 20, category: 'Misc', date: '', createdAt: new Date('2024-01-05') },
+        { id: '2', title: 'With Date', amount: 40, category: 'Food', date: '2024-01-10', createdAt: new Date('2024-01-10') }
+      ];
+
+      onSnapshot.mockImplementation((query, callback) => {
+        setTimeout(() => {
+          callback({
+            forEach: (fn) => {
+              mockExpenses.forEach(expense => {
+                fn({
+                  id: expense.id,
+                  data: () => expense
+                });
+              });
+            }
+          });
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('No Date')).toBeInTheDocument();
+        expect(screen.getByText('With Date')).toBeInTheDocument();
+      });
+    });
   });
 
   describe('Firebase Integration Tests', () => {
@@ -613,6 +649,25 @@ describe('DashboardOverview Component', () => {
       unmount();
       // Note: In a real scenario, React would call the cleanup function
       // This test verifies the setup is correct
+    });
+
+    it('does not subscribe when there is no authenticated user', async () => {
+      onAuthStateChanged.mockImplementation((auth, callback) => {
+        setTimeout(() => callback(null), 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      expect(onSnapshot).not.toHaveBeenCalled();
     });
   });
 });

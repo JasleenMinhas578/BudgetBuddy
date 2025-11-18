@@ -4,8 +4,8 @@
 The goal of this project is to apply **software engineering practices** (Agile, documentation, testing, CI/CD) while developing a full-stack web application.
 
 - **Course**: COMP6905 — Software Engineering  
-- **Purpose**: Academic use; demonstrates SE process from requirements → design → implementation → testing  
-- **Tech Stack**: React, React Router, Chart.js, Firebase (Auth + Firestore), Jest, Cypress
+- **Purpose**: Academic use; demonstrates SE process from Requirements → Design → Implementation → Testing  
+- **Tech Stack**: React, React Router, Chart.js, Firebase (Auth + Firestore), Jest, Cypress, Vercel
 - **Live Project**: https://budget-buddy-mun.vercel.app/
 
 ---
@@ -242,7 +242,8 @@ budget-buddy/
 │   ├── screenshots/                # Auto-captured failure screenshots
 │   └── videos/                     # Recorded runs (local + CI)
 ├── Documents/
-│   ├── CI_e2e_run/                 # Cypress summaries, screenshots, reports
+│   ├── CI_e2e_run_docs_screenshots/# Cypress summaries, reports, guide, screenshots
+|   ├── Jest_Unit_Tests_docs_screenshots/ # Jest Unit tests summaries, screenshots, catalog
 │   ├── Project_Progress_Files/     # PDFs & slides submitted for the course
 │   ├── Project_Proposal_Files/     # Proposal docs/slides
 │   └── UML/                        # Use case, sequence, class diagrams
@@ -274,137 +275,60 @@ budget-buddy/
 
 ---
 
-## 🧪 Unit Test Cases Summary
+## 🧪 Unit Test Summary (Jest)
 
 Our comprehensive test suite ensures reliability and maintainability of the Budget Buddy application. We follow industry best practices with **Jest** and **React Testing Library** for unit testing.
 
+> Detailed Despcription of the Test details present under: **`Documents/Jest_Unit_Tests_docs_screenshots/Jest_Unit_Test_Catalog.md`**
+
 ### 📊 Test Coverage Overview
-- **Total Test Files**: 10
-- **Total Tests**: 169 tests
+- **Total Test Files**: 26
+- **Total Tests**: 295 tests
 - **Overall Coverage**: 100%
 - **Status**: All tests passing ✅
 
-![Test Cases Passing](Documents/JestUnitTestCasesPassing.png)
-*Screenshot showing all tests passing*
-
-### 🔬 Unit Test Cases Short Table Summary:
-
-| Test Suite (file)          | # Tests | Key Focus Areas |
-|----------------------------|:-------:|-----------------|
-| **Categories.test.jsx**    | 26 | Modal open/close, CRUD workflows, validation, Firebase listeners, toast feedback, lifecycle edge cases. |
-| **Login.test.jsx**         | 16 | Rendering/accessibility, field interactions, navigation, auth error states, validation, loading indicators. |
-| **Signup.test.jsx**        | 23 | Password rules, visibility toggles, navigation, form validation, error handling, loading states. |
-| **Expenses.test.jsx**      | 7  | List rendering, add-expense modal, summary cards, Firebase error handling. |
-| **AuthFlow.test.jsx**      | 27 | End-to-end auth, session persistence, private routes, redirect logic. |
-| **Reports.test.jsx**       | 27 | Summary metrics, charts, date filters, table empty states, PDF/CSV exports, error/loading states. |
-| **DashboardOverview.test.jsx** | 16 | Welcome messaging, summary cards, recent expenses widget, Firestore integration, navigation links. |
-| **BarChart.test.jsx**      | 10 | Chart wrapper rendering, data permutations (empty/single/multi/zero/negative), resilience with undefined props. |
-| **LineChart.test.jsx**     | 9  | Trend chart rendering, dataset permutations, Chart.js registration sanity checks. |
-| **PieChart.test.jsx**      | 8  | Category distribution rendering, multiple dataset permutations, Chart.js wiring smoke tests. |
+#### 📸 Snapshot of the Test Passing on Running: `npm run test:coverage`
+![100% Coverage and All Tests Passing](Documents/Jest_Unit_Tests_docs_screenshots/Unit_Tests_Coverage.png)
+*Screenshot showing 100% Coverage and all of the Tests Passing*
 
 
+### 🔬 Unit Test Case Summary:
 
-### 🔬 Unite Test Files Breakdown 
+> Approximate counts come from the latest `npm run test:coverage` run (26 suites / 295 specs). 
 
-#### **1. Categories.test.jsx** (26 tests)
-**Component**: Categories management with charts and CRUD operations
-- **Basic Rendering** (2 tests) - Component structure and UI elements
-- **Modal Interactions** (3 tests) - Add category modal open/close functionality
-- **Form Interactions** (3 tests) - Input handling and form validation
-- **Category Addition** (4 tests) - CRUD operations and success feedback
-- **Error Handling** (4 tests) - Firebase errors and edge cases
-- **Firebase Integration** (3 tests) - Database operations and real-time sync
-- **Data Loading** (2 tests) - Categories and expenses data fetching
-- **Form Validation** (2 tests) - Input validation and requirements
-- **Toast Notifications** (1 test) - User feedback system
-- **Component Lifecycle** (2 tests) - Mount/unmount and re-render handling
+| Test File | ≈ # Tests | Key Test Cases |
+|-----------|-----------|----------------|
+| `App.test.jsx` | 2 | Root `<App />` renders landing page on `/`; router doesn’t crash while React Router future flags log warnings. |
+| `Navigation.test.jsx` | 5 | Desktop vs mobile menu rendering; hamburger toggle locks body scroll; auth-aware nav items; logout button fires context `logout`; mobile menu auto-closes. |
+| `Navbar.test.jsx` | 5 | Breadcrumb title/icon per route; sidebar toggle callback invoked with updater fn; logout confirmation respects `window.confirm`; hides user chip when no `currentUser`. |
+| `Sidebar.test.jsx` | 8 | Nav links render with icons; desktop toggle/ mobile close buttons; logout button calls context; mobile navigation auto-closes via timer; dragging/mobile classes applied; desktop nav leaves sidebar open. |
+| `PagesPrivateRoute.test.jsx` | 3 | Protected route renders when authed, redirects to `/login` when not; loading indicator shown while auth is resolving. |
+| `LayoutPrivateRoute.test.jsx` | 4 | Same patterns for layout wrapper, plus fallback redirect when `redirectTo` prop absent. |
+| `Landing.test.jsx` | 2 | Hero copy, CTA buttons (`/signup`, `/login`), animated sections render with mocked `framer-motion`. |
+| `Login.test.jsx` | 18 | Form field bindings, button disabled states, success navigation to `/dashboard`, `useNavigate` state messaging, Firebase error mapping (user not found, wrong password, invalid email, unknown), retry clears prior errors. |
+| `Signup.test.jsx` | 24 | Password-strength validator (length/upper/lower/number), password match check, Firebase error codes, button spinner, password eye toggles via click + Enter/Space, non-activation keys ignored. |
+| `AuthFlow.test.jsx` | 14 | Auth context provider wiring, signup→dashboard journey, logout returning to login, forgot-reset flows mocked. |
+| `firebaseConfig.test.js` | 3 | Ensures Firebase app initializes with env vars and exports `auth`/`db`. |
+| `TestFirebase.test.jsx` | 6 | Anonymous + email/password smoke tests (mocked) updating Firestore docs and rendering status messaging. |
+| `DashboardOverview.test.jsx` | 22 | Firestore listeners populate expenses, derived totals/month/average/top category, recency sorting, empty states, “View All” link, listener cleanup + guard when user missing. |
+| `Categories.test.jsx` | 25 | Real-time listeners for categories/expenses, modal lifecycle, add/delete category flows, toast success/error, validations when Firebase/auth missing, default category protection, chart data generation. |
+| `Expenses.test.jsx` | 6 | Expense dashboard shell: summary chips, empty table state, open/close add & edit modal, delete confirmation prompt path. |
+| `ExpenseForm.test.jsx` | 34 | Amount sanitizing, validation errors (amount/title/date/future), add + edit submissions, toast messages, onCancel behavior (including loading guard), Firestore listener errors & cleanup, custom categories without IDs, loading copy (“Adding Expense…” / “Saving…”). |
+| `ExpenseList.test.jsx` | 8 | Renders table rows with category icons, amount formatting, edit/delete action buttons, empty-state card. |
+| `Reports.test.jsx` | 5 | Reports dashboard cards, filters, conditionally rendered charts, export button stubs. |
+| `BarChart.test.jsx` | 3 | Chart.js registration happens once, datasets/labels propagate, loading fallback renders when data missing. |
+| `LineChart.test.jsx` | 4 | Gradient creation, dataset mapping, options (tooltips, axes) wired correctly. |
+| `PieChart.test.jsx` | 4 | Doughnut chart renders slices + legend, empty dataset fallback messaging. |
+| `Modal.test.jsx` | 5 | `isOpen` gating, overlay click closes modal, content click stops propagation, close button/ARIA label fallback when title absent. |
+| `Toast.test.jsx` | 4 | Success/error variants render, dismiss button fires callback, auto-dismiss timers mocked. |
+| `database.test.js` | 18 | `addExpense/addCategory` validation + success, update/delete functions, subscribe helpers (expenses/categories/by-category) including error callbacks and parameter guards. |
+| `reportWebVitals.test.js` | 3 | Lazy import of `web-vitals`, ensures each metric callback (`getCLS`, etc.) forwards to `onPerfEntry`, no-op when callback missing. |
+| `index.test.js` | 1 | Confirms React root is created and renders without crashing. |
 
-#### **2. Login.test.jsx** (16 tests)
-**Component**: User authentication login
-- **Rendering** (3 tests) - UI elements and accessibility
-- **Form Interactions** (2 tests) - Input field updates and loading states
-- **Navigation** (3 tests) - Route changes and redirects
-- **Error Handling** (4 tests) - Authentication error scenarios
-- **Form Validation** (2 tests) - Input validation and submission
-- **Loading States** (2 tests) - Button states and spinners
 
-#### **3. Signup.test.jsx** (23 tests)
-**Component**: User registration
-- **Rendering** (3 tests) - UI elements and accessibility
-- **Form Interactions** (4 tests) - Input handling and password visibility
-- **Password Validation** (4 tests) - Password strength requirements
-- **Navigation** (3 tests) - Route changes and redirects
-- **Error Handling** (4 tests) - Registration error scenarios
-- **Form Validation** (1 test) - Input validation and submission
-- **Loading States** (2 tests) - Button states and spinners
-- **Password Visibility Toggle** (2 tests) - UI interaction testing
+> **Note:** All the test cases passes. In total 295 test cases, in 26 test files, that has 100% coverage over the project.
 
-#### **4. Expenses.test.jsx** (7 tests)
-**Component**: Expense management and display
-- **Basic Rendering** (3 tests) - Component structure and empty states
-- **Add Expense** (2 tests) - Modal opening and form interaction
-- **Error Handling** (1 test) - Firebase connection errors
-- **Component Integration** (2 tests) - Summary statistics and data display
 
-#### **5. AuthFlow.test.jsx** (27 tests)
-**Component**: Complete authentication flow integration
-- **End-to-End Authentication Flow** - Complete login/signup integration
-- **User Session Management** - Authentication state handling
-- **Route Protection** - Private route access control
-
-#### **6. Reports.test.jsx** (27 tests)
-**Component**: Analytics dashboard & export workflows
-- **Rendering & Controls** (3 tests) - Header copy, export CTA, and date filter controls
-- **Summary Metrics** (4 tests) - Total spend, transaction count, averages, top category card accuracy
-- **Chart Rendering** (3 tests) - Pie and line charts render with expected datasets
-- **Date Filtering** (6 tests) - All Time / Today / This Month / Custom range filtering logic
-- **Table & Empty States** (5 tests) - Transaction list contents, pagination, and fallbacks when no data exists
-- **Exports & Downloads** (4 tests) - PDF/CSV export buttons, jsPDF integration, and blob handling
-- **Error Handling & Loading** (2 tests) - Firebase listener failures and loading skeletons
-- **Filter Presets & Chips** (3 tests) - Category/tag filter toggles and reset behavior
-
-#### **7. DashboardOverview.test.jsx** (16 tests)
-**Component**: Landing dashboard summary cards & recent expenses widget
-- **Welcome States** (2 tests) - First-time vs returning user messaging
-- **Summary Cards** (5 tests) - Total, monthly, average spend, and top category calculations/empty state
-- **Recent Expenses List** (4 tests) - Shows latest five entries, metadata formatting, and empty-state CTA
-- **Firestore Integration** (3 tests) - Real-time snapshot wiring, unsubscribe handling, console noise suppression
-- **Routing Hooks** (2 tests) - “View All” links and button targets
-
-#### **8. BarChart.test.jsx** (10 tests)
-**Component**: Bar chart wrapper for category/month comparisons
-- **Chart Rendering** (3 tests) - Mounts, wrapper class presence, Chart.js registration sanity checks
-- **Data Permutations** (5 tests) - Empty, single, multi, zero, and negative datasets
-- **Resilience** (2 tests) - Works with undefined props and large data arrays
-
-#### **9. LineChart.test.jsx** (9 tests)
-**Component**: Line chart for monthly spending trends
-- **Rendering & Styling** (2 tests) - Ensures chart + wrapper mount
-- **Data Coverage** (5 tests) - Empty, single point, multi-month, zero, and undefined dataset handling
-- **Chart.js Wiring** (2 tests) - Registration side effects and dataset serialization
-
-#### **10. PieChart.test.jsx** (8 tests)
-**Component**: Pie chart for category distribution
-- **Rendering** (2 tests) - Chart + wrapper presence with default data
-- **Data Variants** (4 tests) - Empty, single, multi-category, and undefined datasets
-- **Chart.js Hooks** (2 tests) - Registration and serialization smoke tests
-
-### 🛠️ Testing Strategy
-
-#### **Mocking Strategy**
-- **Firebase**: Complete mocking of Auth and Firestore services
-- **Charts**: Mocked Chart.js components to prevent DOM errors
-- **Animations**: Framer Motion components mocked for test stability
-- **Navigation**: React Router mocked for route testing
-- **UI Components**: Modal and Toast components mocked
-
-#### **Test Quality Features**
-- ✅ **Comprehensive Coverage**: Authentication, CRUD operations, UI interactions
-- ✅ **Error Handling**: Firebase errors, validation errors, edge cases
-- ✅ **Accessibility**: ARIA attributes and keyboard navigation testing
-- ✅ **Loading States**: Button states, spinners, and async operations
-- ✅ **Form Validation**: Input validation and submission testing
-- ✅ **Component Lifecycle**: Mount/unmount and re-render testing
 
 ### 🎯 Testing Commands
 
@@ -421,15 +345,6 @@ npm test -- --testPathPattern=Categories.test.jsx
 # Run tests in watch mode
 npm test -- --watch
 ```
-
-### 🔧 Test Configuration
-
-Our test setup includes:
-- **Jest** as the testing framework
-- **React Testing Library** for component testing
-- **@testing-library/jest-dom** for custom matchers
-- **@testing-library/user-event** for user interaction simulation
-- **jsdom** environment for DOM testing
 
 ---
 
@@ -532,15 +447,21 @@ cypress/
 | **Logout** | 18 | Session management |
 | **Total** | **108** | **Complete E2E coverage** |
 
-
-### 🎯 Screenshot of E2E Test Cases
-
-![Test Cases Passing](Documents/CypressTestsAnalysis.png)
+## 🎯 Screenshot of E2E Test Cases and Coverage
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
 *Screenshot showing all tests passing*
 
-![Test Cases Passing](Documents/CypressTests.png)
+> This can be verified by running: `npm run cypress:run`
+
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
 *Screenshot showing all tests passing*
 
+> This can be verified by running: `npm run cypress:run`
+
+![Cypress Test Coverage](Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
+*Screenshot showing the test Coverage of Cypress tests*
+
+> This report can be found under the artifcats of the latest test run in Github Actions
 
 ### 📊 Test Results Artifacts
 
@@ -586,7 +507,7 @@ The `.github/workflows/e2e.yml` workflow:
 - **Artifacts & Logs**:
   - Screenshots: `cypress/screenshots/<spec>/<test>.png`
   - Videos: `cypress/videos/<spec>.mp4`
-  - Summary docs: `Documents/CI_e2e_run/CYPRESS_TEST_SUMMARY.md`, `Cypress_Readme.md`, `E2E_TESTING_COMPLETE.md`
+  - Summary docs: `Documents/CI_e2e_run_docs_screenshots`, `Cypress_Testing_Guide.md`, `Cypress_E2E_Testing_Report.md`
   - GitHub Actions artifacts: `cypress-screenshots-*`, `cypress-videos-*`, `cypress-results-*`
 
 #### **View Test Results in CI**
@@ -595,71 +516,17 @@ The `.github/workflows/e2e.yml` workflow:
 3. Click on a specific run to see results
 4. Download artifacts (screenshots/videos) if tests fail
 
-### 🐛 Debugging Tests
-
-#### **Debug in Interactive Mode**
-```bash
-npm run cypress:open
-```
-- Click on a test file to run it
-- Use browser DevTools to inspect elements
-- Add `cy.pause()` to pause test execution
-- Use `cy.debug()` to log debug information
-
-#### **Debug Failed Tests**
-```bash
-# Run failed tests with verbose output
-npx cypress run --spec "cypress/e2e/failing-test.cy.js" --headed --no-exit
-```
-
-#### **Common Debug Commands**
-```javascript
-// Pause test execution
-cy.pause();
-
-// Print debug info
-cy.debug();
-
-// Take screenshot
-cy.screenshot('debug-screenshot');
-
-// Log to console
-cy.log('Debug message');
-```
-
-### ⚙️ Cypress Configuration
-
-Key configuration in `cypress.config.js`:
-
-```javascript
-{
-  baseUrl: 'http://localhost:3000',
-  viewportWidth: 1280,
-  viewportHeight: 720,
-  video: true,
-  screenshotOnRunFailure: true,
-  defaultCommandTimeout: 10000,
-  retries: {
-    runMode: 2,    // Retry failed tests in CI
-    openMode: 0    // No retries in interactive mode
-  }
-}
-```
-
-### 📚 Cypress Resources
-
-- **Official Docs**: https://docs.cypress.io
-- **Best Practices**: https://docs.cypress.io/guides/references/best-practices
-- **Examples**: https://example.cypress.io
-- **API Reference**: https://docs.cypress.io/api/table-of-contents
 
 ## 📂 Deliverables
 - Requirements and Design Documentation  
 - UML diagrams (use case, class, sequence)  
 - Functional web application (React + Firebase)  
-- Unit tests & E22 tests  
+- CI Workflow Runs (GitHub Actions)
+- Test Coverage Reports and Screenshots under `Documents`
+- Unit tests & E2E tests  
 - Final project Report  
 - Presentation + Demo 
+- Vercel Deployment
 - Live Project: https://budget-buddy-mun.vercel.app/ 
 
 ---

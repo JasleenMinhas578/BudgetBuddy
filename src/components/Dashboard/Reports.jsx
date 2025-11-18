@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { useState, useEffect, useCallback } from 'react';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';

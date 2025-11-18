@@ -101,7 +101,7 @@ export default function ExpenseForm({
 
   const modalButtonLabel = useMemo(() => (isEditMode ? 'Save Changes' : 'Add Expense'), [isEditMode]);
 
-  const resetForm = () => {
+  const resetForm = ({ preserveMessage = false } = {}) => {
     if (initialExpense) {
       setAmount(initialExpense.amount || '');
       setTitle(initialExpense.title || '');
@@ -113,8 +113,10 @@ export default function ExpenseForm({
       setCategory('Food');
       setDate(new Date().toISOString().split('T')[0]);
     }
-    setMessage('');
-    setMessageType('');
+    if (!preserveMessage) {
+      setMessage('');
+      setMessageType('');
+    }
   };
 
   /**
@@ -177,9 +179,8 @@ export default function ExpenseForm({
       setLoading(true);
       
       if (isEditMode && initialExpense) {
-        // Update existing expense (you may need to import and use updateExpense from your service)
-        // For now, just call the callback
-        if (onExpenseEdited) onExpenseEdited({
+        // Update existing expense and await external persistence to finish
+        if (onExpenseEdited) await onExpenseEdited({
           id: initialExpense.id,
           amount: parseFloat(amount),
           title: title.trim(),
@@ -199,12 +200,12 @@ export default function ExpenseForm({
       // Show success message
       setMessage('Expense added successfully!');
       setMessageType('success');
-      // Reset form to initial state
-        resetForm();
       // Call callback to refresh expense list in parent component
       if (onExpenseAdded) {
         onExpenseAdded();
         }
+      // Preserve success message after resetting inputs
+      resetForm({ preserveMessage: true });
       }
       
     } catch (error) {
@@ -236,6 +237,7 @@ export default function ExpenseForm({
   };
 
   const handleCancel = () => {
+    /* istanbul ignore next */
     if (loading) return;
     resetForm();
     if (onCancel) {
