@@ -21,7 +21,7 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 - [x] Set up custom Cypress commands (8 commands created)
 - [x] Configure global test settings
 
-### ✅ Test Implementation (132 Total Tests)
+### ✅ Test Implementation (108 Total Tests)
 - [x] **Smoke Test** - `smoke.cy.js` (10 tests)
 - [x] **Signup Flow** - `01-signup.cy.js` (11 tests)
 - [x] **Login Flow** - `02-login.cy.js` (13 tests)
@@ -41,14 +41,13 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 
 ### ✅ Documentation
 - [x] Update README with comprehensive Cypress section
-- [x] Create `CYPRESS_TESTING_GUIDE.md`
-- [x] Create `CYPRESS_TEST_SUMMARY.md`
-- [x] Create `E2E_TESTING_COMPLETE.md` (this file)
-- [x] Document CI_e2e_run directory structure
-- [x] Add troubleshooting guides
+- [x] Create `C.md`
+- [x] Create `Cypress_Testing_Guide.md`
+- [x] Create `Cypress_E2E_Testing_Report.md` (this file)
+- [x] Document CI_e2e_run_docs_screenshots directory structure
 
 ### ✅ Project Setup
-- [x] Create `Documents/CI_e2e_run/` directory structure
+- [x] Create `Documents/CI_e2e_run_docs_screenshots/` directory structure
 - [x] Set up `.gitignore` for test artifacts
 - [x] Create `.gitkeep` files for empty directories
 - [x] Configure Firebase test environment
@@ -62,6 +61,25 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 - [x] Adjust tests to match actual UI
 
 ---
+
+
+# 🎯 Test Status and Coverage
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
+*Screenshot showing all tests passing*
+
+> This can be verified by running: `npm run cypress:run`
+
+![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
+*Screenshot showing all tests passing*
+
+> This can be verified by running: `npm run cypress:run`
+
+![Cypress Test Coverage](Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
+*Screenshot showing the test Coverage of Cypress tests*
+
+> This report can be found under the artifcats of the latest test run in Github Actions
+
+--- 
 
 ## 📁 Files Created/Modified
 
@@ -90,9 +108,8 @@ All Cypress End-to-End (E2E) testing has been successfully implemented for the B
 17. `.github/workflows/ci.yml` - CI unit test workflow
 
 #### Documentation Files
-18. `CYPRESS_TESTING_GUIDE.md` - Comprehensive testing guide
-19. `CYPRESS_TEST_SUMMARY.md` - Test execution summary
-20. `E2E_TESTING_COMPLETE.md` - This file
+18. `Cypress_Testing_Guide.md` - Comprehensive testing guide
+20. `Cypress_E2E_Testing_Report.md` - This file
 
 ### Modified Files (2 files)
 1. `package.json` - Added Cypress scripts and dependencies
@@ -223,12 +240,11 @@ cy.screenshotWithTimestamp('test-name');
 ```
 Budget Buddy/
 ├── README.md                           # Main project docs (updated with Cypress)
-├── CYPRESS_TESTING_GUIDE.md            # Comprehensive testing guide
-├── CYPRESS_TEST_SUMMARY.md             # Test execution summary
-├── E2E_TESTING_COMPLETE.md             # This completion summary
+├── Cypress_Testing_Guide.md            # Comprehensive testing guide
+├── Cypress_E2E_Testing_Report.md       # This completion summary
 ├── cypress.config.js                   # Cypress configuration
 ├── cypress/
-│   ├── e2e/                           # Test files (9 files, 132 tests)
+│   ├── e2e/                           # Test files (8 files, 108 tests)
 │   ├── fixtures/                      # Test data
 │   ├── support/                       # Custom commands & config
 │   ├── screenshots/                   # Auto-generated on failure
@@ -316,14 +332,6 @@ open CYPRESS_TESTING_GUIDE.md
 - 📸 Screenshots: 0 captured
 - 🎥 Video: 8 recorded
 - ⏱️ Duration: 24 minutes 8 seconds
-
-
-### 🎯 Test Status
-![Test Cases Passing](Documents/CypressTestsAnalysis.png)
-*Screenshot showing all tests passing*
-
-![Test Cases Passing](Documents/CypressTests.png)
-*Screenshot showing all tests passing*
 
 
 ### Test Quality Metrics
@@ -417,10 +425,9 @@ npm run test:e2e
 ## 📞 Support & Next Steps
 
 ### If You Need Help
-1. Check `CYPRESS_TESTING_GUIDE.md` for detailed instructions
-2. Review `CYPRESS_TEST_SUMMARY.md` for test details
-3. Check README.md for quick reference
-4. Contact team lead: jminhas@mun.ca
+1. Check `Cypress_Testing_Guide.md` for detailed instructions
+2. Check README.md for quick reference
+3. Contact team lead: jminhas@mun.ca
 ---
 
 ## 🎉 Conclusion
@@ -444,7 +451,6 @@ npm run test:e2e
 
 ---
 
-**Implementation Date**: November 13, 2024  
 **Status**: ✅ Complete & Ready for Use  
 **Project**: Budget Buddy - Group 6  
 **Course**: COMP6905 — Software Engineering  

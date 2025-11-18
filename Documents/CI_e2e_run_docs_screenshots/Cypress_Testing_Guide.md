@@ -123,7 +123,7 @@ npx cypress run --spec "cypress/e2e/smoke.cy.js"
 ```
 
 ### 🎯 Test Status
-![Test Cases Passing](Documents/SmokeTest.png)
+![Test Cases Passing](/Documents/CI_e2e_run_docs_screenshots/SmokeTest.png)
 *Screenshot showing all smoke test passing*
 
 
@@ -435,7 +435,7 @@ Edit `.github/workflows/e2e.yml` to:
 
 - **Cypress Documentation**: https://docs.cypress.io
 - **Budget Buddy README**: See main README.md
-- **Test Results**: See `Documents/CI_e2e_run/`
+- **Test Results**: See `Documents/CI_e2e_run_docs_screenshots/`
 - **GitHub Issues**: Report test issues on GitHub
 
 ## 🆘 Getting Help

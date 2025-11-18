@@ -15,6 +15,22 @@ describe('User Logout Flow', () => {
     password: 'TestPassword123!'
   };
 
+  const loginThroughUI = () => {
+    cy.visit('/login');
+    cy.get('body').then(($body) => {
+      if ($body.find('button:contains("Logout")').length) {
+        cy.contains('button', /logout/i).click({ force: true });
+        cy.wait(2000);
+        cy.visit('/login');
+      }
+    });
+    cy.get('input[type="email"]').clear().type(testUser.email);
+    cy.get('input[type="password"]').clear().type(testUser.password);
+    cy.get('button[type="submit"]').click();
+    cy.location('pathname', { timeout: 30000 }).should('include', '/dashboard');
+    cy.contains('button', /logout/i, { timeout: 15000 }).should('be.visible');
+  };
+
   before(() => {
     // Create a test user
     cy.visit('/signup');
@@ -34,13 +50,7 @@ describe('User Logout Flow', () => {
   });
 
   beforeEach(() => {
-    // Login before each test
-    cy.visit('/login');
-    cy.get('input[type="email"]').type(testUser.email);
-    cy.get('input[type="password"]').type(testUser.password);
-    cy.get('button[type="submit"]').click();
-    cy.wait(5000);
-    cy.url().should('include', '/dashboard', { timeout: 15000 });
+    loginThroughUI();
   });
 
   it('should display logout button when user is authenticated', () => {
