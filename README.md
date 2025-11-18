@@ -1,15 +1,5 @@
 # 💸 Budget Buddy (Group 6)
 
-**Budget Buddy** is a responsive personal finance tracker built as an academic project for the course **COMP6905 — Software Engineering**.  
-The goal of this project is to apply **software engineering practices** (Agile, documentation, testing, CI/CD) while developing a full-stack web application.
-
-- **Course**: COMP6905 — Software Engineering  
-- **Purpose**: Academic use; demonstrates SE process from Requirements → Design → Implementation → Testing  
-- **Tech Stack**: React, React Router, Chart.js, Firebase (Auth + Firestore), Jest, Cypress, Vercel
-- **Live Project**: https://budget-buddy-mun.vercel.app/
-
----
-
 ## 🚀 Project Overview
 
 Budget Buddy is your **Budget Companion** — a free, easy-to-use web app for managing personal expenses.  
@@ -22,16 +12,31 @@ Unlike many market apps that become paid after trial, Budget Buddy focuses on **
 - Report generation (PDF export, CSV export)  
 - Responsive design for desktop, tablet, and mobile  
 
-**Extended scope: (In Future)**
-- AI-driven insights (LLMs)  
-- Notifications/reminders  
-- Bill reminders
+---
+
+
+## 📊 Project Status
+
+[![CI Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml)
+
+> The project works perfectly, all the CI unit tests, E2E test with 100% coverage runs perfectly, across multiple browser - Chrome, Edge, and Firefox.
+> The `coverage_report` is there in the repo. 
+
+- **View Detailed Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+
+- **Live Project (Vercel main-branch deployment URL)**: https://budget-buddy-mun.vercel.app/
+
 
 ---
 
 ## 👥 Team
 
 - **Group**: 6  
+
+- **Planning Board** - Go to the [Planning Board](https://github.com/users/JasleenMinhas578/projects/4/views/1)
+
+- **Roadmap** - Go to the [Roadmap Board](https://github.com/users/JasleenMinhas578/projects/4/views/4)
 
 **Team Lead**  
 - Jasleen Minhas — ID: 202481225 — jminhas@mun.ca  
@@ -51,9 +56,27 @@ Unlike many market apps that become paid after trial, Budget Buddy focuses on **
 - **Joel George Sam** — QA/Testing: Test cases, automated/system testing, V&V compliance.  
 - **Ronit Gajjar** — Reporting/Features: Charts, analytics, and PDF export module.  
 
+
+### 🧮 Story Point Contribution Per Member
+
+> 📌 Assumption used:  
+Each contributor receives **full story points for any issue they worked on** — standard for team Agile contribution analysis unless partial points were assigned originally.
+
+#### ✅ **Automated Story Point Summary**
+(Complete calculation based on full issue list you provided in [Planning Mapping](https://github.com/users/JasleenMinhas578/projects/4/views/1))
+
+| Member | Total Story Points |
+|--------|--------------------|
+| **Jasleen** |  **≈ 170 SP** |
+| **Mashroor** | **≈ 110 SP** |
+| **Sumaiya** | **≈ 58 SP** |
+| **Joel** | **≈ 55 SP** |
+| **Kaustubh** | **≈ 45 SP** |
+| **Ronit** | **≈ 48 SP** |
+
 ---
 
-## Methodology
+## 🖥️ Methodology
 
 We are following the **Agile Software Development** methodology, using an iterative sprint-based approach.  
 - Work is divided into 5 sprints (2 weeks each), with clear milestones.  
@@ -113,7 +136,7 @@ We are following the **Agile Software Development** methodology, using an iterat
 
 ### Iteration 5 (Nov 17 – Nov 30)
 - E2E Testing using Cypress
-- System testing, bug fixing, performance optimization  
+- Bug fixing, performance optimization  
 - Final documentation (report)  
 - Presentation & demo prep  
 - Repo finalization (issues closed, PRs merged, iteration tags added)  
@@ -445,7 +468,7 @@ cypress/
 | **Categories** | 12 | Category management |
 | **Reports** | 16 | Report generation and export |
 | **Logout** | 18 | Session management |
-| **Total** | **108** | **Complete E2E coverage** |
+| **Total** | **102** | **Complete E2E coverage** |
 
 ## 🎯 Screenshot of E2E Test Cases and Coverage
 ![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
@@ -516,6 +539,63 @@ The `.github/workflows/e2e.yml` workflow:
 3. Click on a specific run to see results
 4. Download artifacts (screenshots/videos) if tests fail
 
+---
+
+## 🎯 CI/CD Pipeline & Test Results
+
+Our project uses **GitHub Actions** for continuous integration and continuous deployment. All tests (unit tests and E2E tests) run automatically on every push and pull request to ensure code quality.
+
+### ✅ Workflow Status
+
+The badges at the top of this README show the current status of our CI/CD pipelines:
+- **CI Tests Badge**: Shows the status of unit tests (Jest) and build verification
+- **E2E Tests Badge**: Shows the status of end-to-end tests (Cypress) across multiple browsers
+
+### 📸 CI Workflow (Unit Tests & Build)
+
+The CI workflow runs on every push and includes:
+- Unit tests with Jest
+- Code coverage reporting
+- Production build verification
+
+![CI Workflow Run](Documents/CI_e2e_run_docs_screenshots/CI_Workflow_run.png)
+
+**Key Results:**
+- ✅ **102 unit tests passing** across all components
+- ✅ Build completes successfully
+- ✅ Coverage reports generated and uploaded as artifacts
+
+### 📸 E2E Workflow (Cypress Tests)
+
+The E2E workflow runs comprehensive browser-based tests across Chrome, Firefox, and Edge:
+- **102 E2E tests** covering all user journeys
+- Multi-browser testing (Chrome, Firefox, Edge)
+- Screenshots and videos captured for debugging
+
+![E2E Workflow Run](Documents/CI_e2e_run_docs_screenshots/E2E_Workflow_run.png)
+
+**Key Results:**
+- ✅ **All 102 Cypress tests passing**
+- ✅ Cross-browser compatibility verified
+- ✅ Videos available as artifacts under `cypress/videos/`
+- ✅ Test execution time: ~18-20 minutes across all browsers
+
+### 📊 Test Coverage Summary
+
+| Test Type | Count | Status | Coverage |
+|-----------|-------|--------|----------|
+| **Unit Tests (Jest)** | 102 | ✅ Passing | Component logic, authentication, database operations |
+| **E2E Tests (Cypress)** | 102 | ✅ Passing | Complete user journeys across signup, login, expenses, categories, reports, and logout |
+| **Browser Coverage** | 3 browsers | ✅ Passing | Chrome, Firefox, Edge |
+
+### 🔗 Accessing CI/CD Results
+
+1. **View Live Status**: Check the badges at the top of this README
+2. **View Detailed Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+3. **Download Artifacts**: Each workflow run includes downloadable artifacts (coverage reports, screenshots, videos)
+4. **Review Test Reports**: Check the `Documents/CI_e2e_run_docs_screenshots/` directory for detailed test documentation
+
+---
 
 ## 📂 Deliverables
 - Requirements and Design Documentation  
@@ -531,11 +611,134 @@ The `.github/workflows/e2e.yml` workflow:
 
 ---
 
-## 📚 References
-- GitHub Project Management Guide: https://guides.github.com/features/issues/  
-- Firebase Documentation: https://firebase.google.com/docs  
-- React Docs: https://react.dev/  
-- Chart.js Docs: https://www.chartjs.org/docs/latest/  
-- Agile User Stories: https://www.mountaingoatsoftware.com/agile/user-stories  
+## 🚀 Future Improvements & Enhancements
+
+While Budget Buddy successfully meets all requirements for the Fall 2025 academic project, there are several exciting features and improvements we would like to implement in future iterations:
+
+### 🤖 AI-Powered Features
+- **Smart Expense Categorization**: Implement machine learning models to automatically categorize expenses based on description patterns
+- **Predictive Analytics**: Use LLMs to predict future spending patterns and suggest budget adjustments
+- **Natural Language Input**: Allow users to add expenses using natural language (e.g., "Spent $50 on groceries yesterday")
+
+### 💰 Advanced Financial Features
+- **Budget Goals & Tracking**: Set monthly/yearly budget goals with progress tracking and alerts
+- **Bill Reminders**: Automated notifications for upcoming bill payments
+- **Multi-Currency Support**: Handle expenses in different currencies with real-time conversion
+- **Split Expenses**: Share and split expenses with friends/family members
+- **Income Tracking**: Track income sources alongside expenses for complete financial overview
+- **Savings Goals**: Set and track savings goals with visualization
+
+### 🔔 Notifications & Alerts
+- **Email Notifications**: Send email summaries and alerts
+- **Push Notifications**: Real-time alerts for budget limits and bill reminders
+- **SMS Integration**: Text message reminders for critical financial events
+- **Weekly/Monthly Summaries**: Automated spending summaries delivered to users
+
+### 🔐 Security & Privacy Enhancements
+- **Two-Factor Authentication (2FA)**: Add an extra layer of security for user accounts
+- **Biometric Authentication**: Support for fingerprint/face ID on mobile devices
+- **Data Encryption**: End-to-end encryption for sensitive financial data
 
 ---
+
+
+## 📚 References
+
+### Development & Frameworks
+- **React Documentation**: https://react.dev/  
+- **React Router Documentation**: https://reactrouter.com/  
+- **Create React App**: https://create-react-app.dev/  
+- **Firebase Documentation**: https://firebase.google.com/docs  
+- **Firebase Authentication Guide**: https://firebase.google.com/docs/auth  
+- **Firestore Database Guide**: https://firebase.google.com/docs/firestore  
+- **Chart.js Documentation**: https://www.chartjs.org/docs/latest/  
+- **React-ChartJS-2**: https://react-chartjs-2.js.org/  
+- **Framer Motion (Animations)**: https://www.framer.com/motion/  
+- **date-fns Documentation**: https://date-fns.org/docs/Getting-Started  
+
+### Testing & Quality Assurance
+- **Jest Documentation**: https://jestjs.io/docs/getting-started  
+- **React Testing Library**: https://testing-library.com/docs/react-testing-library/intro/  
+- **Cypress Documentation**: https://docs.cypress.io/  
+- **Cypress Best Practices**: https://docs.cypress.io/guides/references/best-practices  
+- **GitHub Actions CI/CD**: https://docs.github.com/en/actions  
+- **Testing Best Practices**: https://kentcdodds.com/blog/common-mistakes-with-react-testing-library  
+
+### Design & UI/UX
+- **CSS Modules**: https://github.com/css-modules/css-modules  
+- **Responsive Design Principles**: https://web.dev/responsive-web-design-basics/  
+- **Accessibility Guidelines (WCAG)**: https://www.w3.org/WAI/WCAG21/quickref/  
+- **Color Contrast Checker**: https://webaim.org/resources/contrastchecker/  
+- **Material Design Guidelines**: https://m3.material.io/  
+
+### Project Management & Agile
+- **GitHub Project Management Guide**: https://guides.github.com/features/issues/  
+- **Agile User Stories**: https://www.mountaingoatsoftware.com/agile/user-stories  
+- **Scrum Guide**: https://scrumguides.org/scrum-guide.html  
+- **GitHub Flow**: https://docs.github.com/en/get-started/quickstart/github-flow  
+- **Writing Good Commit Messages**: https://chris.beams.io/posts/git-commit/  
+
+### PDF & Report Generation
+- **jsPDF Documentation**: https://github.com/parallax/jsPDF  
+- **html2canvas Documentation**: https://html2canvas.hertzen.com/documentation  
+- **PDF Generation Tutorial**: https://blog.logrocket.com/generating-pdf-react/  
+
+### Deployment & Hosting
+- **Vercel Documentation**: https://vercel.com/docs  
+- **Environment Variables in React**: https://create-react-app.dev/docs/adding-custom-environment-variables/  
+- **React Production Build**: https://create-react-app.dev/docs/production-build/  
+
+### Security & Best Practices
+- **Firebase Security Rules**: https://firebase.google.com/docs/rules  
+- **React Security Best Practices**: https://pragmaticwebsecurity.com/articles/reactsecurity  
+- **OWASP Top 10**: https://owasp.org/www-project-top-ten/  
+- **Content Security Policy**: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP  
+
+### Code Quality & Tools
+- **ESLint**: https://eslint.org/docs/latest/  
+- **Prettier**: https://prettier.io/docs/en/  
+- **Git Best Practices**: https://git-scm.com/book/en/v2  
+- **Semantic Versioning**: https://semver.org/  
+
+### Learning Resources
+- **MDN Web Docs**: https://developer.mozilla.org/  
+- **Web.dev by Google**: https://web.dev/  
+- **JavaScript.info**: https://javascript.info/  
+- **React Patterns**: https://reactpatterns.com/  
+- **CSS Tricks**: https://css-tricks.com/  
+
+### Academic Resources
+- **Software Engineering Best Practices**: https://www.geeksforgeeks.org/software-engineering/  
+- **System Design Primer**: https://github.com/donnemartin/system-design-primer  
+- **Code Review Best Practices**: https://google.github.io/eng-practices/review/  
+
+--- 
+
+## 📝 Contributing
+
+While this is an academic project, we welcome suggestions and feedback! If you have ideas for improvements or notice any issues:
+
+1. Open an issue on GitHub with your suggestion or bug report
+2. Follow the issue template and provide as much detail as possible
+3. For major changes, please open an issue first to discuss what you would like to change
+
+---
+
+## 📄 License
+
+This project is for academic purposes as part of COMP6905 - Software Engineering at Memorial University of Newfoundland.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Dr. Liao** - Course Instructor, COMP6905
+- **Mr. Syed** - TA
+- **Memorial University of Newfoundland** - Computer Science Department
+
+---
+
+**Made with ❤️ by Group 6 | Memorial University of Newfoundland | Fall 2025**
+
+---
+
