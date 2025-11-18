@@ -655,7 +655,7 @@ The complete Lighthouse audit report is available in the repository:
 - **Test Date**: November 18, 2025
 - **How to View**: Download and open the HTML file in any web browser for the interactive Lighthouse report
 
-- **Snapshot of the Repeport**
+- **Snapshot of the Report**
 ![`Lighthouse_Report.png`](Documents/Lighthouse_Metrics/Lighthouse_metric_img.png)
 
 ---
