@@ -17,15 +17,20 @@ jest.mock('chart.js', () => ({
 
 // Mock react-chartjs-2
 jest.mock('react-chartjs-2', () => ({
-  Line: ({ data, options }) => (
-    <div 
-      data-testid="line-chart" 
-      data-labels={data ? JSON.stringify(data.labels || []) : '[]'} 
-      data-datasets={data ? JSON.stringify(data.datasets || []) : '[]'}
-    >
-      Line Chart
-    </div>
-  ),
+  Line: ({ data, options }) => {
+    const callback =
+      options?.scales?.y?.ticks?.callback?.(1234) ?? '';
+    return (
+      <div 
+        data-testid="line-chart" 
+        data-labels={data ? JSON.stringify(data.labels || []) : '[]'} 
+        data-datasets={data ? JSON.stringify(data.datasets || []) : '[]'}
+        data-callback={callback}
+      >
+        Line Chart
+      </div>
+    );
+  },
 }));
 
 import LineChart from '../components/Charts/LineChart';

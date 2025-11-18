@@ -9,6 +9,8 @@ jest.mock('firebase/auth', () => ({
   signOut: jest.fn(),
   onAuthStateChanged: jest.fn(),
   getAuth: jest.fn(() => ({})),
+  sendPasswordResetEmail: jest.fn(),
+  confirmPasswordReset: jest.fn()
 }));
 
 // Mock Firebase config
@@ -48,7 +50,9 @@ const {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  confirmPasswordReset
 } = require('firebase/auth');
 
 // Test wrapper component
@@ -62,7 +66,7 @@ const TestWrapper = ({ children }) => (
 
 // Component to test AuthContext directly
 function AuthTestComponent() {
-  const { currentUser, login, signup, logout } = useAuth();
+  const { currentUser, login, signup, logout, resetPassword, updatePassword } = useAuth();
   
   return (
     <div>
@@ -77,6 +81,12 @@ function AuthTestComponent() {
       </button>
       <button onClick={() => logout()}>
         Logout
+      </button>
+      <button onClick={() => resetPassword('reset@example.com', { url: 'https://example.com/reset' })}>
+        Reset Password
+      </button>
+      <button onClick={() => updatePassword('code-123', 'NewPass123')}>
+        Update Password
       </button>
     </div>
   );
@@ -543,6 +553,30 @@ describe('Authentication Flow Tests', () => {
       expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /signup/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
+    });
+
+    it('exposes resetPassword helper that calls Firebase API', () => {
+      sendPasswordResetEmail.mockResolvedValue({});
+      render(
+        <TestWrapper>
+          <AuthTestComponent />
+        </TestWrapper>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /reset password/i }));
+      expect(sendPasswordResetEmail).toHaveBeenCalledWith(expect.anything(), 'reset@example.com', { url: 'https://example.com/reset' });
+    });
+
+    it('exposes updatePassword helper that calls Firebase API', () => {
+      confirmPasswordReset.mockResolvedValue({});
+      render(
+        <TestWrapper>
+          <AuthTestComponent />
+        </TestWrapper>
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /update password/i }));
+      expect(confirmPasswordReset).toHaveBeenCalledWith(expect.anything(), 'code-123', 'NewPass123');
     });
 
     it('should handle concurrent authentication attempts', async () => {
