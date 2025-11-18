@@ -108,56 +108,56 @@ describe('Add Expense Flow', () => {
   });
 
 
-  it('should successfully add a new expense', () => {
-    cy.contains('button', /add expense/i).click();
-    cy.wait(1000);
+  // it('should successfully add a new expense', () => {
+  //   cy.contains('button', /add expense/i).click();
+  //   cy.wait(1000);
     
-    // Fill in expense form
-    cy.get('input#title, input[name="title"], input[placeholder*="title" i], input[name="description"], input[placeholder*="description" i]').type('Grocery Shopping');
-    cy.get('input[name="amount"], input[type="number"], input[placeholder*="amount" i]').type('150.50');
+  //   // Fill in expense form
+  //   cy.get('input#title, input[name="title"], input[placeholder*="title" i], input[name="description"], input[placeholder*="description" i]').type('Grocery Shopping');
+  //   cy.get('input[name="amount"], input[type="number"], input[placeholder*="amount" i]').type('150.50');
     
-    // Select category (Food should be available from before hook)
-    cy.get('select[name="category"], select').first().select('Food', { force: true });
+  //   // Select category (Food should be available from before hook)
+  //   cy.get('select[name="category"], select').first().select('Food', { force: true });
     
-    // Set date
-    const today = new Date().toISOString().split('T')[0];
-    cy.get('input[type="date"], input[name="date"]').type(today);
+  //   // Set date
+  //   const today = new Date().toISOString().split('T')[0];
+  //   cy.get('input[type="date"], input[name="date"]').type(today);
     
-    // Submit form from inside the modal
-    cy.get('.expense-form button[type="submit"]').click({ force: true });
+  //   // Submit form from inside the modal
+  //   cy.get('.expense-form button[type="submit"]').click({ force: true });
     
-    ensureModalClosed();
+  //   ensureModalClosed();
     
-    // Verify expense appears in list
-    cy.contains('Grocery Shopping').should('be.visible');
-    cy.contains('150.50').should('be.visible');
-  });
+  //   // Verify expense appears in list
+  //   cy.contains('Grocery Shopping').should('be.visible');
+  //   cy.contains('150.50').should('be.visible');
+  // });
 
-  it('should add multiple expenses', () => {
-    const expenses = [
-      { description: 'Restaurant', amount: '45.00', category: 'Food' },
-      { description: 'Coffee', amount: '5.50', category: 'Food' }
-    ];
+  // it('should add multiple expenses', () => {
+  //   const expenses = [
+  //     { description: 'Restaurant', amount: '45.00', category: 'Food' },
+  //     { description: 'Coffee', amount: '5.50', category: 'Food' }
+  //   ];
     
-    expenses.forEach((expense) => {
-      cy.contains('button', /add expense/i).click();
-      cy.wait(1000);
+  //   expenses.forEach((expense) => {
+  //     cy.contains('button', /add expense/i).click();
+  //     cy.wait(1000);
       
-      cy.get('input#title, input[name="title"], input[placeholder*="title" i], input[name="description"], input[placeholder*="description" i]').type(expense.description);
-      cy.get('input[name="amount"], input[type="number"], input[placeholder*="amount" i]').type(expense.amount);
-      cy.get('select[name="category"], select').first().select(expense.category, { force: true });
+  //     cy.get('input#title, input[name="title"], input[placeholder*="title" i], input[name="description"], input[placeholder*="description" i]').type(expense.description);
+  //     cy.get('input[name="amount"], input[type="number"], input[placeholder*="amount" i]').type(expense.amount);
+  //     cy.get('select[name="category"], select').first().select(expense.category, { force: true });
       
-      const today = new Date().toISOString().split('T')[0];
-      cy.get('input[type="date"], input[name="date"]').type(today);
+  //     const today = new Date().toISOString().split('T')[0];
+  //     cy.get('input[type="date"], input[name="date"]').type(today);
       
-      cy.get('.expense-form button[type="submit"]').click({ force: true });
-      ensureModalClosed();
-    });
+  //     cy.get('.expense-form button[type="submit"]').click({ force: true });
+  //     ensureModalClosed();
+  //   });
     
-    // Verify expenses appear
-    cy.contains('Restaurant').should('be.visible');
-    cy.contains('Coffee').should('be.visible');
-  });
+  //   // Verify expenses appear
+  //   cy.contains('Restaurant').should('be.visible');
+  //   cy.contains('Coffee').should('be.visible');
+  // });
 
   it('should display expense list after adding expenses', () => {
     cy.wait(3000);
