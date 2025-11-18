@@ -139,7 +139,10 @@ export default function Expenses() {
 
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
-    // Optionally, refresh expenses here if needed
+    setToast({
+      message: 'Expense added successfully!',
+      type: 'success'
+    });
   };
 
   const closeAddExpenseModal = () => {

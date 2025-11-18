@@ -197,15 +197,15 @@ export default function ExpenseForm({
       };
       // Save expense to Firebase database
         await addExpense(currentUser.uid, expenseData);
-      // Show success message
-      setMessage('Expense added successfully!');
-      setMessageType('success');
-      // Call callback to refresh expense list in parent component
+      
+      // Call callback to refresh expense list and close modal in parent component
+      // This should be called immediately to close the modal
       if (onExpenseAdded) {
         onExpenseAdded();
-        }
-      // Preserve success message after resetting inputs
-      resetForm({ preserveMessage: true });
+      }
+      
+      // Reset form after successful submission
+      resetForm();
       }
       
     } catch (error) {
