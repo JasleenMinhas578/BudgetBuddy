@@ -23,7 +23,9 @@ Unlike many market apps that become paid after trial, Budget Buddy focuses on **
 > The project works perfectly, all the CI unit tests, E2E test with 100% coverage runs perfectly, across multiple browser - Chrome, Edge, and Firefox.
 > The `coverage_report` is there in the repo. 
 
-- **View Detailed Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+- **View Detailed Test Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+
+- **View Deployement**: Go to the [Deployments](https://github.com/JasleenMinhas578/BudgetBuddy/deployments/Production)
 
 - **Live Project (Vercel main-branch deployment URL)**: https://budget-buddy-mun.vercel.app/
 
@@ -594,6 +596,67 @@ The E2E workflow runs comprehensive browser-based tests across Chrome, Firefox, 
 2. **View Detailed Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
 3. **Download Artifacts**: Each workflow run includes downloadable artifacts (coverage reports, screenshots, videos)
 4. **Review Test Reports**: Check the `Documents/CI_e2e_run_docs_screenshots/` directory for detailed test documentation
+
+---
+
+## 🎯 Lighthouse Performance & Quality Report
+
+We use **Google Lighthouse** to ensure our application meets high standards for performance, accessibility, best practices, and SEO. The live production deployment on Vercel is regularly audited.
+
+### 📊 Lighthouse Scores
+
+| Category | Score | Status |
+|----------|-------|--------|
+| **⚡ Performance** | **99/100** | 🟢 Excellent |
+| **♿ Accessibility** | **100/100** | 🟢 Excellent |
+| **✅ Best Practices** | **100/100** | 🟢 Excellent |
+| **🔍 SEO** | **91/100** | 🟢 Excellent |
+
+### 🎉 Overall Assessment
+
+Budget Buddy achieves **excellent scores across all categories**, demonstrating:
+
+✅ **Outstanding Performance (99%)** 
+- Fast load times and optimal resource loading
+- Efficient rendering and minimal blocking resources
+- Optimized images and assets
+
+✅ **Strong Accessibility (100%)**
+- WCAG compliance for users with disabilities
+- Proper ARIA labels and semantic HTML
+- Screen reader friendly implementation
+- Good color contrast and keyboard navigation
+
+✅ **Perfect Best Practices (100%)**
+- Secure HTTPS deployment
+- No console errors or warnings
+- Proper asset optimization
+- Modern web standards compliance
+
+✅ **Excellent SEO (91%)**
+- Mobile-friendly and responsive design
+- Proper meta tags and structured data
+- Fast page load for better search rankings
+- Semantic HTML structure
+
+### 📱 Key Performance Metrics
+
+- **First Contentful Paint (FCP)**: Fast initial render
+- **Largest Contentful Paint (LCP)**: Excellent loading performance
+- **Time to Interactive (TTI)**: Quick user interaction readiness
+- **Cumulative Layout Shift (CLS)**: Stable visual layout
+- **Speed Index**: Rapid content visibility
+
+### 🔗 View Full Report
+
+The complete Lighthouse audit report is available in the repository:
+- **Report File**: [`Lighthouse_Report.html`](Documents/Lighthouse_Metrics/Lighthouse_metric_report.html)
+- **Live URL Tested**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
+- **Test Date**: November 18, 2025
+- **How to View**: Download and open the HTML file in any web browser for the interactive Lighthouse report
+
+- **Snapshot of the Repeport**
+![`Lighthouse_Report.png`](Documents/Lighthouse_Metrics/Lighthouse_metric_img.png)
 
 ---
 
