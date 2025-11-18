@@ -658,6 +658,7 @@ describe('Signup Component', () => {
       expect(passwordInput).toHaveAttribute('type', 'password');
       
       // Press Enter key on toggle button
+      toggleButton.focus();
       fireEvent.keyDown(toggleButton, { key: 'Enter' });
       
       // Password should now be visible
@@ -677,11 +678,86 @@ describe('Signup Component', () => {
       // Initially password should be hidden
       expect(passwordInput).toHaveAttribute('type', 'password');
       
-      // Press Space key on toggle button
-      fireEvent.keyDown(toggleButton, { key: ' ' });
-      
-      // Password should now be visible
+      // Press Space key (space character) on toggle button
+      toggleButton.focus();
+      fireEvent.keyDown(toggleButton, { key: ' ', code: 'Space', charCode: 32, keyCode: 32 });
       expect(passwordInput).toHaveAttribute('type', 'text');
+
+      // Toggle back to hidden and trigger Space string variant
+      fireEvent.click(toggleButton);
+      expect(passwordInput).toHaveAttribute('type', 'password');
+      fireEvent.keyDown(toggleButton, { key: 'Space', code: 'Space', charCode: 32, keyCode: 32 });
+      
+      expect(passwordInput).toHaveAttribute('type', 'text');
+    });
+
+    it('toggles confirm password visibility with keyboard navigation', () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      const confirmPasswordInput = screen.getByLabelText('Confirm Password');
+      const toggleButton = screen.getAllByRole('button', { name: /show password/i })[1];
+
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+      toggleButton.focus();
+      fireEvent.keyDown(toggleButton, { key: 'Enter' });
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+    });
+
+    it('toggles confirm password visibility with space key', () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      const confirmPasswordInput = screen.getByLabelText('Confirm Password');
+      const toggleButton = screen.getAllByRole('button', { name: /show password/i })[1];
+
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+      toggleButton.focus();
+      fireEvent.keyDown(toggleButton, { key: ' ', code: 'Space', charCode: 32, keyCode: 32 });
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+
+      fireEvent.click(toggleButton);
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+      fireEvent.keyDown(toggleButton, { key: 'Space', code: 'Space', charCode: 32, keyCode: 32 });
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+    });
+
+    it('ignores non-activation keys on password toggle', () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      const passwordInput = screen.getByLabelText('Password');
+      const toggleButton = screen.getAllByRole('button', { name: /show password/i })[0];
+
+      expect(passwordInput).toHaveAttribute('type', 'password');
+      toggleButton.focus();
+      fireEvent.keyDown(toggleButton, { key: 'Escape' });
+      expect(passwordInput).toHaveAttribute('type', 'password');
+    });
+
+    it('ignores non-activation keys on confirm password toggle', () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      const confirmPasswordInput = screen.getByLabelText('Confirm Password');
+      const toggleButton = screen.getAllByRole('button', { name: /show password/i })[1];
+
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+      toggleButton.focus();
+      fireEvent.keyDown(toggleButton, { key: 'Escape' });
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
     });
   });
 });
