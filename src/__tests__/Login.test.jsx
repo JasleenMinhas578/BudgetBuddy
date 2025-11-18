@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 
 // Mock Firebase Auth before importing components
 jest.mock('firebase/auth', () => ({
@@ -245,6 +245,23 @@ describe('Login Component', () => {
 
       const signupLink = screen.getByRole('link', { name: /sign up/i });
       expect(signupLink).toHaveAttribute('href', '/signup');
+    });
+
+    it('displays message from navigation state and clears history', async () => {
+      const replaceSpy = jest.spyOn(window.history, 'replaceState');
+      render(
+        <MemoryRouter initialEntries={[{ pathname: '/login', state: { message: 'Password reset successful!' } }]}>
+          <AuthProvider>
+            <Login />
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Password reset successful!/)).toBeInTheDocument();
+      });
+      expect(replaceSpy).toHaveBeenCalled();
+      replaceSpy.mockRestore();
     });
   });
 

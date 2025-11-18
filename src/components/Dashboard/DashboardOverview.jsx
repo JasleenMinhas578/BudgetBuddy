@@ -13,20 +13,12 @@ export default function DashboardOverview() {
   // Get current user from authentication context
   const { currentUser } = useAuth();
 
-  // Debug logging for development
-  console.log('currentUser:', currentUser);
-  if (currentUser) {
-    console.log('Firestore path:', `users/${currentUser.uid}/expenses`);
-  }
-
   /**
    * Set up real-time data listeners for expenses and categories
    * This effect runs when the component mounts and when currentUser changes
    */
   useEffect(() => {
     if (currentUser) {
-      console.log('Firestore path:', `users/${currentUser.uid}/expenses`);
-      
       // Set up real-time listener for expenses
       const qExpenses = query(
         collection(db, 'users', currentUser.uid, 'expenses'),
