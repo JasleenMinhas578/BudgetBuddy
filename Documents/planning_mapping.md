@@ -1,4 +1,4 @@
-# 📌 BudgetBuddy – Planning & Mapping Document
+# 📌 BudgetBuddy – Planning & Issues Mapping Document
 
 This document provides a complete mapping of all project issues, story points, team responsibilities, velocity, and Agile workflow details.  
 It also includes screenshots of the GitHub Project Board and a detailed contribution analysis for each team member.
@@ -13,7 +13,7 @@ It also includes screenshots of the GitHub Project Board and a detailed contribu
 
 - **Project Team Capacity Board Link** : [Team Capacity](https://github.com/users/JasleenMinhas578/projects/4/views/2)
 
-- 📸 Screenshot: **Burnup Chart**
+## 📸 Screenshot of the **Burnup Chart**
 ![Burnup Chart](/Documents/Burn_up_chart.png)
 
 
@@ -72,27 +72,30 @@ It also includes screenshots of the GitHub Project Board and a detailed contribu
 | [87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) | Add Forget Password Functionality                                    | 3            | High     | Medium | Iteration 4      | Jasleen, Mashroor                     | Done   | [#88](https://github.com/JasleenMinhas578/BudgetBuddy/pull/88)                  |
 | [91](https://github.com/JasleenMinhas578/BudgetBuddy/issues/91) | Browser-Level UI Testing with Cypress (E2E Testing)                   | 9            | High     | High   | Iteration 5      | Jasleen, Joel, Mashroor               | Done   | [#93](https://github.com/JasleenMinhas578/BudgetBuddy/pull/93)                  |
 | [94](https://github.com/JasleenMinhas578/BudgetBuddy/issues/94) | Improve Test Coverage & Add Cross-Browser E2E Testing                | 6            | High     | High   | Iteration 5      | Jasleen, Mashroor                     | Done   | [#95](https://github.com/JasleenMinhas578/BudgetBuddy/pull/95), [#97](https://github.com/JasleenMinhas578/BudgetBuddy/pull/97) |
-| [98](https://github.com/JasleenMinhas578/BudgetBuddy/issues/98) | Implement End-to-End Final Checklist as Requested by TA/Stakeholder  | 5            | High     | High   | Iteration 5      | Jasleen                               | Progress   | -                                                                              
+| [98](https://github.com/JasleenMinhas578/BudgetBuddy/issues/98) | Implement End-to-End Final Checklist as Requested by TA/Stakeholder  | 5            | High     | High   | Iteration 5      | Jasleen, Mashroor   | Done   | [#99](https://github.com/JasleenMinhas578/BudgetBuddy/pull/99)  |
+| [100](https://github.com/JasleenMinhas578/BudgetBuddy/issues/100) | Perform Lighthouse Accessibility Audit  | 3           | High     | Low   | Iteration 5      | Jasleen, Mashroor                               | Done   | [#101](https://github.com/JasleenMinhas578/BudgetBuddy/pull/101)  |
+| [102](https://github.com/JasleenMinhas578/BudgetBuddy/issues/100) | Generate ESLint Report and Fix All Linting Issues  | 3           | High     | Medium   | Iteration 5      | Jasleen, Mashroor                               | Done   | [#103](https://github.com/JasleenMinhas578/BudgetBuddy/pull/103)  |
 
-#### **Total Completed Story Points:** 290  
+                                                                             
+
+#### **📌 Total Completed Story Points:** 214 
 ---
 
 # 🧮 3. Story Point Contribution Per Member
 
-> 📌 Assumption used:  
-Each contributor receives **full story points for any issue they worked on** — standard for team Agile contribution analysis unless partial points were assigned originally.
+> 📌 Each contributor receives **full story points for any issue they worked on** — standard for team Agile contribution analysis unless partial points were assigned originally.
 
 ### ✅ **Automated Story Point Summary**
-(Complete calculation based on full issue list you provided)
+(Complete calculation based on the full issue list)
 
 | Member | Total Story Points |
 |--------|--------------------|
-| **Jasleen** |  **≈ 170 SP** |
-| **Mashroor** | **≈ 110 SP** |
-| **Sumaiya** | **≈ 58 SP** |
-| **Joel** | **≈ 55 SP** |
-| **Kaustubh** | **≈ 45 SP** |
-| **Ronit** | **≈ 48 SP** |
+| **Jasleen** |  **≈ 198 SP** |
+| **Mashroor** | **≈ 147 SP** |
+| **Sumaiya** | **≈ 104 SP** |
+| **Joel** | **≈ 92 SP** |
+| **Kaustubh** | **≈ 95 SP** |
+| **Ronit** | **≈ 95 SP** |
 
 ---
 
@@ -117,6 +120,7 @@ Each contributor receives **full story points for any issue they worked on** —
 - Worked on Landing Page, Logout flow, UI fixes  
 - Helped implement Categories & Expenses database integration  
 - Assisted in Cypress tests, Vercel deployment debugging  
+- Helped in fixing bugs
 
 
 ---
@@ -155,17 +159,19 @@ Each contributor receives **full story points for any issue they worked on** —
 
 # 📈 5. Project Velocity
 
-Velocity = **Story Points Completed per Sprint**
+Velocity = **Average Story Points Completed per Sprint**
 
 | Sprint | Story Points Completed |
 |--------|-------------------------|
-| Sprint 1 | ~25 SP |
-| Sprint 2 | ~40 SP |
-| Sprint 3 | ~45 SP |
-| Sprint 4 | ~45 SP |
-| Sprint 5 | ~35 SP |
+| Sprint 1 | 35 SP |
+| Sprint 2 | 76 SP |
+| Sprint 3 | 46 SP |
+| Sprint 4 | 28 SP |
+| Sprint 5 | 26 SP |
 
-**📌 Average Velocity ≈ 39 SP per Sprint**
+**📌 Total Completed Story Points: 214**
+
+**📌 Average Velocity ≈ 44 SP per Sprint**
 
 This shows consistent productivity and healthy iteration cycles.
 
@@ -198,7 +204,7 @@ This shows consistent productivity and healthy iteration cycles.
 - Full transparency of work  
 
 ### ✔ **CI/CD Integration**
-- Automated deploys via Vercel  
+- Automated deploys via Vercel and Github Actions  
 - Preview deployments for pull requests  
 
 ### ✔ **Testing Culture**

@@ -2,6 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
+// Now import the components after mocks are set up
+import Expenses from '../components/Dashboard/Expenses';
+import { AuthProvider } from '../context/AuthContext';
+
 // Mock Firebase Auth before importing components
 jest.mock('firebase/auth', () => ({
   onAuthStateChanged: jest.fn(),
@@ -106,10 +110,6 @@ jest.mock('framer-motion', () => ({
 // Mock window.confirm
 global.confirm = jest.fn();
 
-// Now import the components after mocks are set up
-import Expenses from '../components/Dashboard/Expenses';
-import { AuthProvider } from '../context/AuthContext';
-
 // Get the mocked functions
 const { 
   collection, 
@@ -188,9 +188,10 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Expenses')).toBeInTheDocument();
-        expect(screen.getByText('Track and manage your expenses')).toBeInTheDocument();
-        expect(screen.getByText('Add Expense')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Track and manage your expenses')).toBeInTheDocument();
+      expect(screen.getByText('Add Expense')).toBeInTheDocument();
     });
 
     it('renders summary statistics', async () => {
@@ -202,9 +203,10 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Total Expenses')).toBeInTheDocument();
-        expect(screen.getByText('Total Transactions')).toBeInTheDocument();
-        expect(screen.getByText('Average Amount')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Total Transactions')).toBeInTheDocument();
+      expect(screen.getByText('Average Amount')).toBeInTheDocument();
     });
 
     it('renders empty state when no expenses', async () => {
@@ -216,9 +218,10 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('No expenses yet')).toBeInTheDocument();
-        expect(screen.getByText('Start tracking your expenses to see them here')).toBeInTheDocument();
-        expect(screen.getByText('Add First Expense')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Start tracking your expenses to see them here')).toBeInTheDocument();
+      expect(screen.getByText('Add First Expense')).toBeInTheDocument();
     });
   });
 
@@ -235,8 +238,9 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
-        expect(screen.getByTestId('expense-form')).toBeInTheDocument();
       });
+      
+      expect(screen.getByTestId('expense-form')).toBeInTheDocument();
     });
 
     it('opens expense form when Add First Expense button is clicked in empty state', async () => {
@@ -255,8 +259,9 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
-        expect(screen.getByTestId('expense-form')).toBeInTheDocument();
       });
+      
+      expect(screen.getByTestId('expense-form')).toBeInTheDocument();
     });
   });
 
@@ -287,17 +292,16 @@ describe('Expenses Component', () => {
       );
 
       await waitFor(() => {
-        // Check main container
         expect(screen.getByText('Expenses')).toBeInTheDocument();
-        
-        // Check summary section
-        expect(screen.getByText('Total Expenses')).toBeInTheDocument();
-        expect(screen.getByText('Total Transactions')).toBeInTheDocument();
-        expect(screen.getByText('Average Amount')).toBeInTheDocument();
-        
-        // Check empty state
-        expect(screen.getByText('No expenses yet')).toBeInTheDocument();
       });
+      
+      // Check summary section
+      expect(screen.getByText('Total Expenses')).toBeInTheDocument();
+      expect(screen.getByText('Total Transactions')).toBeInTheDocument();
+      expect(screen.getByText('Average Amount')).toBeInTheDocument();
+      
+      // Check empty state
+      expect(screen.getByText('No expenses yet')).toBeInTheDocument();
     });
 
     it('displays correct summary values for empty state', async () => {
@@ -308,10 +312,10 @@ describe('Expenses Component', () => {
       );
 
       await waitFor(() => {
-        // Check that summary shows zero values
         expect(screen.getAllByText('$0.00')).toHaveLength(2); // Total expenses and average amount
-        expect(screen.getByText('0')).toBeInTheDocument(); // Total transactions
       });
+      
+      expect(screen.getByText('0')).toBeInTheDocument(); // Total transactions
     });
   });
 
@@ -333,8 +337,9 @@ describe('Expenses Component', () => {
       // Modal should open
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
-        expect(screen.getByTestId('expense-form')).toBeInTheDocument();
       });
+      
+      expect(screen.getByTestId('expense-form')).toBeInTheDocument();
 
       // Close modal
       const closeButton = screen.getByText('Close Modal');
@@ -357,9 +362,10 @@ describe('Expenses Component', () => {
 
       await waitFor(() => {
         expect(collection).toHaveBeenCalled();
-        expect(query).toHaveBeenCalled();
-        expect(onSnapshot).toHaveBeenCalled();
       });
+      
+      expect(query).toHaveBeenCalled();
+      expect(onSnapshot).toHaveBeenCalled();
     });
 
     it('handles Firebase unsubscribe correctly', async () => {

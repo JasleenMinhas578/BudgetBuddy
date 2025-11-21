@@ -4,8 +4,6 @@ describe('reportWebVitals', () => {
     jest.clearAllMocks();
   });
 
-  const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0));
-
   it('loads web-vitals and wires metrics when callback is a function', async () => {
     const module = await import('../reportWebVitals');
     const mockVitals = {

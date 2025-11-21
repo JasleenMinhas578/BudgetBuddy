@@ -2,6 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
+// Now import the components after mocks are set up
+import Login from '../components/Auth/Login';
+import Signup from '../components/Auth/Signup';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+
 // Mock Firebase Auth before importing components
 jest.mock('firebase/auth', () => ({
   createUserWithEmailAndPassword: jest.fn(),
@@ -39,11 +44,6 @@ jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
 }));
-
-// Now import the components after mocks are set up
-import Login from '../components/Auth/Login';
-import Signup from '../components/Auth/Signup';
-import { AuthProvider, useAuth } from '../context/AuthContext';
 
 // Get the mocked functions
 const { 

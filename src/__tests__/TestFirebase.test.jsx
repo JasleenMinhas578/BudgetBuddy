@@ -50,12 +50,13 @@ describe('TestFirebase harness', () => {
     fireEvent.click(screen.getByText('Test Anonymous + Firestore'));
 
     await waitFor(() => {
-      expect(signInAnonymously).toHaveBeenCalled();
-      expect(setDoc).toHaveBeenCalledWith('doc-ref', expect.any(Object), { merge: true });
-      expect(getDoc).toHaveBeenCalledWith('doc-ref');
       expect(screen.getByText(/Success/)).toBeInTheDocument();
-      expect(screen.getByText(/"hello": "world"/)).toBeInTheDocument();
     });
+    
+    expect(signInAnonymously).toHaveBeenCalled();
+    expect(setDoc).toHaveBeenCalledWith('doc-ref', expect.any(Object), { merge: true });
+    expect(getDoc).toHaveBeenCalledWith('doc-ref');
+    expect(screen.getByText(/"hello": "world"/)).toBeInTheDocument();
   });
 
   it('surfaces errors from the anonymous flow', async () => {
@@ -78,11 +79,12 @@ describe('TestFirebase harness', () => {
     fireEvent.click(screen.getByText('Test Email/Password + Firestore'));
 
     await waitFor(() => {
-      expect(createUserWithEmailAndPassword).toHaveBeenCalled();
-      expect(signInWithEmailAndPassword).toHaveBeenCalled();
-      expect(setDoc).toHaveBeenCalled();
       expect(screen.getByText(/Success/)).toBeInTheDocument();
     });
+    
+    expect(createUserWithEmailAndPassword).toHaveBeenCalled();
+    expect(signInWithEmailAndPassword).toHaveBeenCalled();
+    expect(setDoc).toHaveBeenCalled();
   });
 
   it('handles unexpected errors in email/password flow', async () => {
@@ -109,8 +111,9 @@ describe('TestFirebase harness', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Success/)).toBeInTheDocument();
-      expect(screen.queryByText(/"hello":/)).toBeNull();
     });
+    
+    expect(screen.queryByText(/"hello":/)).toBeNull();
   });
 
   it('handles missing Firestore document in email/password flow', async () => {
@@ -125,8 +128,9 @@ describe('TestFirebase harness', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Success/)).toBeInTheDocument();
-      expect(screen.queryByText(/from email user/)).toBeNull();
     });
+    
+    expect(screen.queryByText(/from email user/)).toBeNull();
   });
 
   it('handles anonymous errors without firebase codes', async () => {
@@ -147,10 +151,11 @@ describe('TestFirebase harness', () => {
     fireEvent.click(screen.getByText('Sign out'));
 
     await waitFor(() => {
-      expect(signOut).toHaveBeenCalled();
       expect(screen.getByText('Status: Signed out')).toBeInTheDocument();
-      expect(screen.queryByText(/UID:/)).toBeNull();
     });
+    
+    expect(signOut).toHaveBeenCalled();
+    expect(screen.queryByText(/UID:/)).toBeNull();
   });
 });
 
