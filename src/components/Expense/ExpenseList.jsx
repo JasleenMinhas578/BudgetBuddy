@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getExpenses, deleteExpense } from '../../services/database';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -55,7 +55,7 @@ export default function ExpenseList({ refreshTrigger }) {
    * 4. Handles errors appropriately
    * 5. Resets loading state
    */
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -68,7 +68,7 @@ export default function ExpenseList({ refreshTrigger }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
   /**
    * Fetch expenses when component mounts or refresh is triggered
@@ -82,7 +82,7 @@ export default function ExpenseList({ refreshTrigger }) {
     if (currentUser) {
       fetchExpenses();
     }
-  }, [currentUser, refreshTrigger]);
+  }, [currentUser, refreshTrigger, fetchExpenses]);
 
   /**
    * Filter and sort expenses based on current filter and sort settings
