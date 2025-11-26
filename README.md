@@ -1,1229 +1,783 @@
 # 💸 Budget Buddy (Group 6)
 
-## 🚀 Project Overview
-
-Budget Buddy is your **Budget Companion** — a free, easy-to-use web app for managing personal expenses.  
-Unlike many market apps that become paid after trial, Budget Buddy focuses on **cost-effectiveness, accessibility, and simplicity**.  
-
-**Core features Implemented: (Fall 2025 Scope)**
-- Secure authentication (login/signup with Firebase)  
-- Expense and category management  
-- Data visualization with charts  
-- Report generation (PDF export, CSV export)  
-- Responsive design for desktop, tablet, and mobile  
-
-**Testing Done:**
-- Unit Testing - Jest
-- E2E Testing - Cypress
-- UI Testing - Cypress
-- Accessibility/Performance Testing - Lighthouse
-- Code Quality Check - ESLint
-- Beta Testing - User Feedback
-
-**CI/CD:**
-- Vercel 
-- Github Actions
-
----
-
-
-## 📊 Project Status
-
 [![CI Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml)
 [![E2E Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml)
 
-> The project works perfectly, all the CI unit tests, E2E test with 100% coverage runs perfectly, across multiple browser - Chrome, Edge, and Firefox.
-> The [`coverage_report`](https://github.com/JasleenMinhas578/BudgetBuddy/tree/main/coverage-report) is there in the repo. 
+> **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
 
-- **View Detailed Test Results (CI/CD)**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+---
 
-- **View Deployement**: Go to the [Deployments](https://github.com/JasleenMinhas578/BudgetBuddy/deployments/Production)
+## 📑 Table of Contents
 
-- **LightHouse Report**: [Report Snapshot](https://github.com/JasleenMinhas578/BudgetBuddy/blob/main/Documents/Lighthouse_Metrics/Lighthouse_metric_img.png)
+- [🚀 Project Overview](#-project-overview)
+- [📊 Project Status & Quick Links](#-project-status--quick-links)
+- [👥 Team](#-team)
+- [🖥️ Methodology & Iterations](#️-methodology--iterations)
+- [📋 User Stories](#-user-stories)
+- [🛠️ Technologies & Tools](#️-technologies--tools)
+- [🏗️ Architecture](#️-architecture)
+- [🚀 Getting Started](#-getting-started)
+- [🧪 Testing](#-testing)
+- [🔄 CI/CD Pipeline](#-cicd-pipeline)
+- [📊 Quality Reports](#-quality-reports)
+- [📂 Deliverables](#-deliverables)
+- [🎯 Challenges Faced & Lessons Learned](#-challenges-faced--lessons-learned)
+- [🚀 Future Enhancements](#-future-enhancements)
+- [📚 References](#-references)
+- [📎 Appendices](#-appendices)
 
-- **ESLint Code Quality Report**: Go to [`eslint-report`](https://github.com/JasleenMinhas578/BudgetBuddy/tree/main/eslint-report)  (The folder contains the summary of the ESLint Code Quality Report, **from 200 issue to 0 issue**)
-- **Live Project (Vercel main-branch deployment URL)**: https://budget-buddy-mun.vercel.app/
+---
 
+## 🚀 Project Overview
+
+Budget Buddy is a **free, easy-to-use web application** for managing personal expenses. Unlike many market apps that become paid after trial, Budget Buddy focuses on **cost-effectiveness, accessibility, and simplicity**.
+
+### Core Features
+- ✅ Secure authentication (Firebase Auth)
+- ✅ Expense and category management (CRUD operations)
+- ✅ Data visualization (Pie, Bar, Line charts)
+- ✅ Report generation (PDF & CSV export)
+- ✅ Responsive design (desktop, tablet, mobile)
+- ✅ Real-time data synchronization
+
+### Testing & Quality Assurance
+- **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
+- **E2E Testing**: Cypress (102 tests across 8 test files)
+- **Code Quality**: ESLint (0 errors, 0 warnings)
+- **Performance**: Lighthouse (99% performance, 100% accessibility)
+- **CI/CD**: GitHub Actions + Vercel deployment
+
+---
+
+## 📊 Project Status & Quick Links
+
+### ✅ Current Status
+- **All Tests Passing**: 295 unit tests + 102 E2E tests
+- **Code Quality**: 100% (0 ESLint errors/warnings)
+- **Test Coverage**: 100% (statements, branches, functions, lines)
+- **Performance**: 99/100 (Lighthouse)
+- **Accessibility**: 100/100 (WCAG 2.1 compliant)
+
+### 🔗 Quick Links
+
+| Resource | Link |
+|----------|------|
+| **Live Application** | [budget-buddy-mun.vercel.app](https://budget-buddy-mun.vercel.app/) |
+| **CI/CD Results** | [GitHub Actions](https://github.com/JasleenMinhas578/BudgetBuddy/actions) |
+| **Deployments** | [Vercel Deployments](https://github.com/JasleenMinhas578/BudgetBuddy/deployments/Production) |
+| **Planning Board** | [GitHub Projects](https://github.com/users/JasleenMinhas578/projects/4/views/1) |
+| **ESLint Report** | [`eslint-report/ESLint_Report.md`](eslint-report/ESLint_Report.md) |
+| **Lighthouse Report** | [`Documents/Lighthouse_Metrics/`](Documents/Lighthouse_Metrics/) |
+| **Acceptance Tests & Requirements** | [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) |
+| **E2E Test Docs** | [`Documents/Cypress_E2E_Testing/`](Documents/Cypress_E2E_Testing/) |
+| **Unit Test Docs** | [`Documents/Jest_Unit_Testing/`](Documents/Jest_Unit_Testing/) |
 
 ---
 
 ## 👥 Team
 
-- **Group**: 6  
+**Group**: 6 | **Course**: COMP6905 — Software Engineering | **Institution**: Memorial University of Newfoundland
 
-- **Planning Board** - Go to the [Planning Board](https://github.com/users/JasleenMinhas578/projects/4/views/1)
+### Team Members
 
-- **Roadmap** - Go to the [Roadmap Board](https://github.com/users/JasleenMinhas578/projects/4/views/4)
+| Member | ID | Email | Role |
+|--------|-----|-------|------|
+| **Jasleen Minhas** (Lead) | 202481225 | jminhas@mun.ca | Project Lead / Full-Stack |
+| **Sumaiya Khan** | 202480995 | sumaiyak@mun.ca | Frontend (UI/UX) |
+| **Kaustubh Patil** | 202580621 | kspatil@mun.ca | Frontend (Expenses) |
+| **Joel George Sam** | 202483190 | jgeorgesam@mun.ca | QA/Testing |
+| **Mashroor Rahman** | 202482239 | masroorr@mun.ca | Backend/Database |
+| **Ronit Gajjar** | 202488048 | rhgajjar@mun.ca | Reporting/Features |
 
-**Team Lead**  
-- Jasleen Minhas — ID: 202481225 — jminhas@mun.ca  
+### Team Responsibilities
 
-**Team Members**  
-- Sumaiya Khan — ID: 202480995 — sumaiyak@mun.ca  
-- Kaustubh Patil — ID: 202580621 — kspatil@mun.ca  
-- Joel George Sam — ID: 202483190 — jgeorgesam@mun.ca  
-- Mashroor Rahman — ID: 202482239 — masroorr@mun.ca  
-- Ronit Gajjar — ID: 202488048 — rhgajjar@mun.ca  
+**Jasleen Minhas (Project Lead)**
+- Led frontend architecture & Firebase authentication flow
+- Implemented Login, Signup, Logout pages with UI, routing, error handling
+- Built Expense Management CRUD UI and Firebase integration
+- Led Dashboard UI, charts, PDF/CSV reporting
+- Wrote majority of unit tests (Auth, Dashboard, Expense modules)
+- Implemented Cypress E2E testing & cross-browser verification
+- Set up Vercel CI/CD pipeline and deployment troubleshooting
+- Managed GitHub boards, issues, story points & documentation
 
-### 🛠️ Team Responsibilities 
-- **Jasleen Minhas** — Project Lead / Full-Stack: Leads sprints, manages GitHub, authentication & security modules.  
-- **Sumaiya Khan** — Frontend (UI/UX): Page layout and user-friendly interface design.  
-- **Mashroor Rahman** — Backend/Database: Firestore structure, CRUD logic, and data validation, bug fixing.
-- **Kaustubh Patil** — Frontend (Expenses): Expense management UI and category integration.  
-- **Joel George Sam** — QA/Testing: Test cases, automated/system testing, V&V compliance.  
-- **Ronit Gajjar** — Reporting/Features: Charts, analytics, and PDF export module.  
+**Mashroor Rahman (Backend/Database)**
+- Set up Firebase initialization, configuration & .env
+- Contributed to Login/Signup Firebase authentication logic
+- Worked on Landing Page, Logout flow, UI fixes
+- Implemented Categories & Expenses database integration
+- Assisted in Cypress tests, Vercel deployment debugging
+- Bug fixing and troubleshooting
 
+**Joel George Sam (QA/Testing)**
+- Contributed heavily to unit testing across Authentication, Dashboard, Expenses
+- Worked on requirements, UML, architecture & backlog planning
+- Helped with Dashboard visualizations, test coverage improvement
+- Assisted in Firebase database integrations
 
-### 🧮 Story Point Contribution Per Member
-> #### **📌 Total Completed Story Points:** 214 
->  Each contributor receives **full story points for any issue they worked on** — standard for team Agile contribution analysis unless partial points were assigned originally.
+**Kaustubh Patil (Frontend - Expenses)**
+- Implemented parts of Expense Management UI
+- Assisted in Dashboard charts & summary widgets
+- Contributed to Category UI, Landing Page content
+- Helped with frontend styling & UX consistency
 
-#### ✅ **Automated Story Point Summary**
-(Complete calculation based on full issue list you provided in [Planning Board](https://github.com/users/JasleenMinhas578/projects/4/views/1))
+**Sumaiya Khan (Frontend - UI/UX)**
+- Signup/Login styling, content, error handling
+- Categories UI, Landing Page content
+- Assisted in Dashboard widgets & testing tasks
 
-| Member | Total Story Points |
-|--------|--------------------|
-| **Jasleen** |  **≈ 198 SP** |
-| **Mashroor** | **≈ 147 SP** |
-| **Sumaiya** | **≈ 104 SP** |
-| **Joel** | **≈ 92 SP** |
-| **Kaustubh** | **≈ 95 SP** |
-| **Ronit** | **≈ 95 SP** |
+**Ronit Gajjar (Reporting/Features)**
+- Implemented Add Expense UI
+- Worked on CRUD operations and Firebase syncing
+- Helped with Dashboard charting
+- Contributed to Categories and Landing Page
 
-> 📌 **Detailed report about the contribution can be found here** [`PLANNING_MAPPING.MD`](https://github.com/JasleenMinhas578/BudgetBuddy/blob/main/Documents/planning_mapping.md)
+### Story Point Contributions
 
----
+| Member | Story Points |
+|--------|--------------|
+| **Jasleen** | ≈ 198 SP |
+| **Mashroor** | ≈ 147 SP |
+| **Sumaiya** | ≈ 104 SP |
+| **Joel** | ≈ 92 SP |
+| **Kaustubh** | ≈ 95 SP |
+| **Ronit** | ≈ 95 SP |
 
-## 🖥️ Methodology
+**Total Completed**: 211 Story Points | **Average Velocity**: 42 SP per Sprint
 
-We are following the **Agile Software Development** methodology, using an iterative sprint-based approach.  
-- Work is divided into 5 sprints (2 weeks each), with clear milestones.  
-- GitHub Projects, Issues, and Milestones are used for sprint planning and tracking.  
-- Each feature is implemented incrementally, tested with unit/system tests, and refined based on feedback.  
-- Continuous Integration (CI) is set up to ensure all commits are validated before merging. 
-- Continous deployement (CD) is set up in vercel to insure non stop availabilty of the app. 
-- Cypress tests are used E2E testing.
-- Jest is used for Unit tesing of each functionality.
-
----
-
-## 📅 Milestones / Iterations
-
-### Iteration 1 (Sept 22 – Oct 5)
-- Requirements gathering & analysis  
-- User stories in GitHub (issues with story points, risk, priority)  
-- UML diagrams (use case, sequence, class)  
-- GitHub setup: repo, branch strategy, labels, milestones, issue templates  
-- CI/CD setup (GitHub Actions)  
-- Firebase project initialization  
-
-**Deliverable:** Requirements documentation + repo setup  
-
----
-
-### Iteration 2 (Oct 6 – Oct 19)
-- React frontend setup (CRA, routing, context API)  
-- Landing Page, Login, Signup  
-- Authentication module with Firebase (login/signup/logout, session protection)  
-- Unit tests for auth  
-
-**Deliverable:** Working login/signup flow (deployed version)  
+> 📌 **Detailed contribution report**: [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md)
 
 ---
 
-### Iteration 3 (Oct 20 – Nov 2)
-- Expense management (Add/Edit/Delete/List)  
-- Category management (create/manage categories)  
-- Firestore integration with real-time sync  
-- Unit tests for CRUD  
+## 🖥️ Methodology & Iterations
 
-**Deliverable:** Functional expense + category management  
+### Methodology
+We follow **Agile Software Development** with iterative sprint-based approach:
+- 5 sprints (2 weeks each) with clear milestones
+- GitHub Projects, Issues, and Milestones for planning
+- Incremental feature implementation with testing
+- Continuous Integration (CI) and Continuous Deployment (CD)
 
----
+### Iterations Summary
 
-### Iteration 4 (Nov 3 – Nov 16)
-- Visualization with Pie, Bar, Line charts  
-- Reporting: export PDF summaries + charts  
-- Dashboard with summary view  
-- UI/UX responsiveness across devices  
-- Usability testing  
+| Iteration | Dates | Story Points | Key Deliverables | GitHub Issues |
+|-----------|-------|--------------|------------------|--------------|
+| **Iteration 1** | Sept 22 – Oct 5 | 35 SP | Requirements, UML diagrams, repo setup, CI/CD | [#1](https://github.com/JasleenMinhas578/BudgetBuddy/issues/1), [#2](https://github.com/JasleenMinhas578/BudgetBuddy/issues/2), [#3](https://github.com/JasleenMinhas578/BudgetBuddy/issues/3), [#4](https://github.com/JasleenMinhas578/BudgetBuddy/issues/4), [#5](https://github.com/JasleenMinhas578/BudgetBuddy/issues/5), [#6](https://github.com/JasleenMinhas578/BudgetBuddy/issues/6), [#7](https://github.com/JasleenMinhas578/BudgetBuddy/issues/7), [#16](https://github.com/JasleenMinhas578/BudgetBuddy/issues/16) |
+| **Iteration 2** | Oct 6 – Oct 19 | 76 SP | React setup, Landing/Login/Signup, Firebase Auth | [#8](https://github.com/JasleenMinhas578/BudgetBuddy/issues/8), [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#12](https://github.com/JasleenMinhas578/BudgetBuddy/issues/12), [#13](https://github.com/JasleenMinhas578/BudgetBuddy/issues/13), [#36](https://github.com/JasleenMinhas578/BudgetBuddy/issues/36), [#38](https://github.com/JasleenMinhas578/BudgetBuddy/issues/38), [#40](https://github.com/JasleenMinhas578/BudgetBuddy/issues/40), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47), [#49](https://github.com/JasleenMinhas578/BudgetBuddy/issues/49), [#50](https://github.com/JasleenMinhas578/BudgetBuddy/issues/50), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59), [#62](https://github.com/JasleenMinhas578/BudgetBuddy/issues/62) |
+| **Iteration 3** | Oct 20 – Nov 2 | 46 SP | Expense & category management, Firestore integration | [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24), [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#66](https://github.com/JasleenMinhas578/BudgetBuddy/issues/66), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78), [#81](https://github.com/JasleenMinhas578/BudgetBuddy/issues/81), [#85](https://github.com/JasleenMinhas578/BudgetBuddy/issues/85) |
+| **Iteration 4** | Nov 3 – Nov 16 | 28 SP | Charts, reports (PDF/CSV), dashboard, responsive design | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) |
+| **Iteration 5** | Nov 17 – Nov 30 | 26 SP | E2E testing, ESLint fixes, documentation, finalization | [#91](https://github.com/JasleenMinhas578/BudgetBuddy/issues/91), [#94](https://github.com/JasleenMinhas578/BudgetBuddy/issues/94), [#98](https://github.com/JasleenMinhas578/BudgetBuddy/issues/98), [#100](https://github.com/JasleenMinhas578/BudgetBuddy/issues/100), [#102](https://github.com/JasleenMinhas578/BudgetBuddy/issues/102) |
 
-**Deliverable:** Dashboard with analytics & reporting  
-
----
-
-### Iteration 5 (Nov 17 – Nov 30)
-- E2E Testing using Cypress
-- Bug fixing, performance optimization  
-- ESLint fixes
-- Final documentation (report)  
-- Presentation & demo prep  
-- Repo finalization (issues closed, PRs merged, iteration tags added)  
-
-**Deliverable:** Final working app + report + demo  
-
-
----
-## 📈 **Story Point Summary for Each Iteration**
-(Complete calculation based on full issue list you provided in [Planning Board](https://github.com/users/JasleenMinhas578/projects/4/views/1))
-
-| Iteration | Total Story Points |
-|--------|--------------------|
-| **Iteration 1** |  **35 SP** |
-| **Iteration 2** | **76 SP** |
-| **Iteration 3** | **46 SP** |
-| **Iteration 4** | **28 SP** |
-| **Iteration 5** | **26 SP** |
-
-**📌 Total Completed Story Points:** 214 
-
-**📌 Average Velocity ≈ 44 SP per Sprint**
+**Total**: 211 Story Points across 5 iterations
 
 ---
 
-## 🏷️ Labels (Features)
+## 📋 User Stories
 
-We use GitHub **Labels** for tracking features and tasks:  
+### 📌 **Primary User Stories (Features)**  
+**Total**: 7 primary user stories (features), decomposed into **29 GitHub feature issues** (55 allocated story points, 113 total feature story points)
 
-- 🔒 **Authentication** — Login/Signup & Firebase Auth  
-- 💸 **Expense Management** — CRUD operations for expenses  
-- 📂 **Category Management** — Organizing expense categories  
-- 📊 **Visualisation using Charts** — Pie/Bar/Line charts  
-- 🖥️ **Dashboard** — Central view of expenses & insights  
-- 🔑 **Login** — User login flow  
-- 📝 **Sign up** — User registration flow  
-- 📑 **Report Generation** — PDF export of expenses  
-- 📚 **Documentation** — Reports, diagrams, project docs  
-- 🐞 **Bug Fixing** — Debugging & patching issues  
-- 📱 **Responsive Design** — Cross-device support  
-- 🔥 **Firebase/Database Setup** — Firestore structure, sync  
-- ✅ **Unit Test** — Component/feature-level testing  
-- 🧪 **E2E Test** — End-to-end testing 
-- 🔥 **Accessibility Test** —Lighthouse Performance Test
-- 🐞 **ESLint** — Generate Bug Report  
+#### Iteration 1 (Sept 22 – Oct 5)
+*No Primary user stories - Just Setup and planning phase*
 
+#### Iteration 2 (Oct 6 – Oct 19) - 3 user stories, 13 story points
+- **US-001**: User Registration [5 points] [Status: Done]
+  - **GitHub Issues**: [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47)
+- **US-002**: User Login [5 points] [Status: Done]
+  - **GitHub Issues**: [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87)
+- **US-007**: User Logout [3 points] [Status: Done]
+  - **GitHub Issues**: [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59)
+
+#### Iteration 3 (Oct 20 – Nov 2) - 3 user stories, 29 story points
+- **US-003**: View Dashboard [8 points] [Status: Done]
+  - **GitHub Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58)
+- **US-004**: Manage Expenses [13 points] [Status: Done]
+  - **GitHub Issues**: [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24)
+- **US-005**: Manage Categories [8 points] [Status: Done]
+  - **GitHub Issues**: [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78)
+
+#### Iteration 4 (Nov 3 – Nov 16) - 1 user story, 13 story points
+- **US-006**: Generate Reports [13 points] [Status: Done]
+  - **GitHub Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35)
+
+#### Iteration 5 (Nov 17 – Nov 30)
+*No new primary user stories - Testing, quality assurance, and documentation (covered by infrastructure/support issues such as testing, CI/CD, documentation, and quality tasks)*
+
+### 📌 **Infrastructure & Supporting User Stories**  
+In addition to the 7 primary user stories, the project includes **infrastructural/supporting work** that enabled those features:
+
+- **Project Setup & Planning**: 8 issues, 35 SP (e.g., requirements, UML, repo setup, Firebase/React initialization)  
+- **Landing Page & Navigation**: 4 issues, 16 SP (marketing/entry UX, routing, responsiveness)  
+- **Testing Infrastructure**: 6 issues, 29 SP (unit test infrastructure, E2E setup, cross-browser coverage)  
+- **CI/CD & Deployment**: 2 issues, 9 SP (Vercel deployment, CI workflows, preview fixes)  
+- **Documentation & Quality**: 5 issues, 17 SP (README/docs, UI/UX polish, ESLint/Lighthouse work)
+
+## 📌 **Overall Summary of User Stories**  
+All **7 primary user stories** completed (55 allocated story points) and implemented through **29 feature issues**.  
+Infrastructure/support work adds **25 issues** and **98 story points**, for a total of **54 core issues** and **211 story points** across **5 iterations** (plus additional overhead issues as detailed in `Documents/Planning_Mapping.md`).  
+Status: ✅ **100% feature + infrastructure scope complete**
+
+> 📋 **Detailed user stories with acceptance criteria**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)  
+> 📋 **Complete issue mapping**: [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md#3-github-issues-mapping-by-category)
 
 ---
 
-## Technologies & Tools  
+## 🛠️ Technologies & Tools
 
-| **Technology / Tool**       | **Purpose**              | **Reason for Choice**                                                                 |
-|------------------------------|--------------------------|----------------------------------------------------------------------------------------|
-| **React.js**                | Frontend UI              | Popular, component-based, scalable, and supports responsive web design.                 |
-| **React Context API** + **React Router** | State management & routing | Lightweight global state + SPA routing for auth-protected pages. |
-| **Firebase Authentication** | User login/signup        | Secure, easy-to-integrate, with session handling built-in.                             |
-| **Firebase Firestore**      | Database                 | Cloud-based, real-time NoSQL DB, ideal for expense data storage and synchronization.   |
-| **Chart.js**                | Visualization            | Widely used, customizable, and integrates easily with React.                           |
-| **date-fns**                | Date handling            | Lightweight and faster than Moment.js for parsing and formatting dates.                |
-| **jsPDF + html2canvas**     | Report generation        | Allows exporting dashboard summaries into PDF easily.                                  |
-| **Jest + React Testing Library** | Component testing   | Industry standard for reliable, maintainable unit & integration tests.                 |
-| **Cypress**                  | E2E testing             | Real-browser coverage of signup/login, expenses, categories, reports, charts, logout. |
-| **Node.js 20 + npm**         | Runtime/tooling         | Aligns with Cypress/Joi engine requirements and CI runners.                            |
-| **Vercel and GitHub Actions**           | CI/CD                   | Automates builds, Jest coverage, Cypress suites, and artifact uploads.                 |
-| **GitHub (Projects, Issues, PRs)** | Collaboration     | Central hub for Agile planning, documentation, and code reviews.                      |
+| Technology | Link | Why We Use It | Alternatives Considered |
+|------------|------|---------------|-------------------------|
+| **React.js** | [React.dev](https://react.dev/) | Component-based architecture, virtual DOM for efficient rendering, extensive ecosystem, strong community support. Ideal for rapid development with declarative syntax and unidirectional data flow. | Vue.js (smaller ecosystem), Angular (steeper learning curve) |
+| **React Context API** | [React Context](https://react.dev/reference/react/createContext) | Lightweight global state management without external dependencies. Perfect for authentication state, eliminates prop drilling, zero bundle size impact. | Redux (too complex), Zustand (unnecessary dependency) |
+| **React Router** | [React Router](https://reactrouter.com/) | Industry standard for React routing. Provides declarative routing, protected routes, and seamless React integration. | Next.js (requires migration), Reach Router (merged into React Router) |
+| **Firebase Auth** | [Firebase Auth](https://firebase.google.com/docs/auth) | Production-ready authentication with minimal setup. Handles password hashing, JWT tokens, session management automatically. Seamless React integration with real-time auth state. | Auth0 (cost/complexity), AWS Cognito (complex setup), Custom (security risks) |
+| **Cloud Firestore** | [Firestore](https://firebase.google.com/docs/firestore) | NoSQL database with real-time sync, automatic scaling, offline support. Real-time listeners eliminate polling. Security rules enable fine-grained access control. | MongoDB Atlas (no real-time), PostgreSQL (no real-time), Realtime DB (worse querying) |
+| **Chart.js** | [Chart.js](https://www.chartjs.org/) | Simple, flexible charting with excellent React integration. Supports Pie/Bar/Line charts, responsive design, extensive customization. Lightweight with large community. | D3.js (steep learning curve), Recharts (less customization), Victory (heavier) |
+| **date-fns** | [date-fns](https://date-fns.org/) | Modern, tree-shakeable date utilities. Immutable functions, smaller bundle size than Moment.js, excellent TypeScript support. | Moment.js (maintenance mode, large bundle), Luxon (larger), Day.js (fewer features) |
+| **jsPDF + html2canvas** | [jsPDF](https://github.com/parallax/jsPDF) / [html2canvas](https://html2canvas.hertzen.com/) | Client-side PDF generation without server. Captures DOM elements as images for charts. Simple, no backend required. | Server-side (Puppeteer/PDFKit - adds complexity), pdfmake (poor chart support) |
+| **Jest + RTL** | [Jest](https://jestjs.io/) / [RTL](https://testing-library.com/docs/react-testing-library/intro/) | Industry standard React testing. Jest provides test runner, mocking, coverage. RTL encourages behavior-based testing for maintainable tests. | Mocha (more setup), Jasmine (older), Vitest (less ecosystem) |
+| **Cypress** | [Cypress](https://www.cypress.io/) | E2E testing in real browsers with excellent DX. Time-travel debugging, automatic waiting, screenshot/video capture. Multi-browser support with CI/CD integration. | Selenium (slower, complex), Playwright (less community), Puppeteer (Chrome-only) |
+| **ESLint** | [ESLint](https://eslint.org/) | Industry standard JavaScript linter. Maintains code quality, catches bugs early, enforces standards. Seamless React integration with extensive rule set. | Prettier (formatting only), JSHint (deprecated), TSLint (deprecated) |
+| **Vercel** | [Vercel](https://vercel.com/) | Zero-config React deployment. Automatic Git deployments, preview URLs, global CDN, built-in SSL. Excellent React optimization with generous free tier. | Netlify (less React optimization), AWS Amplify (more config), Traditional hosting (no CDN/scaling) |
+| **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
+| **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
 
+> 📋 **Detailed justifications**: See [`Documents/Architecture_Diagrams.md`](Documents/Architecture_Diagrams.md#7-infrastructure--technology-choices) for complete technology choice rationale.
 
----
+## 🏗️ Architecture
 
-## 🏗️ High-Level Architecture
+### System Architecture Overview
 
-Budget Buddy follows a modern **3-tier web application architecture** with a clear separation of concerns between the presentation layer, business logic, and data persistence layer.
+Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application:
 
-### 📐 System Architecture Overview
+**Primary Architecture Pattern: Client-Server**
+- **Client**: React Single Page Application (SPA) running in the browser
+- **Server**: Firebase cloud services (Authentication, Firestore Database)
+
+**Secondary Architecture Pattern: Layered Architecture (within Client)**
+- **Presentation Layer**: React components, pages, UI elements
+- **Business Logic Layer**: Services, utilities, validation, context
+- **Data Access Layer**: Firebase SDK integration, API calls
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER                             │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              React Single Page Application                │  │
-│  │  ┌────────────┐  ┌────────────┐  ┌────────────────────┐ │  │
-│  │  │   Pages    │  │ Components │  │  Context (State)   │ │  │
-│  │  │  - Landing │  │  - Auth    │  │  - AuthContext     │ │  │
-│  │  │  - Login   │  │  - Dashboard│  │  - User Session   │ │  │
-│  │  │  - Signup  │  │  - Expenses │  │                    │ │  │
-│  │  │  - Dashboard│  │  - Charts  │  │                    │ │  │
-│  │  └────────────┘  └────────────┘  └────────────────────┘ │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↕ HTTPS
-┌─────────────────────────────────────────────────────────────────┐
-│                    FIREBASE BACKEND LAYER                        │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              Firebase Authentication                      │  │
-│  │  - Email/Password Authentication                         │  │
-│  │  - Session Management & JWT Tokens                       │  │
-│  │  - User Registration & Login                             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                              ↕                                   │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              Cloud Firestore (NoSQL Database)            │  │
-│  │  ┌────────────────┐  ┌────────────────┐                 │  │
-│  │  │   Collections  │  │   Documents    │                 │  │
-│  │  │  - users       │  │  - user data   │                 │  │
-│  │  │  - expenses    │  │  - expense rec │                 │  │
-│  │  │  - categories  │  │  - category rec│                 │  │
-│  │  └────────────────┘  └────────────────┘                 │  │
-│  │  - Real-time Sync                                        │  │
-│  │  - Security Rules                                        │  │
-│  │  - Indexed Queries                                       │  │
-│  └──────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↕
-┌─────────────────────────────────────────────────────────────────┐
-│                    DEPLOYMENT & CI/CD LAYER                      │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
-│  │   Vercel Hosting     │  │   GitHub Actions             │   │
-│  │  - CDN Distribution  │  │  - CI: Jest Unit Tests       │   │
-│  │  - Auto Deployment   │  │  - E2E: Cypress Tests        │   │
-│  │  - SSL/HTTPS         │  │  - Build Verification        │   │
-│  └──────────────────────┘  └──────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│      CLIENT (React SPA)              │
+│  ┌────────────────────────────────┐ │
+│  │  Presentation Layer            │ │
+│  │  - Pages, Components, UI       │ │
+│  └────────────────────────────────┘ │
+│  ┌────────────────────────────────┐ │
+│  │  Business Logic Layer          │ │
+│  │  - Services, Context, Utils   │ │
+│  └────────────────────────────────┘ │
+│  ┌────────────────────────────────┐ │
+│  │  Data Access Layer              │ │
+│  │  - Firebase SDK, API calls     │ │
+│  └────────────────────────────────┘ │
+└─────────────────────────────────────┘
+                              ↕ HTTPS/REST
+┌─────────────────────────────────────┐
+│   SERVER (Firebase Cloud)            │
+│  - Authentication (Email/Password)   │
+│  - Firestore (NoSQL Database)       │
+│  - Real-time Sync                    │
+└─────────────────────────────────────┘
+              ↕
+┌─────────────────────────────────────┐
+│   DEPLOYMENT & CI/CD                │
+│  - Vercel (Hosting + CDN)            │
+│  - GitHub Actions (CI/CD)            │
+└─────────────────────────────────────┘
 ```
 
-### 🔧 Component Architecture
+**Architecture Pattern Justification**:
+- **Client-Server**: Clear separation between client (React) and server (Firebase), enabling scalability, security, and independent deployment
+- **Layered Architecture (Client)**: Separation of concerns within the client application promotes maintainability, testability, and code organization
 
-#### **Frontend Layer (React)**
+### Component Structure
+
 ```
 src/
 ├── components/
-│   ├── Auth/              # Authentication components
-│   │   ├── Login.jsx      # User login form
-│   │   └── Signup.jsx     # User registration form
-│   ├── Dashboard/         # Main application views
-│   │   ├── DashboardOverview.jsx  # Summary & analytics
-│   │   ├── Expenses.jsx           # Expense management
-│   │   ├── Categories.jsx         # Category management
-│   │   └── Reports.jsx            # Report generation
-│   ├── Expense/           # Expense-specific components
-│   │   ├── ExpenseForm.jsx        # Add/Edit expense form
-│   │   └── ExpenseList.jsx        # Expense table display
-│   ├── Charts/            # Data visualization
-│   │   ├── PieChart.jsx   # Category distribution
-│   │   ├── BarChart.jsx   # Monthly comparison
-│   │   └── LineChart.jsx  # Trend analysis
-│   ├── Layout/            # Layout components
-│   │   ├── Navbar.jsx     # Top navigation bar
-│   │   └── Sidebar.jsx    # Side navigation menu
-│   └── UI/                # Reusable UI components
-│       ├── Modal.jsx      # Modal dialogs
-│       └── Toast.jsx      # Notification system
-├── context/
-│   └── AuthContext.jsx    # Global authentication state
-├── services/
-│   └── database.js        # Firebase CRUD operations
-└── firebaseConfig.js      # Firebase initialization
+│   ├── Auth/          # Login, Signup
+│   ├── Dashboard/     # Overview, Expenses, Categories, Reports
+│   ├── Expense/       # ExpenseForm, ExpenseList
+│   ├── Charts/        # PieChart, BarChart, LineChart
+│   ├── Layout/        # Navbar, Sidebar
+│   └── UI/            # Modal, Toast
+├── context/           # AuthContext
+├── services/          # database.js (Firebase CRUD)
+└── firebaseConfig.js  # Firebase initialization
 ```
 
-### 🔥 Firebase Architecture Details
+### Firebase Architecture
 
-#### **1. Firebase Authentication**
-```
-Authentication Flow:
-┌──────────┐    Sign Up/Login    ┌──────────────────┐
-│  Client  │ ──────────────────> │ Firebase Auth    │
-│ (React)  │ <────────────────── │ - Email/Password │
-└──────────┘    JWT Token        └──────────────────┘
-                                          │
-                                          ↓
-                                  ┌──────────────────┐
-                                  │  User Session    │
-                                  │  - UID           │
-                                  │  - Email         │
-                                  │  - Token         │
-                                  └──────────────────┘
-```
+**Authentication**: Email/Password with JWT tokens, automatic refresh, protected routes
 
-**Features:**
-- Email/Password authentication
-- Secure session management with JWT tokens
-- Automatic token refresh
-- Protected routes with authentication guards
-- Password reset functionality
+**Firestore Structure**:
+- `users/` - User profiles
+- `expenses/` - Expense records (userId, title, amount, category, date)
+- `categories/` - Category records (userId, name)
 
-#### **2. Cloud Firestore Database Structure**
+**Security Rules**: User-level data isolation, authenticated access only
 
-```
-Firestore Database:
-├── users/                          # User profiles collection
-│   └── {userId}/                   # Document per user
-│       ├── email: string
-│       ├── displayName: string
-│       ├── createdAt: timestamp
-│       └── lastLogin: timestamp
-│
-├── expenses/                       # Expenses collection
-│   └── {expenseId}/               # Document per expense
-│       ├── userId: string         # Owner reference
-│       ├── title: string          # Expense description
-│       ├── amount: number         # Expense amount
-│       ├── category: string       # Category name
-│       ├── date: timestamp        # Expense date
-│       ├── createdAt: timestamp
-│       └── updatedAt: timestamp
-│
-└── categories/                     # Categories collection
-    └── {categoryId}/              # Document per category
-        ├── userId: string         # Owner reference
-        ├── name: string           # Category name
-        └── createdAt: timestamp
-```
+**Real-time Sync**: `onSnapshot()` listeners for automatic UI updates
 
-**Firestore Security Rules:**
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users can only read/write their own data
-    match /expenses/{expenseId} {
-      allow read, write: if request.auth != null 
-                         && request.auth.uid == resource.data.userId;
-    }
-    
-    match /categories/{categoryId} {
-      allow read, write: if request.auth != null 
-                         && request.auth.uid == resource.data.userId;
-    }
-  }
-}
-```
+### State Management
+- **React Context API** for global authentication state
+- **Local component state** for UI interactions
+- **Firestore real-time listeners** for data state
 
-**Firestore Indexes:**
-- Composite index on `userId` + `date` (descending) for efficient expense queries
-- Composite index on `userId` + `category` for category-based filtering
-- Single field indexes on `createdAt` and `updatedAt` for sorting
-
-#### **3. Real-time Data Synchronization**
-
-```
-Real-time Sync Flow:
-┌──────────────┐                    ┌──────────────────┐
-│   Client A   │ ──── Add Expense ─>│   Firestore      │
-└──────────────┘                    │   Database       │
-                                    └──────────────────┘
-                                            │
-                                            │ Real-time
-                                            │ Listener
-                                            ↓
-┌──────────────┐                    ┌──────────────────┐
-│   Client B   │ <─── Auto Update ──│   onSnapshot()   │
-└──────────────┘                    └──────────────────┘
-```
-
-**Implementation:**
-- `onSnapshot()` listeners for real-time updates
-- Automatic UI refresh when data changes
-- Optimistic UI updates for better UX
-- Offline persistence support
-
-### 🔄 Data Flow Architecture
-
-#### **Add Expense Flow**
-```
-1. User fills ExpenseForm
-   ↓
-2. Form validation (client-side)
-   ↓
-3. Submit to Firebase via database.js
-   ↓
-4. Firestore adds document with auto-generated ID
-   ↓
-5. Security rules validate userId
-   ↓
-6. Real-time listener triggers
-   ↓
-7. UI updates automatically with new expense
-```
-
-#### **Authentication Flow**
-```
-1. User enters credentials (Login/Signup)
-   ↓
-2. Firebase Authentication validates
-   ↓
-3. JWT token generated and stored
-   ↓
-4. AuthContext updates with user data
-   ↓
-5. Protected routes become accessible
-   ↓
-6. User redirected to Dashboard
-   ↓
-7. Firestore listeners initialized with userId
-```
-
-### 🛡️ Security Architecture
-
-#### **Authentication Security**
-- ✅ Firebase Authentication handles password hashing (bcrypt)
-- ✅ JWT tokens with automatic expiration and refresh
-- ✅ HTTPS-only communication
-- ✅ Protected routes with authentication guards
-- ✅ Session persistence with secure storage
-
-#### **Database Security**
-- ✅ Firestore Security Rules enforce user-level data isolation
-- ✅ All queries filtered by authenticated userId
-- ✅ No direct database access from client
-- ✅ Server-side validation via Firebase Rules
-- ✅ Rate limiting and abuse prevention
-
-#### **Frontend Security**
-- ✅ Input sanitization and validation
-- ✅ XSS protection via React's built-in escaping
-- ✅ No sensitive data in localStorage
-- ✅ Environment variables for API keys
-- ✅ Content Security Policy headers
-
-### 📊 State Management Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    AuthContext Provider                  │
-│  ┌───────────────────────────────────────────────────┐  │
-│  │  Global State:                                    │  │
-│  │  - currentUser (user object or null)             │  │
-│  │  - loading (authentication status)               │  │
-│  │                                                   │  │
-│  │  Methods:                                         │  │
-│  │  - login(email, password)                        │  │
-│  │  - signup(email, password)                       │  │
-│  │  - logout()                                      │  │
-│  │  - resetPassword(email)                          │  │
-│  └───────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
-                         ↓ Provides context to
-┌─────────────────────────────────────────────────────────┐
-│              All Protected Components                    │
-│  - Dashboard, Expenses, Categories, Reports, etc.       │
-└─────────────────────────────────────────────────────────┘
-```
-
-**State Management Strategy:**
-- React Context API for global authentication state
-- Local component state for UI interactions
-- Firestore real-time listeners for data state
-- No Redux needed due to simple state requirements
-
-### 🚀 Deployment Architecture
-
-```
-Development → GitHub → CI/CD → Production
-
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Developer   │────>│    GitHub    │────>│ GitHub       │
-│  Local Dev   │     │  Repository  │     │ Actions      │
-└──────────────┘     └──────────────┘     └──────────────┘
-                                                  │
-                                                  ↓
-                                          ┌──────────────┐
-                                          │ Run Tests    │
-                                          │ - Jest       │
-                                          │ - Cypress    │
-                                          └──────────────┘
-                                                  │
-                                                  ↓ (on success)
-                                          ┌──────────────┐
-                                          │   Vercel     │
-                                          │  Deployment  │
-                                          │  - Build     │
-                                          │  - Deploy    │
-                                          │  - CDN       │
-                                          └──────────────┘
-                                                  │
-                                                  ↓
-                                          ┌──────────────┐
-                                          │ Production   │
-                                          │ Live App     │
-                                          └──────────────┘
-```
-
-**CI/CD Pipeline:**
-1. **Push to GitHub** → Triggers automated workflows
-2. **CI Workflow** → Runs Jest unit tests + build verification
-3. **E2E Workflow** → Runs Cypress tests across multiple browsers
-4. **Vercel Deployment** → Automatic deployment on success
-5. **Production** → Live at https://budget-buddy-mun.vercel.app/
-
-### 🔌 API Integration Points
-
-#### **Firebase SDK Integration**
-```javascript
-// Firebase Configuration
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  // ... other config
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-```
-
-#### **Key Service Methods**
-```javascript
-// database.js - CRUD Operations
-- addExpense(userId, expenseData)
-- updateExpense(expenseId, updates)
-- deleteExpense(expenseId)
-- getExpenses(userId)
-- subscribeToExpenses(userId, callback)
-- addCategory(userId, categoryData)
-- getCategories(userId)
-```
-
-### 📈 Performance Optimization
-
-- **Code Splitting**: React.lazy() for route-based splitting
-- **Memoization**: React.memo() for expensive components
-- **Firestore Optimization**: Indexed queries and pagination
-- **Asset Optimization**: Compressed images and minified bundles
-- **CDN Delivery**: Vercel's global CDN for fast loading
-- **Caching Strategy**: Browser caching for static assets
-
-### 🔍 Monitoring & Analytics
-
-- **Lighthouse**: Performance, accessibility, and SEO audits
-- **GitHub Actions**: Automated test results and coverage reports
-- **Vercel Analytics**: Deployment status and performance metrics
-- **Firebase Console**: Authentication and database usage monitoring
+> 📋 **Detailed Architecture**: [`Documents/Architecture_Diagrams.md`](Documents/Architecture_Diagrams.md)
 
 ---
 
-## 🚀 How to Run the Project
+## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js** (version 20 LTS or newer — required by Cypress & Joi)
+- **Node.js** 20 LTS or newer
 - **npm** (comes with Node.js)
-- **Git** (for cloning the repository)
+- **Git**
 
-### Installation & Setup
+### Installation
 
-1. **Clone the Repository**
    ```bash
+# 1. Clone repository
    git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
    cd BudgetBuddy
-   ```
 
-2. **Install Dependencies**
-   ```bash
+# 2. Install dependencies
    npm install
-   ```
 
-3. **Environment Configuration**
-   - ✅ **The `.env` file is already included in this private repository**
-   - ✅ **Firebase configuration is pre-configured**
-   - ✅ **No additional environment setup required**
-
-4. **Start the Development Server**
-   ```bash
+# 3. Start development server
    npm start
    ```
 
-5. **Access the Application**
-   - Open your browser and navigate to `http://localhost:3000`
-   - The application will automatically reload when you make changes
+The application will open at `http://localhost:3000`
+
+> ✅ **Note**: The `.env` file with Firebase configuration is included in this repository.
 
 ### Available Scripts
 
 ```bash
-# Start development server
-npm start
+# Development
+npm start              # Start dev server
+npm run build          # Production build
 
-# Run tests
-npm test
+# Testing
+npm test               # Run unit tests
+npm test -- --coverage # Run with coverage
+npm run cypress:open   # Open Cypress (interactive)
+npm run cypress:run    # Run Cypress (headless)
+npm run test:e2e       # Run E2E tests with server
 
-# Run tests with coverage
-npm test -- --coverage --watchAll=false
-
-# Build for production
-npm run build
-
-# Run specific test file
-npm test -- --testPathPattern=Categories.test.jsx
+# Code Quality
+npx eslint src/ --ext .js,.jsx  # Run ESLint
 ```
 
 ### Project Structure
+
 ```
 budget-buddy/
-├── public/                         # CRA public assets (index.html, icons, manifest)
-├── src/
-│   ├── components/
-│   │   ├── Auth/                   # Login / Signup views
-│   │   ├── Charts/                 # PieChart, BarChart, LineChart wrappers
-│   │   ├── Dashboard/              # DashboardOverview, Reports, Categories, Expenses
-│   │   ├── Expense/                # ExpenseForm, ExpenseList
-│   │   ├── Layout/                 # Navbar, Sidebar, responsive shells
-│   │   └── UI/                     # Modal, Toast, loaders, shared UI pieces
-│   ├── context/                    # AuthContext provider
-│   ├── services/                   # Firebase CRUD helpers (database.js)
-│   ├── styles/                     # main.css, modal css, etc.
-│   ├── __tests__/                  # Jest + RTL suites (AuthFlow, Reports, Charts…)
-│   ├── firebaseConfig.js           # Firebase initialization
-│   └── setupTests.js               # RTL/Jest bootstrap & mocks
-├── cypress/
-│   ├── e2e/                        # Cypress specs (01-signup … smoke)
-│   ├── fixtures/                   # JSON fixtures for tests
-│   ├── support/                    # commands.js, e2e.js
-│   ├── screenshots/                # Auto-captured failure screenshots
-│   └── videos/                     # Recorded runs (local + CI)
-├── Documents/
-│   ├── CI_e2e_run_docs_screenshots/# Cypress summaries, reports, guide, screenshots
-|   ├── Jest_Unit_Tests_docs_screenshots/ # Jest Unit tests summaries, screenshots, catalog
-│   ├── Project_Progress_Files/     # PDFs & slides submitted for the course
-│   ├── Project_Proposal_Files/     # Proposal docs/slides
-│   └── UML/                        # Use case, sequence, class diagrams
-├── build/                          # Production build artifacts (generated)
-├── coverage/                       # Jest coverage reports
-├── scripts/                        # Helper scripts / utilities
-├── .github/workflows/              # CI/CD definitions (ci.yml, e2e.yml)
-├── .env                            # Firebase env vars (private repo)
-├── package.json / package-lock.json
-└── README.md
+├── src/                    # Source code
+│   ├── components/        # React components
+│   ├── context/           # AuthContext
+│   ├── services/          # Firebase services
+│   └── __tests__/         # Unit tests
+├── cypress/               # E2E tests
+│   ├── e2e/              # Test specs
+│   ├── fixtures/         # Test data
+│   └── support/          # Custom commands
+├── Documents/            # Documentation
+│   ├── Cypress_E2E_Testing/
+│   ├── Jest_Unit_Testing/
+│   └── ...
+├── .github/workflows/    # CI/CD workflows
+└── eslint-report/        # ESLint reports
 ```
-
-### Firebase Configuration
-- **Authentication**: Email/Password authentication enabled
-- **Firestore**: Real-time database for expenses and categories
 
 ### Troubleshooting
 
-**Common Issues:**
-- **Port 3000 in use**: The app will automatically suggest using a different port
+- **Port 3000 in use**: App will suggest alternative port
 - **Dependencies issues**: Run `npm install` again
-- **Firebase errors**: Ensure you have internet connection
-- **Test failures**: Run `npm test -- --watchAll=false` to see detailed error messages
-
-**Need Help?**
-- Check the console for error messages
-- Ensure all dependencies are installed: `npm install`
-- Verify Node.js version: `node --version` (should be 16+)
+- **Firebase errors**: Check internet connection
+- **Test failures**: Run `npm test -- --watchAll=false` for detailed errors
 
 ---
 
-## 🧪 Unit Test Summary (Jest)
+## 🧪 Testing
 
-Our comprehensive test suite ensures reliability and maintainability of the Budget Buddy application. We follow industry best practices with **Jest** and **React Testing Library** for unit testing.
+### Unit Testing (Jest)
 
-> Detailed Despcription of the Test details present under: **`Documents/Jest_Unit_Tests_docs_screenshots/Jest_Unit_Test_Catalog.md`**
+**Coverage**: 100% (Statements, Branches, Functions, Lines)
 
-### 📊 Test Coverage Overview
-- **Total Test Files**: 26
-- **Total Tests**: 295 tests
-- **Overall Coverage**: 100%
-- **Status**: All tests passing ✅
+| Metric | Value |
+|--------|-------|
+| **Test Files** | 26 files |
+| **Total Tests** | 295 tests |
+| **Status** | ✅ All passing |
 
-#### 📸 Snapshot of the Test Passing on Running: `npm run test:coverage`
-![100% Coverage and All Tests Passing](Documents/Jest_Unit_Tests_docs_screenshots/Unit_Tests_Coverage.png)
-*Screenshot showing 100% Coverage and all of the Tests Passing*
+**Test Categories**:
+- Application shell & routing (App, Navigation, Navbar, Sidebar)
+- Authentication flows (Login, Signup, AuthFlow)
+- Dashboard & data (DashboardOverview, Expenses, Categories)
+- Charts & visualization (PieChart, BarChart, LineChart)
+- UI components (Modal, Toast)
+- Utilities (database, firebaseConfig)
 
+> 📋 **Detailed Test Catalog**: [`Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md`](Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md)
 
-### 🔬 Unit Test Case Summary:
+![Unit Tests Coverage](Documents/Jest_Unit_Testing/Unit_Tests_Coverage.png)
 
-> Approximate counts come from the latest `npm run test:coverage` run (26 suites / 295 specs). 
+### Acceptance Testing & Requirements Traceability
 
-| Test File | ≈ # Tests | Key Test Cases |
-|-----------|-----------|----------------|
-| `App.test.jsx` | 2 | Root `<App />` renders landing page on `/`; router doesn’t crash while React Router future flags log warnings. |
-| `Navigation.test.jsx` | 5 | Desktop vs mobile menu rendering; hamburger toggle locks body scroll; auth-aware nav items; logout button fires context `logout`; mobile menu auto-closes. |
-| `Navbar.test.jsx` | 5 | Breadcrumb title/icon per route; sidebar toggle callback invoked with updater fn; logout confirmation respects `window.confirm`; hides user chip when no `currentUser`. |
-| `Sidebar.test.jsx` | 8 | Nav links render with icons; desktop toggle/ mobile close buttons; logout button calls context; mobile navigation auto-closes via timer; dragging/mobile classes applied; desktop nav leaves sidebar open. |
-| `PagesPrivateRoute.test.jsx` | 3 | Protected route renders when authed, redirects to `/login` when not; loading indicator shown while auth is resolving. |
-| `LayoutPrivateRoute.test.jsx` | 4 | Same patterns for layout wrapper, plus fallback redirect when `redirectTo` prop absent. |
-| `Landing.test.jsx` | 2 | Hero copy, CTA buttons (`/signup`, `/login`), animated sections render with mocked `framer-motion`. |
-| `Login.test.jsx` | 18 | Form field bindings, button disabled states, success navigation to `/dashboard`, `useNavigate` state messaging, Firebase error mapping (user not found, wrong password, invalid email, unknown), retry clears prior errors. |
-| `Signup.test.jsx` | 24 | Password-strength validator (length/upper/lower/number), password match check, Firebase error codes, button spinner, password eye toggles via click + Enter/Space, non-activation keys ignored. |
-| `AuthFlow.test.jsx` | 14 | Auth context provider wiring, signup→dashboard journey, logout returning to login, forgot-reset flows mocked. |
-| `firebaseConfig.test.js` | 3 | Ensures Firebase app initializes with env vars and exports `auth`/`db`. |
-| `TestFirebase.test.jsx` | 6 | Anonymous + email/password smoke tests (mocked) updating Firestore docs and rendering status messaging. |
-| `DashboardOverview.test.jsx` | 22 | Firestore listeners populate expenses, derived totals/month/average/top category, recency sorting, empty states, “View All” link, listener cleanup + guard when user missing. |
-| `Categories.test.jsx` | 25 | Real-time listeners for categories/expenses, modal lifecycle, add/delete category flows, toast success/error, validations when Firebase/auth missing, default category protection, chart data generation. |
-| `Expenses.test.jsx` | 6 | Expense dashboard shell: summary chips, empty table state, open/close add & edit modal, delete confirmation prompt path. |
-| `ExpenseForm.test.jsx` | 34 | Amount sanitizing, validation errors (amount/title/date/future), add + edit submissions, toast messages, onCancel behavior (including loading guard), Firestore listener errors & cleanup, custom categories without IDs, loading copy (“Adding Expense…” / “Saving…”). |
-| `ExpenseList.test.jsx` | 8 | Renders table rows with category icons, amount formatting, edit/delete action buttons, empty-state card. |
-| `Reports.test.jsx` | 5 | Reports dashboard cards, filters, conditionally rendered charts, export button stubs. |
-| `BarChart.test.jsx` | 3 | Chart.js registration happens once, datasets/labels propagate, loading fallback renders when data missing. |
-| `LineChart.test.jsx` | 4 | Gradient creation, dataset mapping, options (tooltips, axes) wired correctly. |
-| `PieChart.test.jsx` | 4 | Doughnut chart renders slices + legend, empty dataset fallback messaging. |
-| `Modal.test.jsx` | 5 | `isOpen` gating, overlay click closes modal, content click stops propagation, close button/ARIA label fallback when title absent. |
-| `Toast.test.jsx` | 4 | Success/error variants render, dismiss button fires callback, auto-dismiss timers mocked. |
-| `database.test.js` | 18 | `addExpense/addCategory` validation + success, update/delete functions, subscribe helpers (expenses/categories/by-category) including error callbacks and parameter guards. |
-| `reportWebVitals.test.js` | 3 | Lazy import of `web-vitals`, ensures each metric callback (`getCLS`, etc.) forwards to `onPerfEntry`, no-op when callback missing. |
-| `index.test.js` | 1 | Confirms React root is created and renders without crashing. |
+**Goal**: Verify that every functional and non-functional requirement is covered by user stories, acceptance criteria, and automated tests.
 
+**Coverage**: 100% requirements and user stories coverage
 
-> **Note:** All the test cases passes. In total 295 test cases, in 26 test files, that has 100% coverage over the project.
+| Category | Total | Tested/Verified | Coverage | Status |
+|----------|-------|-----------------|----------|--------|
+| **Functional Requirements** | 11 | 11 | 100% | ✅ Complete |
+| **Non-Functional Requirements** | 10 | 10 | 100% | ✅ Complete |
+| **User Stories** | 7 | 7 | 100% | ✅ Complete |
+| **Acceptance Criteria** | 38 | 38 | 100% | ✅ Complete |
+| **GitHub Issues** | 100 | 100 | 100% | ✅ Complete |
 
+Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped end‑to‑end from requirements → user stories → acceptance criteria → GitHub issues → automated tests.
 
+> 📋 **Detailed Acceptance Tests & Traceability**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)
 
-### 🎯 Testing Commands
+### E2E Testing (Cypress)
 
-```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm test -- --coverage --watchAll=false
-
-# Run specific test file
-npm test -- --testPathPattern=Categories.test.jsx
-
-# Run tests in watch mode
-npm test -- --watch
-```
-
----
-
-## 🎭 E2E Testing with Cypress
-
-Budget Buddy includes comprehensive end-to-end (E2E) testing using **Cypress** to ensure all critical user flows work correctly in a real browser environment.
-
-### 📦 Cypress Setup
-
-Cypress is already installed and configured in the project. The E2E tests verify:
-- ✅ User signup and registration
-- ✅ User login and authentication
-- ✅ Dashboard display and navigation
-- ✅ Adding and managing expenses
-- ✅ Creating and managing categories
-- ✅ Viewing charts and visualizations
-- ✅ Generating and exporting reports
-- ✅ User logout and session management
-
-### 🚀 Running Cypress Tests
-
-#### **Interactive Mode (Recommended for Development)**
-Open Cypress Test Runner with a visual interface:
-
-```bash
-# Open Cypress in interactive mode
-npm run cypress:open
-
-# Or with the app already running
-npm run test:e2e:dev
-```
-
-This will:
-1. Open the Cypress Test Runner GUI
-2. Allow you to select and run individual test files
-3. Watch tests execute in a real browser
-4. Enable debugging and step-through
-
-#### **Headless Mode (For CI/CD)**
-Run all tests in the terminal without GUI:
-
-```bash
-# Run all tests in headless mode
-npm run cypress:run
-
-# Run with specific browser
-npm run cypress:run:chrome
-
-# Run with visible browser (headed mode)
-npm run cypress:run:headed
-
-# Run with server start and tests
-npm run test:e2e
-```
-
-#### **Run Specific Test File**
-```bash
-# Run a specific test file
-npx cypress run --spec "cypress/e2e/01-signup.cy.js"
-
-# Run tests matching a pattern
-npx cypress run --spec "cypress/e2e/*-login.cy.js"
-```
-
-### 📁 Test File Structure
-
-```
-cypress/
-├── e2e/
-│   ├── smoke.cy.js           # Smoke tests for basic functionality
-│   ├── 01-signup.cy.js        # User signup flow tests
-│   ├── 02-login.cy.js         # User login flow tests
-│   ├── 03-dashboard.cy.js     # Dashboard display tests
-│   ├── 04-expenses.cy.js      # Add expense flow tests
-│   ├── 05-categories.cy.js    # Add categories flow tests
-│   ├── 06-reports.cy.js       # Export reports flow tests
-│   └── 07-logout.cy.js        # User logout flow tests
-├── fixtures/
-│   ├── users.json            # Test user data
-│   ├── expenses.json         # Test expense data
-│   └── categories.json       # Test category data
-├── support/
-│   ├── commands.js           # Custom Cypress commands
-│   └── e2e.js                # Global test configuration
-├── screenshots/              # Auto-captured on test failure
-└── videos/                   # Recorded test runs
-```
-
-### 🧪 Test Coverage Overview
+**Coverage**: Complete user journey coverage
 
 | Test Suite | # Tests | Coverage |
 |------------|---------|----------|
-| **Smoke Tests** | 10 | Basic application functionality |
-| **Signup Flow** | 11 | User registration and validation |
-| **Login Flow** | 13 | Authentication and error handling |
-| **Dashboard** | 16 | Navigation and data display |
-| **Expenses** | 12 | CRUD operations for expenses |
-| **Categories** | 12 | Category management |
-| **Reports** | 16 | Report generation and export |
-| **Logout** | 18 | Session management |
-| **Total** | **102** | **Complete E2E coverage** |
+| Smoke Tests | 10 | Basic functionality |
+| Signup Flow | 11 | User registration |
+| Login Flow | 13 | Authentication |
+| Dashboard | 16 | Navigation & display |
+| Expenses | 12 | CRUD operations |
+| Categories | 12 | Category management |
+| Reports | 16 | Report generation |
+| Logout | 18 | Session management |
+| **Total** | **102** | **Complete E2E** |
 
-## 🎯 Screenshot of E2E Test Cases and Coverage
-![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Analysis.png)
-*Screenshot showing all tests passing*
+**Test Files**: `cypress/e2e/`
+- `smoke.cy.js`, `01-signup.cy.js`, `02-login.cy.js`, `03-dashboard.cy.js`
+- `04-expenses.cy.js`, `05-categories.cy.js`, `06-reports.cy.js`, `07-logout.cy.js`
 
-> This can be verified by running: `npm run cypress:run`
+> 📋 **Detailed E2E Guide**: [`Documents/Cypress_E2E_Testing/Cypress_E2E_Testing.md`](Documents/Cypress_E2E_Testing/Cypress_E2E_Testing.md)
 
-![Test Cases Passing](Documents/CI_e2e_run_docs_screenshots/Cypress_Tests_Passing.png)
-*Screenshot showing all tests passing*
+![E2E Tests](Documents/Cypress_E2E_Testing/Cypress_Tests_Passing.png)
 
-> This can be verified by running: `npm run cypress:run`
+---
 
-![Cypress Test Coverage](Documents/CI_e2e_run_docs_screenshots/Cypress_Coverage_Report.png)
-*Screenshot showing the test Coverage of Cypress tests*
+## 🔄 CI/CD Pipeline
 
-> This report can be found under the artifcats of the latest test run in Github Actions
+### Workflow Overview
 
-### 📊 Test Results Artifacts
-
-After running tests, Cypress generates:
-
-#### **Screenshots**
-- Automatically captured on test failures
-- Location: `cypress/screenshots/`
-- Helps identify what went wrong
-
-#### **Videos**
-- Recorded for all test runs
-- Location: `cypress/videos/`
-- Complete playback of test execution
-
-#### **Access Artifacts**
-```bash
-# View screenshots
-open cypress/screenshots/
-
-# View videos
-open cypress/videos/
+```
+Push/PR → GitHub Actions → Tests → Build → Vercel → Production
 ```
 
-### 🔄 CI/CD Integration
+### CI Workflow (`ci.yml`)
 
-Cypress tests run automatically on:
-- Push to `main` or `develop` branches
-- Pull requests to `main` or `develop`
-- Manual workflow dispatch
+**Triggers**: Push to `main`/`develop`, Pull requests
 
-#### **GitHub Actions Workflow**
+**Steps**:
+1. Checkout code
+2. Setup Node.js 20
+3. Install dependencies (`npm ci`)
+4. Run unit tests (295 tests)
+5. Generate coverage reports
+6. Build production bundle
+7. Upload artifacts
 
-The `.github/workflows/e2e.yml` workflow:
-- Runs the Cypress suite on Node 20 across Chrome & Edge matrices
-- Uploads screenshots/videos for failed specs along with summary artifacts
-- Uses Firebase env secrets so the dev server behaves like local
-- Emits job summaries + downloadable artifacts for every run
+**Duration**: ~3-5 minutes | **Success Rate**: 100%
 
-#### **E2E Coverage Snapshot**
-- **Specs**: 8 primary flows (`01-signup` … `07-logout` + `smoke`)
-- **User journeys covered**: auth (happy/error), dashboard navigation, expenses & categories CRUD, reports/charts export, logout, smoke verification.
-- **Artifacts & Logs**:
-  - Screenshots: `cypress/screenshots/<spec>/<test>.png`
-  - Videos: `cypress/videos/<spec>.mp4`
-  - Summary docs: `Documents/CI_e2e_run_docs_screenshots`, `Cypress_Testing_Guide.md`, `Cypress_E2E_Testing_Report.md`
-  - GitHub Actions artifacts: `cypress-screenshots-*`, `cypress-videos-*`, `cypress-results-*`
+### E2E Workflow (`e2e.yml`)
 
-#### **View Test Results in CI**
-1. Go to the **Actions** tab in GitHub
-2. Select the **E2E Tests with Cypress** workflow
-3. Click on a specific run to see results
-4. Download artifacts (screenshots/videos) if tests fail
+**Multi-Job Strategy**:
+- **Job 1**: Unit tests & build (prerequisite)
+- **Job 2**: E2E tests (matrix: Chrome, Firefox, Edge)
 
----
+**Features**:
+- Parallel browser execution
+- Screenshot/video capture
+- Artifact upload (7-day retention)
 
-## 🎯 CI/CD Pipeline & Test Results
+**Duration**: ~20 minutes (parallel) | **Success Rate**: 100%
 
-Our project uses **GitHub Actions** for continuous integration and continuous deployment. All tests (unit tests and E2E tests) run automatically on every push and pull request to ensure code quality.
+### Continuous Deployment (Vercel)
 
-### ✅ Workflow Status
+**Automatic Deployment**:
+- Push to `main` → Production deployment
+- Push to `develop` → Preview deployment
+- Pull requests → Preview URLs
 
-The badges at the top of this README show the current status of our CI/CD pipelines:
-- **CI Tests Badge**: Shows the status of unit tests (Jest) and build verification
-- **E2E Tests Badge**: Shows the status of end-to-end tests (Cypress) across multiple browsers
+**Features**:
+- Zero-downtime deployments
+- Global CDN (100+ edge locations)
+- Automatic HTTPS/SSL
+- Instant rollback
 
-### 📸 CI Workflow (Unit Tests & Build)
+### CI/CD Metrics
 
-The CI workflow runs on every push and includes:
-- Unit tests with Jest
-- Code coverage reporting
-- Production build verification
+| Metric | Value |
+|--------|-------|
+| **CI Execution Time** | 3-5 minutes |
+| **E2E Execution Time** | ~20 minutes (parallel) |
+| **Total Tests** | 397 (295 unit + 102 E2E) |
+| **Success Rate** | 100% |
+| **Browser Coverage** | Chrome, Firefox, Edge |
 
-![CI Workflow Run](Documents/CI_e2e_run_docs_screenshots/CI_Workflow_run.png)
+### Accessing Results
 
-**Key Results:**
-- ✅ **102 unit tests passing** across all components
-- ✅ Build completes successfully
-- ✅ Coverage reports generated and uploaded as artifacts
-
-### 📸 E2E Workflow (Cypress Tests)
-
-The E2E workflow runs comprehensive browser-based tests across Chrome, Firefox, and Edge:
-- **102 E2E tests** covering all user journeys
-- Multi-browser testing (Chrome, Firefox, Edge)
-- Screenshots and videos captured for debugging
-
-![E2E Workflow Run](Documents/CI_e2e_run_docs_screenshots/E2E_Workflow_run.png)
-
-**Key Results:**
-- ✅ **All 102 Cypress tests passing**
-- ✅ Cross-browser compatibility verified
-- ✅ Videos available as artifacts under `cypress/videos/`
-- ✅ Test execution time: ~18-20 minutes across all browsers
-
-### 📊 Test Coverage Summary
-
-| Test Type | Count | Status | Coverage |
-|-----------|-------|--------|----------|
-| **Unit Tests (Jest)** | 102 | ✅ Passing | Component logic, authentication, database operations |
-| **E2E Tests (Cypress)** | 102 | ✅ Passing | Complete user journeys across signup, login, expenses, categories, reports, and logout |
-| **Browser Coverage** | 3 browsers | ✅ Passing | Chrome, Firefox, Edge |
-
-### 🔗 Accessing CI/CD Results
-
-1. **View Live Status**: Check the badges at the top of this README
-2. **View Detailed Results**: Go to the [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
-3. **Download Artifacts**: Each workflow run includes downloadable artifacts (coverage reports, screenshots, videos)
-4. **Review Test Reports**: Check the `Documents/CI_e2e_run_docs_screenshots/` directory for detailed test documentation
+1. **Status Badges**: Top of README (real-time status)
+2. **GitHub Actions**: [Actions tab](https://github.com/JasleenMinhas578/BudgetBuddy/actions)
+3. **Artifacts**: Downloadable from workflow runs
+4. **Vercel Dashboard**: Deployment history and preview URLs
 
 ---
 
-## 📊 ESLint Code Quality Report - Budget Buddy
+## 📊 Quality Reports
 
-**Project**: Budget Buddy  
-**Date**: November 20, 2025  
-**Status**: ✅ **ALL ISSUES RESOLVED**  
-**Total Issues**: 0 errors, 0 warnings  
+### ESLint Code Quality
 
->**ESLint Code Quality Report**: Go to [`eslint-report`](https://github.com/JasleenMinhas578/BudgetBuddy/tree/main/eslint-report)  (The folder contains the summary of the ESLint Code Quality Report, **from 200 issue to 0 issue**)
+**Status**: ✅ **PERFECT** (0 errors, 0 warnings)
 
-## 🎉 Executive Summary
+| Metric | Value |
+|--------|-------|
+| **Files Analyzed** | 50+ JavaScript/JSX files |
+| **Current Issues** | 0 errors, 0 warnings |
+| **Code Quality Score** | 100% |
+| **Historical Fixes** | 200 issues → 0 issues |
 
-**ESLint analysis shows PERFECT code quality!** All 200 previously identified issues have been successfully resolved. The codebase now follows all ESLint rules and React Testing Library best practices.
+**Key Improvements**:
+- Fixed 200 ESLint violations (196 errors, 4 warnings)
+- Enforced React & Testing Library best practices
+- 100% compliance with 170+ rules
 
-### Final Results:
-- ✅ **0 errors** - All linting errors fixed
-- ✅ **0 warnings** - All warnings resolved
-- ✅ **All production code is lint-free**
-- ✅ **All test files follow best practices**
-- ✅ **Build compiles successfully**
-- ✅ **All 204 tests pass**
+> 📋 **Full Report**: [`eslint-report/ESLint_Report.md`](eslint-report/ESLint_Report.md)
 
-## 📈 Issues Fixed (Original → Final)
+![ESLint Before](eslint-report/Eslint_Report_Before_Fixes.png)
+![ESLint After](eslint-report/Eslint_Report_After_Fixes.png)
 
-### Before Fixes:
-- **Total Issues**: 200 (196 errors, 4 warnings)
-- **Test Files**: 196 errors
-- **Production Files**: 4 warnings
+### Lighthouse Performance
 
-### After Fixes:
-- **Total Issues**: 0 (0 errors, 0 warnings)
-- **Test Files**: 0 errors
-- **Production Files**: 0 warnings
-
-
-### Snapshot of ESLint Report Before Fixes:
-
-![Before Fixes](eslint-report/Eslint_Report_Before_Fixes.png)
-
-
-### Snapshot of ESLint Report After Fixes:
-![After Fixes](eslint-report/Eslint_Report_After_Fixes.png)
-
----
-
-## 🎯 Lighthouse Performance & Quality Report
-
-We use **Google Lighthouse** to ensure our application meets high standards for performance, accessibility, best practices, and SEO. The live production deployment on Vercel is regularly audited.
-
-### 📊 Lighthouse Scores
+**Scores**:
 
 | Category | Score | Status |
 |----------|-------|--------|
-| **⚡ Performance** | **99/100** | 🟢 Excellent |
-| **♿ Accessibility** | **100/100** | 🟢 Excellent |
-| **✅ Best Practices** | **100/100** | 🟢 Excellent |
-| **🔍 SEO** | **91/100** | 🟢 Excellent |
+| **Performance** | 99/100 | 🟢 Excellent |
+| **Accessibility** | 100/100 | 🟢 Excellent |
+| **Best Practices** | 100/100 | 🟢 Excellent |
+| **SEO** | 91/100 | 🟢 Excellent |
 
-### 🎉 Overall Assessment
-
-Budget Buddy achieves **excellent scores across all categories**, demonstrating:
-
-✅ **Outstanding Performance (99%)** 
+**Key Metrics**:
 - Fast load times and optimal resource loading
-- Efficient rendering and minimal blocking resources
-- Optimized images and assets
-
-✅ **Strong Accessibility (100%)**
-- WCAG compliance for users with disabilities
-- Proper ARIA labels and semantic HTML
-- Screen reader friendly implementation
-- Good color contrast and keyboard navigation
-
-✅ **Perfect Best Practices (100%)**
+- WCAG 2.1 compliance (100% accessibility)
 - Secure HTTPS deployment
-- No console errors or warnings
-- Proper asset optimization
-- Modern web standards compliance
+- Mobile-friendly responsive design
 
-✅ **Excellent SEO (91%)**
-- Mobile-friendly and responsive design
-- Proper meta tags and structured data
-- Fast page load for better search rankings
-- Semantic HTML structure
+> 📋 **Full Report**: [`Documents/Lighthouse_Metrics/Lighthouse_metric_report.html`](Documents/Lighthouse_Metrics/Lighthouse_metric_report.html)
 
-### 📱 Key Performance Metrics
-
-- **First Contentful Paint (FCP)**: Fast initial render
-- **Largest Contentful Paint (LCP)**: Excellent loading performance
-- **Time to Interactive (TTI)**: Quick user interaction readiness
-- **Cumulative Layout Shift (CLS)**: Stable visual layout
-- **Speed Index**: Rapid content visibility
-
-### 🔗 View Full Report
-
-The complete Lighthouse audit report is available in the repository:
-- **Report File**: [`Lighthouse_Report.html`](Documents/Lighthouse_Metrics/Lighthouse_metric_report.html)
-- **Live URL Tested**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
-- **Test Date**: November 18, 2025
-- **How to View**: Download and open the HTML file in any web browser for the interactive Lighthouse report
-
-- **Snapshot of the Report**
-![`Lighthouse_Report.png`](Documents/Lighthouse_Metrics/Lighthouse_metric_img.png)
+![Lighthouse Report](Documents/Lighthouse_Metrics/Lighthouse_metric_img.png)
 
 ---
 
 ## 📂 Deliverables
-- Requirements and Design Documentation  
-- UML diagrams (use case, class, sequence)  
-- Functional web application (React + Firebase)  
-- CI Workflow Runs (GitHub Actions)
-- Test Coverage Reports and Screenshots under `Documents`
-- Unit tests & E2E tests  
-- Final project Report  
-- Presentation + Demo 
-- Vercel Deployment
-- Live Project: https://budget-buddy-mun.vercel.app/ 
+
+✅ **Requirements & Design Documentation**  
+✅ **UML Diagrams** (use case, class, sequence)  
+✅ **Functional Web Application** (React + Firebase)  
+✅ **CI/CD Workflows** (GitHub Actions)  
+✅ **Test Coverage Reports** (100% coverage)  
+✅ **Unit Tests** (295 tests)  
+✅ **E2E Tests** (102 tests)  
+✅ **Code Quality Reports** (ESLint, Lighthouse)  
+✅ **Final Project Report**  
+✅ **Presentation & Demo**  
+✅ **Vercel Deployment**  
+✅ **Live Application**: [budget-buddy-mun.vercel.app](https://budget-buddy-mun.vercel.app/)
 
 ---
 
-## 🚀 Future Improvements & Enhancements
+## 🎯 Challenges Faced & Lessons Learned
 
-While Budget Buddy successfully meets all requirements for the Fall 2025 academic project, there are several exciting features and improvements we would like to implement in future iterations:
+### 1. Code Quality & ESLint Compliance
+**Challenge**: 200 ESLint violations (196 errors, 4 warnings) causing inconsistent code style and potential bugs.  
+**Solution**: Comprehensive ESLint config, CI/CD integration, systematic refactoring by category.  
+**Lesson**: Early linting integration prevents technical debt. Enforcing in CI/CD ensures consistent quality.  
+**Result**: ✅ 0 errors, 0 warnings — 100% compliance
 
-### 🤖 AI-Powered Features
-- **Smart Expense Categorization**: Implement machine learning models to automatically categorize expenses based on description patterns
-- **Predictive Analytics**: Use LLMs to predict future spending patterns and suggest budget adjustments
-- **Natural Language Input**: Allow users to add expenses using natural language (e.g., "Spent $50 on groceries yesterday")
+### 2. Firebase Security Rules & Data Isolation
+**Challenge**: Ensuring users only access their own data while maintaining performance.  
+**Solution**: Firestore structure with `userId` as primary field, security rules with auth checks, optimized indexes, E2E testing.  
+**Lesson**: Security-first design in data model enables both security and performance. Test security rules like functionality.  
+**Result**: ✅ Secure, performant data access with user isolation
 
-### 💰 Advanced Financial Features
-- **Budget Goals & Tracking**: Set monthly/yearly budget goals with progress tracking and alerts
-- **Bill Reminders**: Automated notifications for upcoming bill payments
-- **Multi-Currency Support**: Handle expenses in different currencies with real-time conversion
-- **Split Expenses**: Share and split expenses with friends/family members
-- **Income Tracking**: Track income sources alongside expenses for complete financial overview
-- **Savings Goals**: Set and track savings goals with visualization
+### 3. Real-Time Data Synchronization
+**Challenge**: Memory leaks, unnecessary re-renders, and race conditions with Firestore listeners.  
+**Solution**: Proper `useEffect` cleanup with unsubscribe functions, query constraints, debouncing, centralized data service layer.  
+**Lesson**: Always clean up subscriptions. Centralized data access improves management and testing.  
+**Result**: ✅ Efficient real-time sync with no memory leaks
 
-### 🔔 Notifications & Alerts
-- **Email Notifications**: Send email summaries and alerts
-- **Push Notifications**: Real-time alerts for budget limits and bill reminders
-- **SMS Integration**: Text message reminders for critical financial events
-- **Weekly/Monthly Summaries**: Automated spending summaries delivered to users
+### 4. Vercel Preview Deployment Failures
+**Challenge**: Preview deployments failing, blocking PR reviews and testing.  
+**Solution**: Diagnosed Firebase env variable issues, fixed `.env` structure, added deployment verification in CI/CD, created troubleshooting guide.  
+**Lesson**: Environment variables must be configured in all deployment environments. Documentation prevents silent failures.  
+**Result**: ✅ Reliable preview deployments for all PRs
 
-### 🔐 Security & Privacy Enhancements
-- **Two-Factor Authentication (2FA)**: Add an extra layer of security for user accounts
-- **Biometric Authentication**: Support for fingerprint/face ID on mobile devices
-- **Data Encryption**: End-to-end encryption for sensitive financial data
+### 5. Test Coverage & E2E Testing Complexity
+**Challenge**: Achieving 100% coverage with maintainable tests, reliable cross-browser E2E tests.  
+**Solution**: React Testing Library best practices, async testing with `waitFor`, Cypress with fixtures, matrix strategy for cross-browser testing, proper test isolation.  
+**Lesson**: Test quality over quantity. Focus on user behavior and critical paths. Proper setup prevents flaky tests.  
+**Result**: ✅ 295 unit + 102 E2E tests, all passing
+
+### 6. State Management & Context API
+**Challenge**: Managing global auth state and local component state without prop drilling or unnecessary re-renders.  
+**Solution**: `AuthContext` for global state, local state for UI data, Firestore listeners for data state, split context providers, `useMemo`/`useCallback` optimization.  
+**Lesson**: Not all state needs to be global. Context for global state, local state for components, real-time DB can replace some state management.  
+**Result**: ✅ Clean state management with minimal re-renders
+
+### 7. Performance Optimization & Bundle Size
+**Challenge**: Slow load times, large bundles, poor mobile performance, slow chart rendering.  
+**Solution**: Code splitting with lazy loading, optimized Chart.js imports, `date-fns` over Moment.js, pagination/virtualization, loading states, Vercel CDN.  
+**Lesson**: Performance is a feature. Regular audits and bundle monitoring catch issues early. Fast load times improve UX.  
+**Result**: ✅ 99/100 Lighthouse score, fast load times
+
+### 8. Team Collaboration & Git Workflow
+**Challenge**: Managing 6 team members with merge conflicts and integration issues.  
+**Solution**: Clear Git workflow with feature branches, PR review process, GitHub Projects, coding standards, automated CI/CD testing, regular sync meetings.  
+**Lesson**: Clear processes and communication are essential. Workflows, standards, and regular communication prevent conflicts.  
+**Result**: ✅ Smooth collaboration, 100 issues completed
+
+### 9. Responsive Design & Cross-Device Testing
+**Challenge**: Consistent UX across desktop, tablet, mobile with different screen sizes and input methods.  
+**Solution**: Mobile-first design, CSS Grid/Flexbox, responsive breakpoints, real device testing, E2E tests with viewport sizes, optimized touch targets, responsive charts.  
+**Lesson**: Mobile-first design saves time. Testing on real devices and responsive patterns from the start prevents costly redesigns.  
+**Result**: ✅ 100% accessibility, responsive on all devices
+
+### 10. Documentation & Knowledge Sharing
+**Challenge**: Maintaining comprehensive, up-to-date documentation accessible to all team members.  
+**Solution**: Centralized `Documents/` structure, documentation standards, regular reviews, README as entry point, architecture/UML diagrams, API/testing/deployment docs.  
+**Lesson**: Good documentation is an investment. Well-maintained docs accelerate onboarding and reduce questions.  
+**Result**: ✅ Comprehensive, up-to-date documentation
 
 ---
 
+## 📊 Key Lessons Summary
+
+| Lesson | Impact |
+|--------|--------|
+| **Early tooling setup** | Prevents technical debt and ensures consistency |
+| **Security-first design** | Protects user data and prevents vulnerabilities |
+| **Proper cleanup** | Prevents memory leaks and performance issues |
+| **Test behavior, not implementation** | Creates maintainable, reliable tests |
+| **Performance is a feature** | Improves user experience and engagement |
+| **Clear processes** | Enables smooth team collaboration |
+| **Mobile-first design** | Ensures accessibility across all devices |
+| **Documentation investment** | Accelerates development and knowledge sharing |
+
+---
+
+## 🎓 Overall Project Learnings
+
+1. **Agile methodology works**: Regular sprints and retrospectives enable quick adaptation to challenges
+2. **Automation is essential**: CI/CD pipelines, automated testing, and linting catch issues early
+3. **User experience matters**: Performance, accessibility, and responsive design significantly impact satisfaction
+4. **Team communication is critical**: Regular standups, clear documentation, and shared understanding prevent conflicts
+5. **Quality over speed**: Good tests, linting fixes, and optimization pay off long-term
+6. **Learning from challenges**: Each challenge provided valuable learning opportunities that improved skills and project quality
+
+---
+
+## 🚀 Future Enhancements
+
+### AI-Powered Features
+- Smart expense categorization using ML
+- Predictive analytics for spending patterns
+- Natural language expense input
+
+### Advanced Financial Features
+- Budget goals & tracking
+- Bill reminders & notifications
+- Multi-currency support
+- Split expenses with friends/family
+- Income tracking
+- Savings goals
+
+### Notifications & Alerts
+- Email notifications
+- Push notifications
+- SMS integration
+- Weekly/monthly summaries
+
+### Security Enhancements
+- Two-factor authentication (2FA)
+- Biometric authentication
+- End-to-end encryption
+
+---
 
 ## 📚 References
 
 ### Development & Frameworks
-- **React Documentation**: https://react.dev/  
-- **React Router Documentation**: https://reactrouter.com/  
-- **Create React App**: https://create-react-app.dev/  
-- **Firebase Documentation**: https://firebase.google.com/docs  
-- **Firebase Authentication Guide**: https://firebase.google.com/docs/auth  
-- **Firestore Database Guide**: https://firebase.google.com/docs/firestore  
-- **Chart.js Documentation**: https://www.chartjs.org/docs/latest/  
-- **React-ChartJS-2**: https://react-chartjs-2.js.org/  
-- **Framer Motion (Animations)**: https://www.framer.com/motion/  
-- **date-fns Documentation**: https://date-fns.org/docs/Getting-Started  
+- [React Documentation](https://react.dev/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [React Router](https://reactrouter.com/)
+- [Chart.js](https://www.chartjs.org/docs/latest/)
 
-### Testing & Quality Assurance
-- **Jest Documentation**: https://jestjs.io/docs/getting-started  
-- **React Testing Library**: https://testing-library.com/docs/react-testing-library/intro/  
-- **Cypress Documentation**: https://docs.cypress.io/  
-- **Cypress Best Practices**: https://docs.cypress.io/guides/references/best-practices  
-- **GitHub Actions CI/CD**: https://docs.github.com/en/actions  
-- **Testing Best Practices**: https://kentcdodds.com/blog/common-mistakes-with-react-testing-library  
+### Testing & Quality
+- [Jest Documentation](https://jestjs.io/docs/getting-started)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Cypress Documentation](https://docs.cypress.io/)
+- [ESLint Documentation](https://eslint.org/docs/latest/)
 
-### Design & UI/UX
-- **CSS Modules**: https://github.com/css-modules/css-modules  
-- **Responsive Design Principles**: https://web.dev/responsive-web-design-basics/  
-- **Accessibility Guidelines (WCAG)**: https://www.w3.org/WAI/WCAG21/quickref/  
-- **Color Contrast Checker**: https://webaim.org/resources/contrastchecker/  
-- **Material Design Guidelines**: https://m3.material.io/  
+### Deployment & CI/CD
+- [Vercel Documentation](https://vercel.com/docs)
+- [GitHub Actions](https://docs.github.com/en/actions)
 
-### Project Management & Agile
-- **GitHub Project Management Guide**: https://guides.github.com/features/issues/  
-- **Agile User Stories**: https://www.mountaingoatsoftware.com/agile/user-stories  
-- **Scrum Guide**: https://scrumguides.org/scrum-guide.html  
-- **GitHub Flow**: https://docs.github.com/en/get-started/quickstart/github-flow  
-- **Writing Good Commit Messages**: https://chris.beams.io/posts/git-commit/  
+### Design & Accessibility
+- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [Responsive Design](https://web.dev/responsive-web-design-basics/)
 
-### PDF & Report Generation
-- **jsPDF Documentation**: https://github.com/parallax/jsPDF  
-- **html2canvas Documentation**: https://html2canvas.hertzen.com/documentation  
-- **PDF Generation Tutorial**: https://blog.logrocket.com/generating-pdf-react/  
+---
 
-### Deployment & Hosting
-- **Vercel Documentation**: https://vercel.com/docs  
-- **Environment Variables in React**: https://create-react-app.dev/docs/adding-custom-environment-variables/  
-- **React Production Build**: https://create-react-app.dev/docs/production-build/  
+## 📎 Appendices
 
-### Security & Best Practices
-- **Firebase Security Rules**: https://firebase.google.com/docs/rules  
-- **React Security Best Practices**: https://pragmaticwebsecurity.com/articles/reactsecurity  
-- **OWASP Top 10**: https://owasp.org/www-project-top-ten/  
-- **Content Security Policy**: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP  
+### Appendix A: Static Analysis Report
+**📋 [ESLint Static Analysis Report](eslint-report/ESLint_Report.md)**
 
-### Code Quality & Tools
-- **ESLint**: https://eslint.org/docs/latest/  
-- **Prettier**: https://prettier.io/docs/en/  
-- **Git Best Practices**: https://git-scm.com/book/en/v2  
-- **Semantic Versioning**: https://semver.org/  
+Comprehensive static code analysis using ESLint v8.57.1. Includes executive summary, before/after comparison, detailed issue breakdown, rule compliance, security analysis, and accessibility compliance.
 
-### Learning Resources
-- **MDN Web Docs**: https://developer.mozilla.org/  
-- **Web.dev by Google**: https://web.dev/  
-- **JavaScript.info**: https://javascript.info/  
-- **React Patterns**: https://reactpatterns.com/  
-- **CSS Tricks**: https://css-tricks.com/  
+**Key Statistics**: 50 files analyzed, 0 errors/warnings, 100% compliance
 
-### Academic Resources
-- **Software Engineering Best Practices**: https://www.geeksforgeeks.org/software-engineering/  
-- **System Design Primer**: https://github.com/donnemartin/system-design-primer  
-- **Code Review Best Practices**: https://google.github.io/eng-practices/review/  
+---
+
+### Appendix B: Naming Conventions
+**📝 [Naming Conventions Guide](Documents/Naming_Conventions_Summary.md)**
+
+Complete documentation of all naming conventions used throughout the codebase. Includes file naming, component naming, variable naming, function naming, CSS classes, test files, and database collections.
+
+**Key Conventions**: PascalCase (components), camelCase (variables/functions), kebab-case (CSS), UPPER_SNAKE_CASE (constants)
+
+---
+
+### Appendix C: Acceptance Tests & Requirements
+**✅ [Acceptance Tests & Requirements Traceability](Documents/Acceptance_Tests.md)**
+
+Comprehensive acceptance tests, user stories, acceptance criteria, and requirements traceability. Includes 7 user stories, 38 acceptance criteria, 11 functional requirements, 10 non-functional requirements, and complete test mapping.
+
+**Key Metrics**: 100% requirements coverage, 100% test coverage, 397 tests passing
+
+---
+
+### Appendix D: Architecture Diagrams
+**🏗️ [Architecture Diagrams & 4+1 Model](Documents/Architecture_Diagrams.md)**
+
+Complete system architecture documentation following the 4+1 architectural view model. Includes logical view, process view, development view, physical view, and scenarios with 15+ comprehensive diagrams.
 
 --- 
 
@@ -1233,13 +787,13 @@ While this is an academic project, we welcome suggestions and feedback! If you h
 
 1. Open an issue on GitHub with your suggestion or bug report
 2. Follow the issue template and provide as much detail as possible
-3. For major changes, please open an issue first to discuss what you would like to change
+3. For major changes, please open an issue first to discuss
 
 ---
 
 ## 📄 License
 
-This project is for academic purposes as part of COMP6905 - Software Engineering at Memorial University of Newfoundland.
+This project is for academic purposes as part of **COMP6905 - Software Engineering** at Memorial University of Newfoundland.
 
 ---
 
@@ -1252,6 +806,4 @@ This project is for academic purposes as part of COMP6905 - Software Engineering
 ---
 
 **Made with ❤️ by Group 6 | Memorial University of Newfoundland | Fall 2025**
-
----
 
