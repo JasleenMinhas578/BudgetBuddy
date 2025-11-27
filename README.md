@@ -16,7 +16,7 @@
 - [📋 User Stories](#-user-stories)
 - [🛠️ Technologies & Tools](#️-technologies--tools)
 - [🏗️ Architecture](#️-architecture)
-- [🚀 Getting Started](#-getting-started)
+- [🚀 How to Run the Project](#-how-to-run-the-project)
 - [🧪 Testing](#-testing)
 - [🔄 CI/CD Pipeline](#-cicd-pipeline)
 - [📊 Quality Reports](#-quality-reports)
@@ -95,7 +95,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 
 ### Team Responsibilities
 
-**Jasleen Minhas (Project Lead)**
+**1. Jasleen Minhas (Project Lead)**
 - Led frontend architecture & Firebase authentication flow
 - Implemented Login, Signup, Logout pages with UI, routing, error handling
 - Built Expense Management CRUD UI and Firebase integration
@@ -105,7 +105,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - Set up Vercel CI/CD pipeline and deployment troubleshooting
 - Managed GitHub boards, issues, story points & documentation
 
-**Mashroor Rahman (Backend/Database)**
+**2. Mashroor Rahman (Backend/Database)**
 - Set up Firebase initialization, configuration & .env
 - Contributed to Login/Signup Firebase authentication logic
 - Worked on Landing Page, Logout flow, UI fixes
@@ -113,24 +113,24 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - Assisted in Cypress tests, Vercel deployment debugging
 - Bug fixing and troubleshooting
 
-**Joel George Sam (QA/Testing)**
+**3. Joel George Sam (QA/Testing)**
 - Contributed heavily to unit testing across Authentication, Dashboard, Expenses
 - Worked on requirements, UML, architecture & backlog planning
 - Helped with Dashboard visualizations, test coverage improvement
 - Assisted in Firebase database integrations
 
-**Kaustubh Patil (Frontend - Expenses)**
+**4. Kaustubh Patil (Frontend - Expenses)**
 - Implemented parts of Expense Management UI
 - Assisted in Dashboard charts & summary widgets
 - Contributed to Category UI, Landing Page content
 - Helped with frontend styling & UX consistency
 
-**Sumaiya Khan (Frontend - UI/UX)**
+**5. Sumaiya Khan (Frontend - UI/UX)**
 - Signup/Login styling, content, error handling
 - Categories UI, Landing Page content
 - Assisted in Dashboard widgets & testing tasks
 
-**Ronit Gajjar (Reporting/Features)**
+**6. Ronit Gajjar (Reporting/Features)**
 - Implemented Add Expense UI
 - Worked on CRUD operations and Firebase syncing
 - Helped with Dashboard charting
@@ -168,7 +168,7 @@ In particular, we adopted **four core XP practices** throughout the project:
 - **Test-Driven Development (TDD)**: Many modules (especially authentication, dashboard, and expense management) were developed with tests written first or in very tight red‑green‑refactor loops.
 - **Refactoring**: We continuously refactored code (e.g., during ESLint fixes, test improvements, and architecture cleanup) to improve readability, maintainability, and adherence to our naming and style conventions.
 
-#### Visual: How We Worked Each Sprint
+## 📈 Visual: How We Worked Each Sprint
 
 ![Development Methodology Flow](Documents/Methodology.png)
 
@@ -279,7 +279,7 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 - **Layered Architecture (Client)**: Separation of concerns within the client application promotes maintainability, testability, and code organization
 
 ### Detailed Flowchart of System Architecture Overview
-![Detailed Architecture](Documents/UML/High_Level_System_Architecture.png)
+![Detailed Architecture](Documents/UML/Detailed_System_Architecture.png)
 
 ### Component Structure
 
@@ -322,7 +322,7 @@ src/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 How to Run the Project
 
 ### Prerequisites
 - **Node.js** 20 LTS or newer
@@ -586,7 +586,11 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 > 📋 **Full Report**: [`eslint-report/ESLint_Report.md`](eslint-report/ESLint_Report.md)
 
+
+#### **ESLint Report Before Fixes**
 ![ESLint Before](eslint-report/Eslint_Report_Before_Fixes.png)
+
+#### **ESLint Report After Fixes**
 ![ESLint After](eslint-report/Eslint_Report_After_Fixes.png)
 
 ### Lighthouse Performance
