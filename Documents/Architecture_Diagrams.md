@@ -42,68 +42,7 @@ This document provides comprehensive architecture documentation following the 4+
 
 ### 1.1 High-Level Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           CLIENT TIER (Frontend)                         │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │                    React Single Page Application                   │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐ │  │
-│  │  │ Presentation │  │  Business    │  │   State Management       │ │  │
-│  │  │    Layer     │  │    Logic     │  │   (React Context)        │ │  │
-│  │  │              │  │              │  │                          │ │  │
-│  │  │ • Pages      │  │ • Services   │  │ • AuthContext            │ │  │
-│  │  │ • Components │  │ • Utilities  │  │ • User Session           │ │  │
-│  │  │ • UI Elements│  │ • Validation │  │ • Global State           │ │  │
-│  │  └──────────────┘  └──────────────┘  └──────────────────────────┘ │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    ↕ HTTPS/REST
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      BACKEND TIER (Firebase Services)                    │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │                    Firebase Authentication                         │  │
-│  │  • Email/Password Authentication                                  │  │
-│  │  • Session Management (JWT Tokens)                                │  │
-│  │  • User Registration & Login                                      │  │
-│  │  • Password Reset                                                 │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-│                                    ↕                                     │
-│  ┌───────────────────────────────────────────────────────────────────┐  │
-│  │                    Cloud Firestore (NoSQL Database)               │  │
-│  │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────────┐ │  │
-│  │  │   Collections   │  │    Documents    │  │   Real-time      │ │  │
-│  │  │                 │  │                 │  │   Listeners      │ │  │
-│  │  │ • users/        │  │ • user data     │  │                  │ │  │
-│  │  │ • expenses/     │  │ • expense rec   │  │ • onSnapshot()   │ │  │
-│  │  │ • categories/   │  │ • category rec  │  │ • Auto-sync      │ │  │
-│  │  └─────────────────┘  └─────────────────┘  └──────────────────┘ │  │
-│  │                                                                   │  │
-│  │  Security Rules: User-level data isolation                       │  │
-│  │  Indexes: Optimized queries for userId + date/category           │  │
-│  └───────────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    ↕
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    DEPLOYMENT & CI/CD TIER                               │
-│  ┌──────────────────────┐  ┌──────────────────────────────────────┐   │
-│  │   Vercel Hosting     │  │       GitHub Actions                 │   │
-│  │                      │  │                                      │   │
-│  │  • CDN Distribution  │  │  • CI Pipeline (Jest Tests)          │   │
-│  │  • Auto Deployment   │  │  • E2E Pipeline (Cypress)            │   │
-│  │  • SSL/HTTPS         │  │  • Build Verification                │   │
-│  │  • Edge Functions    │  │  • Code Quality (ESLint)             │   │
-│  │  • Preview URLs      │  │  • Artifact Management               │   │
-│  └──────────────────────┘  └──────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────┘
-                                    ↕
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         END USERS (Clients)                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                 │
-│  │   Desktop    │  │    Tablet    │  │    Mobile    │                 │
-│  │   Browsers   │  │   Browsers   │  │   Browsers   │                 │
-│  └──────────────┘  └──────────────┘  └──────────────┘                 │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+![Detailed System Architecture](UML/Detailed_System_Architecture.png)
 
 ### 1.2 Technology Stack Mapping
 
@@ -399,62 +338,7 @@ See [Section 3.4.3](#343-user-authentication---log-out) for the complete Log Out
 
 ### 2.2.3 State Diagram - Expense Management
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│              Expense State Transitions                       │
-└─────────────────────────────────────────────────────────────┘
-
-                    [Initial State]
-                          │
-                          ↓
-                  ┌───────────────┐
-                  │  No Expenses  │
-                  └───────────────┘
-                          │
-                  User adds expense
-                          │
-                          ↓
-                  ┌───────────────┐
-                  │   Loading     │
-                  │   (Saving)    │
-                  └───────────────┘
-                          │
-                ┌─────────┴─────────┐
-                │                   │
-            Success              Error
-                │                   │
-                ↓                   ↓
-        ┌───────────────┐   ┌───────────────┐
-        │  Expense      │   │  Error State  │
-        │  Saved        │   │               │
-        └───────────────┘   └───────────────┘
-                │                   │
-                │             Retry/Cancel
-                │                   │
-                ↓                   ↓
-        ┌───────────────┐   ┌───────────────┐
-        │  Expense      │   │  No Expenses  │
-        │  List View    │   │               │
-        └───────────────┘   └───────────────┘
-                │
-        ┌───────┼───────┐
-        │       │       │
-     View     Edit   Delete
-        │       │       │
-        ↓       ↓       ↓
-    ┌─────┐ ┌─────┐ ┌─────────┐
-    │View │ │Edit │ │Confirm  │
-    │Mode │ │Mode │ │Delete   │
-    └─────┘ └─────┘ └─────────┘
-                │         │
-             Save      Confirm
-                │         │
-                ↓         ↓
-        ┌───────────────────────┐
-        │   Updated List        │
-        │   (Real-time sync)    │
-        └───────────────────────┘
-```
+![Expense State Transitions](UML/State_Diagram_Expense_Management.png)
 
 ---
 
@@ -549,56 +433,7 @@ budget-buddy/
 
 ### 2.3.2 Module Dependencies
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  Module Dependency Graph                     │
-└─────────────────────────────────────────────────────────────┘
-
-                    ┌──────────────┐
-                    │   index.js   │
-                    │  (Entry)     │
-                    └──────────────┘
-                           │
-                           ↓
-                    ┌──────────────┐
-                    │    App.js    │
-                    │  (Root)      │
-                    └──────────────┘
-                           │
-            ┌──────────────┼──────────────┐
-            │              │              │
-            ↓              ↓              ↓
-    ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-    │ AuthContext  │ │   Router     │ │   Styles     │
-    └──────────────┘ └──────────────┘ └──────────────┘
-            │              │
-            │              ↓
-            │      ┌──────────────┐
-            │      │    Pages     │
-            │      └──────────────┘
-            │              │
-            │      ┌───────┼───────┐
-            │      │       │       │
-            ↓      ↓       ↓       ↓
-    ┌──────────────────────────────────┐
-    │        Components                │
-    │  ┌────────┐  ┌────────┐  ┌────┐ │
-    │  │  Auth  │  │Dashboard│ │ UI │ │
-    │  └────────┘  └────────┘  └────┘ │
-    └──────────────────────────────────┘
-            │
-            ↓
-    ┌──────────────┐
-    │   Services   │
-    │  (database)  │
-    └──────────────┘
-            │
-            ↓
-    ┌──────────────┐
-    │   Firebase   │
-    │     SDK      │
-    └──────────────┘
-```
+![Module Dependency Graph](UML/Module_Dependency_Graph.png)
 
 ---
 
@@ -1211,7 +1046,7 @@ This architecture document provides comprehensive views of the Budget Buddy syst
 - ✅ **Maintainability**: Clear separation of concerns
 - ✅ **Testability**: Comprehensive testing at all levels
 
----
+
 
 ---
 
@@ -1257,10 +1092,10 @@ This section provides detailed justification for each technology, framework, lib
 **Link**: [React.js](https://react.dev/)
 
 **Why we use this framework**:  
-React.js was chosen as our frontend framework because it provides a component-based architecture that enables code reusability and maintainability. Its virtual DOM ensures efficient rendering, which is crucial for a real-time application with frequent data updates. React's extensive ecosystem, strong community support, and excellent developer tools make it ideal for rapid development. The declarative syntax simplifies UI development, and React's unidirectional data flow helps prevent bugs and makes the application more predictable.
+Component-based architecture for reusability, virtual DOM for efficient rendering, extensive ecosystem, strong community support, and excellent developer tools. Ideal for rapid development with declarative syntax and unidirectional data flow.
 
 **Alternatives and why they don't work**:  
-We considered Vue.js and Angular, but React was chosen because it has a larger ecosystem, better integration with Firebase, and more team familiarity. Vue.js, while simpler, has a smaller community and fewer third-party integrations. Angular, though powerful, has a steeper learning curve and is more suited for enterprise applications with complex requirements. For a small team project with tight deadlines, React's balance of simplicity and power was optimal.
+Vue.js has a smaller ecosystem and fewer integrations. Angular has a steeper learning curve and is more suited for enterprise applications. React's balance of simplicity and power, plus better Firebase integration, made it optimal for our team.
 
 ---
 
@@ -1270,10 +1105,10 @@ We considered Vue.js and Angular, but React was chosen because it has a larger e
 **Link**: [Firebase Auth](https://firebase.google.com/docs/auth)
 
 **Why we use this framework**:  
-Firebase Authentication provides secure, production-ready authentication with minimal setup. It handles password hashing, session management, JWT tokens, and email verification out of the box. The SDK integrates seamlessly with React and provides real-time authentication state changes. Firebase Auth supports multiple authentication providers and handles security best practices automatically, reducing development time and security risks.
+Production-ready authentication with minimal setup. Handles password hashing, session management, JWT tokens, and email verification automatically. Seamless React integration with real-time auth state changes. Reduces development time and security risks.
 
 **Alternatives and why they don't work**:  
-We considered Auth0, AWS Cognito, and custom authentication. Auth0 is feature-rich but adds cost and complexity for our simple email/password needs. AWS Cognito requires AWS infrastructure knowledge and is more complex to set up. Custom authentication would require implementing security best practices, password hashing, session management, and token handling - significantly increasing development time and security risks.
+Auth0 adds cost and complexity for simple email/password needs. AWS Cognito requires AWS knowledge and complex setup. Custom authentication would require implementing security best practices, significantly increasing development time and risks.
 
 ---
 
@@ -1281,10 +1116,10 @@ We considered Auth0, AWS Cognito, and custom authentication. Auth0 is feature-ri
 **Link**: [Cloud Firestore](https://firebase.google.com/docs/firestore)
 
 **Why we use this framework**:  
-Cloud Firestore is a NoSQL document database that provides real-time synchronization, automatic scaling, and offline support. Its real-time listeners eliminate the need for polling, providing instant UI updates when data changes. Firestore's security rules enable fine-grained access control, and its query capabilities are sufficient for our expense tracking needs. The integration with Firebase Auth provides seamless user-scoped data access.
+NoSQL document database with real-time synchronization, automatic scaling, and offline support. Real-time listeners provide instant UI updates. Security rules enable fine-grained access control. Seamless integration with Firebase Auth for user-scoped data access.
 
 **Alternatives and why they don't work**:  
-We considered MongoDB Atlas, PostgreSQL, and Firebase Realtime Database. MongoDB Atlas requires server setup and doesn't provide real-time sync out of the box. PostgreSQL is a relational database that would require complex schema design and doesn't offer real-time capabilities without additional setup. Firebase Realtime Database was considered but Firestore's better querying, offline support, and scalability make it superior for our use case.
+MongoDB Atlas requires server setup and lacks real-time sync. PostgreSQL requires complex schema design and doesn't offer real-time capabilities. Firebase Realtime Database has inferior querying, offline support, and scalability compared to Firestore.
 
 ---
 
@@ -1294,10 +1129,10 @@ We considered MongoDB Atlas, PostgreSQL, and Firebase Realtime Database. MongoDB
 **Link**: [Vercel](https://vercel.com/)
 
 **Why we use this platform**:  
-Vercel provides seamless deployment for React applications with zero configuration. It offers automatic deployments from Git, preview deployments for pull requests, global CDN distribution, and built-in SSL certificates. Vercel's integration with GitHub provides a smooth workflow, and the platform handles scaling automatically. The free tier is generous for our project needs.
+Zero-configuration deployment for React applications. Automatic deployments from Git, preview URLs for PRs, global CDN, and built-in SSL. Seamless GitHub integration with automatic scaling. Generous free tier.
 
 **Alternatives and why they don't work**:  
-We considered Netlify, AWS Amplify, and traditional hosting. Netlify is similar but has less React-specific optimization. AWS Amplify requires more configuration and AWS knowledge. Traditional hosting (shared/VPS) requires server management, SSL setup, and doesn't provide CDN or automatic scaling. Vercel's simplicity and React optimization make it ideal.
+Netlify has less React-specific optimization. AWS Amplify requires more configuration and AWS knowledge. Traditional hosting requires server management and lacks CDN/automatic scaling. Vercel's simplicity and React optimization make it ideal.
 
 ---
 
@@ -1305,10 +1140,10 @@ We considered Netlify, AWS Amplify, and traditional hosting. Netlify is similar 
 **Link**: [GitHub Actions](https://docs.github.com/en/actions)
 
 **Why we use this tool**:  
-GitHub Actions provides CI/CD directly integrated with our GitHub repository, eliminating the need for external CI services. It supports matrix builds for cross-browser testing, artifact management, and workflow automation. The YAML-based configuration is version-controlled and easy to maintain. GitHub Actions' generous free tier covers our project needs.
+CI/CD directly integrated with GitHub repository. Supports matrix builds for cross-browser testing, artifact management, and workflow automation. YAML-based configuration is version-controlled and easy to maintain. Generous free tier.
 
 **Alternatives and why they don't work**:  
-We considered Jenkins, CircleCI, and Travis CI. Jenkins requires server setup and maintenance. CircleCI and Travis CI are external services that add complexity and potential security concerns. GitHub Actions' native integration, zero setup for public repos, and workflow flexibility make it the best choice.
+Jenkins requires server setup and maintenance. CircleCI and Travis CI are external services that add complexity and security concerns. GitHub Actions' native integration, zero setup for public repos, and workflow flexibility make it the best choice.
 
 ---
 

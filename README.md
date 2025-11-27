@@ -68,6 +68,8 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **CI/CD Results** | [GitHub Actions](https://github.com/JasleenMinhas578/BudgetBuddy/actions) |
 | **Deployments** | [Vercel Deployments](https://github.com/JasleenMinhas578/BudgetBuddy/deployments/Production) |
 | **Planning Board** | [GitHub Projects](https://github.com/users/JasleenMinhas578/projects/4/views/1) |
+| **Requirements Document** | [`Documents/Requirements.md`](Documents/Requirements.md) |
+| **Planning & Issues Mapping** | [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md) |
 | **ESLint Report** | [`eslint-report/ESLint_Report.md`](eslint-report/ESLint_Report.md) |
 | **Lighthouse Report** | [`Documents/Lighthouse_Metrics/`](Documents/Lighthouse_Metrics/) |
 | **Acceptance Tests & Requirements** | [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) |
@@ -168,7 +170,7 @@ In particular, we adopted **four core XP practices** throughout the project:
 
 #### Visual: How We Worked Each Sprint
 
-![Development Methodology Flow](Documents/Methodology.svg)
+![Development Methodology Flow](Documents/Methodology.png)
 
 ### Iterations Summary
 
@@ -262,7 +264,7 @@ Status: ✅ **100% feature + infrastructure scope complete**
 Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application:
 
 **Primary Architecture Pattern: Client-Server**
-- **Client**: React Single Page Application (SPA) running in the browser
+- **Client**: React running in the browser
 - **Server**: Firebase cloud services (Authentication, Firestore Database)
 
 **Secondary Architecture Pattern: Layered Architecture (within Client)**
@@ -270,40 +272,14 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 - **Business Logic Layer**: Services, utilities, validation, context
 - **Data Access Layer**: Firebase SDK integration, API calls
 
-```
-┌─────────────────────────────────────┐
-│      CLIENT (React SPA)             │
-│  ┌────────────────────────────────┐ │
-│  │  Presentation Layer            │ │
-│  │  - Pages, Components, UI       │ │
-│  └────────────────────────────────┘ │
-│  ┌────────────────────────────────┐ │
-│  │  Business Logic Layer          │ │
-│  │  - Services, Context, Utils    │ │
-│  └────────────────────────────────┘ │
-│  ┌────────────────────────────────┐ │
-│  │  Data Access Layer             │ │
-│  │  - Firebase SDK, API calls     │ │
-│  └────────────────────────────────┘ │
-└─────────────────────────────────────┘
-                              ↕ HTTPS/REST
-┌─────────────────────────────────────┐
-│   SERVER (Firebase Cloud)           │
-│  - Authentication (Email/Password)  │
-│  - Firestore (NoSQL Database)       │
-│  - Real-time Sync                   │
-└─────────────────────────────────────┘
-              ↕
-┌─────────────────────────────────────┐
-│   DEPLOYMENT & CI/CD                │
-│  - Vercel (Hosting + CDN)           │
-│  - GitHub Actions (CI/CD)           │
-└─────────────────────────────────────┘
-```
+![System Architecture](Documents/UML/High_Level_System_Architecture.png)
 
 **Architecture Pattern Justification**:
 - **Client-Server**: Clear separation between client (React) and server (Firebase), enabling scalability, security, and independent deployment
 - **Layered Architecture (Client)**: Separation of concerns within the client application promotes maintainability, testability, and code organization
+
+### Detailed Flowchart of System Architecture Overview
+![Detailed Architecture](Documents/UML/High_Level_System_Architecture.png)
 
 ### Component Structure
 
@@ -326,6 +302,9 @@ src/
 **Authentication**: Email/Password with JWT tokens, automatic refresh, protected routes
 
 **Firestore Structure**:
+
+![Firestore Structure](Documents/UML/Firestore_Structure.png)
+
 - `users/` - User profiles
 - `expenses/` - Expense records (userId, title, amount, category, date)
 - `categories/` - Category records (userId, name)
@@ -523,15 +502,9 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 ### Workflow Overview
 
-```mermaid
-flowchart LR
-  Dev[Developer Push / PR] --> GA[GitHub Actions CI]
-  GA --> UT[Run Unit Tests\n+ Coverage]
-  UT --> B[Build React App]
-  B --> E2E[Cypress E2E\n(Chrome / Firefox / Edge)]
-  E2E --> V[Vercel Deploy\nPreview/Prod]
-  V --> Badge[Status Badges\nin README]
-```
+![CI/CD Pipeline](Documents/CI_CD_Pipeline.png)
+
+
 
 ### CI Workflow (`ci.yml`)
 
