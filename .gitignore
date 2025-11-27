@@ -31,7 +31,6 @@ cypress/downloads
 
 # CI E2E artifacts (keep structure, ignore content)
 Documents/CI_e2e_run/screenshots/*
-Documents/CI_e2e_run/videos/*
 Documents/CI_e2e_run/reports/*
 !Documents/CI_e2e_run/screenshots/.gitkeep
 !Documents/CI_e2e_run/videos/.gitkeep

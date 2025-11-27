@@ -272,32 +272,32 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 
 ```
 ┌─────────────────────────────────────┐
-│      CLIENT (React SPA)              │
+│      CLIENT (React SPA)             │
 │  ┌────────────────────────────────┐ │
 │  │  Presentation Layer            │ │
 │  │  - Pages, Components, UI       │ │
 │  └────────────────────────────────┘ │
 │  ┌────────────────────────────────┐ │
 │  │  Business Logic Layer          │ │
-│  │  - Services, Context, Utils   │ │
+│  │  - Services, Context, Utils    │ │
 │  └────────────────────────────────┘ │
 │  ┌────────────────────────────────┐ │
-│  │  Data Access Layer              │ │
+│  │  Data Access Layer             │ │
 │  │  - Firebase SDK, API calls     │ │
 │  └────────────────────────────────┘ │
 └─────────────────────────────────────┘
                               ↕ HTTPS/REST
 ┌─────────────────────────────────────┐
-│   SERVER (Firebase Cloud)            │
-│  - Authentication (Email/Password)   │
+│   SERVER (Firebase Cloud)           │
+│  - Authentication (Email/Password)  │
 │  - Firestore (NoSQL Database)       │
-│  - Real-time Sync                    │
+│  - Real-time Sync                   │
 └─────────────────────────────────────┘
               ↕
 ┌─────────────────────────────────────┐
 │   DEPLOYMENT & CI/CD                │
-│  - Vercel (Hosting + CDN)            │
-│  - GitHub Actions (CI/CD)            │
+│  - Vercel (Hosting + CDN)           │
+│  - GitHub Actions (CI/CD)           │
 └─────────────────────────────────────┘
 ```
 
@@ -464,32 +464,32 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│         Requirements Coverage Summary                    │
+│         Requirements Coverage Summary                   │
 ├─────────────────────────────────────────────────────────┤
-│                                                          │
+│                                                         │
 │  Total Requirements:              21                    │
 │  Requirements Tested/Verified:    21                    │
 │  Coverage Percentage:             100%                  │
-│                                                          │
-│  Functional Requirements:         11/11  ✅             │
-│  Non-Functional Requirements:     10/10  ✅             │
-│                                                          │
+│                                                         │
+│  Functional Requirements:         11/11                 │
+│  Non-Functional Requirements:     10/10                 │
+│                                                         │
 │  Total User Stories:              7                     │
 │  User Stories Implemented:        7                     │
-│                                                          │
+│                                                         │
 │  Total Acceptance Criteria:       38                    │
 │  Acceptance Criteria Tested:      38                    │
-│                                                          │
+│                                                         │
 │  Total E2E Tests:                 102                   │
 │  Passing Tests:                   102 (100%)            │
 │  Failing Tests:                   0 (0%)                │
-│                                                          │
+│                                                         │
 │  Total Unit Tests:                295                   │
 │  Passing Tests:                   295 (100%)            │
 │  Failing Tests:                   0 (0%)                │
-│                                                          │
-│  Status:                          ✅ COMPLETE           │
-│                                                          │
+│                                                         │
+│  Status:                          COMPLETE              │
+│                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
