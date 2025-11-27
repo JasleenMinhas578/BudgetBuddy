@@ -2,6 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
+// Now import the components after mocks are set up
+import Categories from '../components/Dashboard/Categories';
+import { AuthProvider } from '../context/AuthContext';
+
 // Mock Firebase Auth before importing components
 jest.mock('firebase/auth', () => ({
   onAuthStateChanged: jest.fn(),
@@ -82,10 +86,6 @@ jest.mock('framer-motion', () => ({
   },
 }));
 
-// Now import the components after mocks are set up
-import Categories from '../components/Dashboard/Categories';
-import { AuthProvider } from '../context/AuthContext';
-
 // Get the mocked functions
 const { 
   collection, 
@@ -158,9 +158,10 @@ describe('Categories Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Categories')).toBeInTheDocument();
-        expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
-        expect(screen.getByText('Add Category')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
+      expect(screen.getByText('Add Category')).toBeInTheDocument();
     });
 
     it('renders with proper component structure', async () => {
@@ -171,15 +172,14 @@ describe('Categories Component', () => {
       );
 
       await waitFor(() => {
-        // Check main container
         expect(screen.getByText('Categories')).toBeInTheDocument();
-        
-        // Check section subtitle
-        expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
-        
-        // Check add button
-        expect(screen.getByText('Add Category')).toBeInTheDocument();
       });
+      
+      // Check section subtitle
+      expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
+      
+      // Check add button
+      expect(screen.getByText('Add Category')).toBeInTheDocument();
     });
   });
 
@@ -201,8 +201,9 @@ describe('Categories Component', () => {
       // Modal should open
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
-        expect(screen.getByText('Add New Category')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Add New Category')).toBeInTheDocument();
     });
 
     it('closes modal when close button is clicked', async () => {
@@ -270,10 +271,11 @@ describe('Categories Component', () => {
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
-        expect(screen.getByPlaceholderText('Enter category name')).toBeInTheDocument();
-        expect(screen.getByText('Cancel')).toBeInTheDocument();
-        expect(screen.getAllByRole('button', { name: /add category/i })).toHaveLength(2);
       });
+      
+      expect(screen.getByPlaceholderText('Enter category name')).toBeInTheDocument();
+      expect(screen.getByText('Cancel')).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /add category/i })).toHaveLength(2);
     });
 
     it('updates input value when typing', async () => {
@@ -288,10 +290,12 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        expect(input.value).toBe('Test Category');
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      expect(input.value).toBe('Test Category');
     });
 
     it('resets form when modal is closed', async () => {
@@ -306,10 +310,12 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        expect(input.value).toBe('Test Category');
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      expect(input.value).toBe('Test Category');
 
       // Close modal
       const closeButton = screen.getByText('Close Modal');
@@ -338,12 +344,14 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(addDoc).toHaveBeenCalledWith(
@@ -368,18 +376,21 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
-        expect(screen.getByText('Category "Test Category" added successfully!')).toBeInTheDocument();
-        expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'success');
       });
+      
+      expect(screen.getByText('Category "Test Category" added successfully!')).toBeInTheDocument();
+      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'success');
     });
 
     it('closes modal after successful category addition', async () => {
@@ -394,12 +405,14 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
@@ -421,20 +434,22 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        
-        // Check that submit button is disabled during loading (before clicking)
-        expect(submitButtons[1]).not.toBeDisabled(); // Should not be disabled initially
-        
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
-        
-        // The modal closes immediately after submission, so we can't check the disabled state
-        // But we can verify that the form submission was initiated
-        expect(addDoc).toHaveBeenCalled();
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      
+      // Check that submit button is disabled during loading (before clicking)
+      expect(submitButtons[1]).not.toBeDisabled(); // Should not be disabled initially
+      
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      
+      // The modal closes immediately after submission, so we can't check the disabled state
+      // But we can verify that the form submission was initiated
+      expect(addDoc).toHaveBeenCalled();
     });
   });
 
@@ -453,18 +468,21 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
-        expect(screen.getByText('Failed to add category. Please try again.')).toBeInTheDocument();
-        expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
       });
+      
+      expect(screen.getByText('Failed to add category. Please try again.')).toBeInTheDocument();
+      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
     });
 
     it('handles Firebase not configured error', async () => {
@@ -483,18 +501,21 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
-        expect(screen.getByText('Firebase not configured. Please set up your Firebase project.')).toBeInTheDocument();
-        expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
       });
+      
+      expect(screen.getByText('Firebase not configured. Please set up your Firebase project.')).toBeInTheDocument();
+      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
 
       // Restore original db
       require('../firebaseConfig').db = originalDb;
@@ -520,18 +541,21 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
-        expect(screen.getByText('Please log in to add categories.')).toBeInTheDocument();
-        expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
       });
+      
+      expect(screen.getByText('Please log in to add categories.')).toBeInTheDocument();
+      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
     });
 
     it('handles Firebase listener errors gracefully', async () => {
@@ -561,9 +585,10 @@ describe('Categories Component', () => {
 
       await waitFor(() => {
         expect(collection).toHaveBeenCalledWith({}, 'users', 'test-user-123', 'expenses');
-        expect(query).toHaveBeenCalled();
-        expect(onSnapshot).toHaveBeenCalled();
       });
+      
+      expect(query).toHaveBeenCalled();
+      expect(onSnapshot).toHaveBeenCalled();
     });
 
     it('handles Firebase unsubscribe correctly', async () => {
@@ -635,8 +660,9 @@ describe('Categories Component', () => {
       // This test verifies that the data is loaded from Firebase
       await waitFor(() => {
         expect(collection).toHaveBeenCalled();
-        expect(onSnapshot).toHaveBeenCalled();
       });
+      
+      expect(onSnapshot).toHaveBeenCalled();
     });
 
     it('loads and displays expenses from Firebase', async () => {
@@ -663,8 +689,9 @@ describe('Categories Component', () => {
       // Verify that expenses are loaded
       await waitFor(() => {
         expect(collection).toHaveBeenCalledWith({}, 'users', 'test-user-123', 'expenses');
-        expect(onSnapshot).toHaveBeenCalled();
       });
+      
+      expect(onSnapshot).toHaveBeenCalled();
     });
   });
 
@@ -681,10 +708,12 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        // Click the submit button (the one in the form)
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getAllByRole('button', { name: /add category/i })).toHaveLength(2);
       });
+      
+      // Click the submit button (the one in the form)
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       // Wait for the form submission
       await waitFor(() => {
@@ -710,9 +739,11 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        expect(input).toHaveAttribute('required');
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      expect(input).toHaveAttribute('required');
     });
   });
 
@@ -729,12 +760,14 @@ describe('Categories Component', () => {
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-        
-        fireEvent.change(input, { target: { value: 'Test Category' } });
-        fireEvent.click(submitButtons[1]); // Second button is the submit button
+        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
+      
+      const input = screen.getByLabelText('Category Name');
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       // Wait for toast to appear
       await waitFor(() => {
