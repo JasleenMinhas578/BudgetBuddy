@@ -50,6 +50,9 @@ Budget Buddy has a comprehensive End-to-End (E2E) test suite implemented using C
 ### Smoke Tests
 ![Smoke Test Results](./SmokeTest.png)
 
+**Smoke Test Video**:
+[![Smoke Test Video](../../cypress/videos/smoke.cy.js.mp4)](../../cypress/videos/smoke.cy.js.mp4)
+
 ### CI/CD Workflows
 
 **E2E Test Workflow**:
@@ -123,6 +126,8 @@ npm run cypress:run:firefox
 - Protected routes are secured
 
 **Run**: `npx cypress run --spec "cypress/e2e/smoke.cy.js"`
+
+**Test Execution Video**: [View Smoke Test Video](../../cypress/videos/smoke.cy.js.mp4)
 
 ---
 

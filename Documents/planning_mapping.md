@@ -38,7 +38,7 @@ It also includes screenshots of the GitHub Project Board and a detailed contribu
 - **Project Team Capacity Board Link** : [Team Capacity](https://github.com/users/JasleenMinhas578/projects/4/views/2)
 
 ## 📸 Screenshot of the **Burnup Chart**
-![Burnup Chart](/Documents/Burn_up_chart.png)
+![Burnup Chart](./Burn_up_chart.png)
 
 
 ---
@@ -378,6 +378,12 @@ This shows consistent productivity and healthy iteration cycles.
 ### ✔ **Scrum-Based Iterations**
 - 5 structured sprints  
 - Each sprint had clear deliverables and acceptance criteria  
+
+### ✔ **Extreme Programming (XP) Practices**
+- **User Stories**: All core functionality was captured as user stories with explicit acceptance criteria and mapped to GitHub issues.
+- **Pair Programming**: **The majority of coding work (features, tests, and refactoring) was done using pair programming**, where two team members collaboratively implemented and reviewed code in real time.
+- **Test-Driven Development (TDD)**: Many critical components (authentication, dashboard, expense and category management) were implemented with tests written first or in very short red‑green‑refactor cycles.
+- **Refactoring**: Continuous refactoring was performed across sprints (especially during ESLint cleanup, architecture refinement, and naming-convention alignment) to improve design quality without changing observable behavior.
 
 ### ✔ **User Stories + Story Points**
 - Every feature broken into user stories (5–8 SP major features)  

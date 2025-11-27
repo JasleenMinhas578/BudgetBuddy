@@ -14,7 +14,7 @@ This document summarizes every Jest suite that ships with **Budget Buddy**, the 
 
 
 #### 📸 Snapshot of All the Tests Passing
-![All the Test Cases Passing](Documents/Jest_Unit_Testing/Unit_Tests_Passing.png)
+![All the Test Cases Passing](./Unit_Tests_Passing.png)
 *Screenshot showing all tests passing*
 
 --- 
@@ -44,7 +44,7 @@ This document summarizes every Jest suite that ships with **Budget Buddy**, the 
 
 
 #### 📸 Snapshot of the Test Coverage HTML
-![100% Coverage HTML File](Documents/Jest_Unit_Testing/Unit_Tests_Coverage_HTML.png)
+![100% Coverage HTML File](./Unit_Tests_Coverage_HTML.png)
 *Screenshot showing 100% Coverage of the Tests included*
 
 > This can be found in under Coverage HTML folder in repo 
@@ -52,7 +52,7 @@ This document summarizes every Jest suite that ships with **Budget Buddy**, the 
 
 
 #### 📸 Snapshot of the Test Coverage on Running: `npm run test:coverage`
-![100% Coverage](Documents/Jest_Unit_Testing/Unit_Tests_Coverage.png)
+![100% Coverage](./Unit_Tests_Coverage.png)
 *Screenshot showing 100% Coverage of the Tests included*
 
 
