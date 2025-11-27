@@ -161,7 +161,7 @@ The 4+1 architectural view model describes the architecture using five concurren
 
 The logical view is best represented by the Class Diagram, which shows the core domain model:
 
-![Class Diagram](Documents/UML/Class_Diagram.png)
+![Class Diagram](UML/Class_Diagram.png)
 
 For detailed relationships, see the [Class Diagram Relationships](#33-class-diagram---relationships) section.
 
@@ -466,7 +466,7 @@ See [Section 3.4.3](#343-user-authentication---log-out) for the complete Log Out
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│              Development Structure                           │
+│              Development Structure                          │
 └─────────────────────────────────────────────────────────────┘
 
 budget-buddy/
@@ -581,9 +581,9 @@ budget-buddy/
             │      │       │       │
             ↓      ↓       ↓       ↓
     ┌──────────────────────────────────┐
-    │        Components                 │
+    │        Components                │
     │  ┌────────┐  ┌────────┐  ┌────┐ │
-    │  │  Auth  │  │Dashboard│  │ UI │ │
+    │  │  Auth  │  │Dashboard│ │ UI │ │
     │  └────────┘  └────────┘  └────┘ │
     └──────────────────────────────────┘
             │
@@ -610,11 +610,11 @@ budget-buddy/
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      Deployment Architecture                         │
+│                      Deployment Architecture                        │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌───────────────────────────────────────────────────────────────────┐
-│                        Client Devices                              │
+│                        Client Devices                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
 │  │  Desktop    │  │   Tablet    │  │   Mobile    │              │
 │  │  Browser    │  │   Browser   │  │   Browser   │              │
@@ -629,7 +629,7 @@ budget-buddy/
                             │ HTTPS
                             ↓
 ┌───────────────────────────────────────────────────────────────────┐
-│                    Vercel Edge Network (CDN)                       │
+│                    Vercel Edge Network (CDN)                      │
 │  ┌──────────────────────────────────────────────────────────────┐ │
 │  │  Global CDN Nodes (100+ locations worldwide)                 │ │
 │  │  • Static Asset Caching                                      │ │
@@ -741,7 +741,7 @@ Internet
 
 The Use Case Diagram shows all actors and use cases in the Budget Buddy system. See the detailed diagram in [Section 3.1](#31-use-case-diagram).
 
-![Use Case Diagram](Documents/UML/Use_Case_Diagram.png)
+![Use Case Diagram](UML/Use_Case_Diagram.png)
 
 ### 2.5.2 Key Use Case Descriptions
 
@@ -817,7 +817,7 @@ This section contains the official UML diagrams for the Budget Buddy system. All
 
 The Use Case Diagram illustrates all the use cases and actors in the Budget Buddy system, showing the interactions between guest users, registered users, and the system functionalities.
 
-![Use Case Diagram](Documents/UML/Use_Case_Diagram.png)
+![Use Case Diagram](UML/Use_Case_Diagram.png)
 
 **Description**:
 - **Actors**: Guest User, Registered User
@@ -834,7 +834,7 @@ The Use Case Diagram illustrates all the use cases and actors in the Budget Budd
 
 The Class Diagram shows the core domain model with classes, their attributes, methods, and relationships.
 
-![Class Diagram](Documents/UML/Class_Diagram.png)
+![Class Diagram](UML/Class_Diagram.png)
 
 **Key Classes**:
 - **User**: Represents authenticated users with authentication methods
@@ -849,7 +849,7 @@ The Class Diagram shows the core domain model with classes, their attributes, me
 
 This diagram provides a detailed view of the relationships between classes, including associations, aggregations, and dependencies.
 
-![Class Diagram Relationships](Documents/UML/Class_Diagram_Relationships.png)
+![Class Diagram Relationships](UML/Class_Diagram_Relationships.png)
 
 **Key Relationships**:
 - User **owns** multiple Expenses (1-to-many)
@@ -868,7 +868,7 @@ Sequence diagrams illustrate the dynamic interactions between system components 
 
 This sequence diagram shows the complete user registration flow from form submission to account creation.
 
-![Sign Up Sequence Diagram](Documents/UML/Sequence_Diagram_for_Sign_up.png)
+![Sign Up Sequence Diagram](UML/Sequence_Diagram_for_Sign_up.png)
 
 **Flow**:
 1. User fills signup form
@@ -883,7 +883,7 @@ This sequence diagram shows the complete user registration flow from form submis
 
 This sequence diagram illustrates the login process and session management.
 
-![Log In Sequence Diagram](Documents/UML/Sequence_Diagram_for_Log_In.png)
+![Log In Sequence Diagram](UML/Sequence_Diagram_for_Log_In.png)
 
 **Flow**:
 1. User enters credentials
@@ -899,7 +899,7 @@ This sequence diagram illustrates the login process and session management.
 
 This sequence diagram shows the logout process and session cleanup.
 
-![Log Out Sequence Diagram](Documents/UML/Sequence_Diagram_for_Log_Out.png)
+![Log Out Sequence Diagram](UML/Sequence_Diagram_for_Log_Out.png)
 
 **Flow**:
 1. User clicks logout
@@ -914,7 +914,7 @@ This sequence diagram shows the logout process and session cleanup.
 
 This sequence diagram details the process of adding a new expense to the system.
 
-![Add Expense Sequence Diagram](Documents/UML/Sequence_Diagram_for_Adding_Expense.png)
+![Add Expense Sequence Diagram](UML/Sequence_Diagram_for_Adding_Expense.png)
 
 **Flow**:
 1. User opens expense form
@@ -930,7 +930,7 @@ This sequence diagram details the process of adding a new expense to the system.
 
 This sequence diagram shows the expense editing workflow.
 
-![Edit Expense Sequence Diagram](Documents/UML/Sequence_Diagram_for_Editing_Expense.png)
+![Edit Expense Sequence Diagram](UML/Sequence_Diagram_for_Editing_Expense.png)
 
 **Flow**:
 1. User selects expense to edit
@@ -946,7 +946,7 @@ This sequence diagram shows the expense editing workflow.
 
 This sequence diagram illustrates the expense deletion process with confirmation.
 
-![Delete Expense Sequence Diagram](Documents/UML/Sequence_Diagram_for_Deleting_an_Expense.png)
+![Delete Expense Sequence Diagram](UML/Sequence_Diagram_for_Deleting_an_Expense.png)
 
 **Flow**:
 1. User clicks delete button
@@ -963,7 +963,7 @@ This sequence diagram illustrates the expense deletion process with confirmation
 
 This sequence diagram shows the process of creating a new expense category.
 
-![Add Category Sequence Diagram](Documents/UML/Sequence_Diagram_for_Adding_Category.png)
+![Add Category Sequence Diagram](UML/Sequence_Diagram_for_Adding_Category.png)
 
 **Flow**:
 1. User opens category form
@@ -979,7 +979,7 @@ This sequence diagram shows the process of creating a new expense category.
 
 This sequence diagram illustrates the dashboard initialization and data loading process.
 
-![View Dashboard Sequence Diagram](Documents/UML/Sequence_Diagram_for_Viewing_the_Dashbaord.png)
+![View Dashboard Sequence Diagram](UML/Sequence_Diagram_for_Viewing_the_Dashbaord.png)
 
 **Flow**:
 1. User navigates to dashboard
@@ -995,7 +995,7 @@ This sequence diagram illustrates the dashboard initialization and data loading 
 
 This sequence diagram shows the PDF report generation and export process.
 
-![Export PDF Sequence Diagram](Documents/UML/Sequence_Diagram_for_Exporting_Report_to_PDF.png)
+![Export PDF Sequence Diagram](UML/Sequence_Diagram_for_Exporting_Report_to_PDF.png)
 
 **Flow**:
 1. User clicks "Export PDF"
@@ -1011,7 +1011,7 @@ This sequence diagram shows the PDF report generation and export process.
 
 This sequence diagram illustrates the date-based filtering for charts and reports.
 
-![Filter Charts Sequence Diagram](Documents/UML/Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png)
+![Filter Charts Sequence Diagram](UML/Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png)
 
 **Flow**:
 1. User selects date range

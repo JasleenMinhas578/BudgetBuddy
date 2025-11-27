@@ -44,6 +44,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
 - **E2E Testing**: Cypress (102 tests across 8 test files)
 - **Code Quality**: ESLint (0 errors, 0 warnings)
+- **Acceptance Testing**: User Stories coverage
 - **Performance**: Lighthouse (99% performance, 100% accessibility)
 - **CI/CD**: GitHub Actions + Vercel deployment
 
@@ -55,6 +56,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - **All Tests Passing**: 295 unit tests + 102 E2E tests
 - **Code Quality**: 100% (0 ESLint errors/warnings)
 - **Test Coverage**: 100% (statements, branches, functions, lines)
+- **Acceptance Testing**: 100% (requirements and user stories coverage)
 - **Performance**: 99/100 (Lighthouse)
 - **Accessibility**: 100/100 (WCAG 2.1 compliant)
 
@@ -152,11 +154,21 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 ## 🖥️ Methodology & Iterations
 
 ### Methodology
-We follow **Agile Software Development** with iterative sprint-based approach:
+We follow **Agile Software Development** with an iterative sprint-based approach, complemented by key practices from **Extreme Programming (XP)**:
 - 5 sprints (2 weeks each) with clear milestones
 - GitHub Projects, Issues, and Milestones for planning
 - Incremental feature implementation with testing
 - Continuous Integration (CI) and Continuous Deployment (CD)
+  
+In particular, we adopted **four core XP practices** throughout the project:
+- **User Stories**: All functionality was captured and planned as user stories with clear acceptance criteria.
+- **Pair Programming**: **Most of the production code was written in pairs**, with two developers collaborating at one workstation to improve design quality, knowledge sharing, and defect detection.
+- **Test-Driven Development (TDD)**: Many modules (especially authentication, dashboard, and expense management) were developed with tests written first or in very tight red‑green‑refactor loops.
+- **Refactoring**: We continuously refactored code (e.g., during ESLint fixes, test improvements, and architecture cleanup) to improve readability, maintainability, and adherence to our naming and style conventions.
+
+#### Visual: How We Worked Each Sprint
+
+![Development Methodology Flow](Documents/Methodology.svg)
 
 ### Iterations Summary
 
@@ -446,6 +458,41 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 > 📋 **Detailed Acceptance Tests & Traceability**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)
 
+### Traceability Verification
+
+**Requirements Coverage Summary**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│         Requirements Coverage Summary                    │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Total Requirements:              21                    │
+│  Requirements Tested/Verified:    21                    │
+│  Coverage Percentage:             100%                  │
+│                                                          │
+│  Functional Requirements:         11/11  ✅             │
+│  Non-Functional Requirements:     10/10  ✅             │
+│                                                          │
+│  Total User Stories:              7                     │
+│  User Stories Implemented:        7                     │
+│                                                          │
+│  Total Acceptance Criteria:       38                    │
+│  Acceptance Criteria Tested:      38                    │
+│                                                          │
+│  Total E2E Tests:                 102                   │
+│  Passing Tests:                   102 (100%)            │
+│  Failing Tests:                   0 (0%)                │
+│                                                          │
+│  Total Unit Tests:                295                   │
+│  Passing Tests:                   295 (100%)            │
+│  Failing Tests:                   0 (0%)                │
+│                                                          │
+│  Status:                          ✅ COMPLETE           │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
 ### E2E Testing (Cypress)
 
 **Coverage**: Complete user journey coverage
@@ -476,8 +523,14 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 ### Workflow Overview
 
-```
-Push/PR → GitHub Actions → Tests → Build → Vercel → Production
+```mermaid
+flowchart LR
+  Dev[Developer Push / PR] --> GA[GitHub Actions CI]
+  GA --> UT[Run Unit Tests\n+ Coverage]
+  UT --> B[Build React App]
+  B --> E2E[Cypress E2E\n(Chrome / Firefox / Edge)]
+  E2E --> V[Vercel Deploy\nPreview/Prod]
+  V --> Badge[Status Badges\nin README]
 ```
 
 ### CI Workflow (`ci.yml`)
