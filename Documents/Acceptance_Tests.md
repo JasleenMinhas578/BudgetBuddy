@@ -1,10 +1,10 @@
-# Acceptance Tests & Requirements Traceability - Budget Buddy
+# 📌 Acceptance Tests & Requirements Traceability - Budget Buddy
 
 **Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
 **Team**: Group 6  
 **Date**: November 26, 2025  
-**Purpose**: Comprehensive acceptance tests documentation with complete traceability from requirements to user stories to acceptance criteria to tests  
+**Purpose**: Comprehensive acceptance tests documentation with complete traceability from requirements to issues (user stories) to acceptance criteria to tests  
 **Status**: ✅ 100% Complete Coverage | ✅ 102/102 E2E Tests Passing | ✅ 295/295 Unit Tests Passing
 
 > 📋 **Related Documents**:  
@@ -22,13 +22,15 @@
 |----------|-------|-----------------|----------|--------|
 | **Functional Requirements** | 11 | 11 | 100% | ✅ Complete |
 | **Non-Functional Requirements** | 10 | 10 | 100% | ✅ Complete |
-| **User Stories** | 7 | 7 | 100% | ✅ Complete |
+| **Feature Issues** | 29 | 29 | 100% | ✅ Complete |
+| **Story Points for Feature Issues** | 113 | 113 | 100% | ✅ Complete |
+| **Infrastructure Issues** | 24 | 24 | 100% | ✅ Complete |
+| **Story Points for Infrastucture** | 98 | 98 | 100% | ✅ Complete |
+| **GitHub Issues** | 53 | 53 | 100% | ✅ Complete |
+| **Story Points for Total Project** | 211 | 211 | 100% | ✅ Complete |
 | **Acceptance Criteria** | 38 | 38 | 100% | ✅ Complete |
 | **E2E Tests (Cypress)** | 102 | 102 | 100% | ✅ Passing |
 | **Unit Tests (Jest)** | 295 | 295 | 100% | ✅ Passing |
-| **GitHub Issues** | 100 | 100 | 100% | ✅ Complete |
-| **Story Points (User Stories)** | 55 | 55 | 100% | ✅ Complete |
-| **Story Points (Total Project)** | 211 | 211 | 100% | ✅ Complete |
 
 ### Test Execution Summary
 
@@ -38,26 +40,28 @@
 | **Unit Tests (Jest)** | 42 files | 295 tests | ✅ 295 passing | ~45 sec |
 | **Total** | **50 files** | **397 tests** | ✅ **100% passing** | **~21 min** |
 
-### User Story Summary
+### Feature Issues Summary
 
-| User Story | Story Points | Sprint | Issues | Acceptance Criteria | E2E Tests | Status |
-|------------|--------------|--------|--------|---------------------|-----------|--------|
-| **US-001**: User Registration | 5 | Iteration 2 | 4 | 6 | 11 | ✅ Complete |
-| **US-002**: User Login | 5 | Iteration 2 | 5 | 3 | 13 | ✅ Complete |
-| **US-003**: View Dashboard | 8 | Iteration 3-4 | 4 | 2 | 16 | ✅ Complete |
-| **US-004**: Manage Expenses | 13 | Iteration 3 | 5 | 9 | 12 | ✅ Complete |
-| **US-005**: Manage Categories | 8 | Iteration 3 | 5 | 6 | 12 | ✅ Complete |
-| **US-006**: Generate Reports | 13 | Iteration 4 | 4 | 7 | 16 | ✅ Complete |
-| **US-007**: User Logout | 3 | Iteration 2 | 2 | 3 | 18 | ✅ Complete |
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. Issues are organized into 7 feature categories (US-001 through US-007) for better tracking and planning.
+
+| Issue Category | Story Points | Sprint | Issues | Acceptance Criteria | E2E Tests | Status |
+|----------------|--------------|--------|--------|---------------------|-----------|--------|
+| **US-001**: User Registration | 16 | Iteration 2 | 4 | 6 | 11 | ✅ Complete |
+| **US-002**: User Login | 18 | Iteration 2 | 5 | 3 | 13 | ✅ Complete |
+| **US-003**: View Dashboard | 18 | Iteration 3-4 | 4 | 2 | 16 | ✅ Complete |
+| **US-004**: Manage Expenses | 21 | Iteration 3 | 5 | 9 | 12 | ✅ Complete |
+| **US-005**: Manage Categories | 16 | Iteration 3 | 5 | 6 | 12 | ✅ Complete |
+| **US-006**: Generate Reports | 19 | Iteration 4 | 4 | 7 | 16 | ✅ Complete |
+| **US-007**: User Logout | 5 | Iteration 2 | 2 | 3 | 18 | ✅ Complete |
 | **Smoke Tests** | - | All | - | - | 10 | ✅ Complete |
-| **TOTAL** | **55 SP** | **5 Sprints** | **29** | **38** | **102** | ✅ **Complete** |
+| **TOTAL** | **113 SP** | **5 Sprints** | **29** | **38** | **102** | ✅ **Complete** |
 
 ---
 
 ## Table of Contents
 
 1. [Traceability Approach](#1-traceability-approach)
-2. [User Stories & Acceptance Criteria](#2-user-stories--acceptance-criteria)
+2. [Feature Issues & Acceptance Criteria](#2-feature-issues--acceptance-criteria)
 3. [Functional Requirements Traceability](#3-functional-requirements-traceability)
 4. [Non-Functional Requirements Traceability](#4-non-functional-requirements-traceability)
 5. [Test File Mapping](#5-test-file-mapping)
@@ -75,7 +79,7 @@
 ```
 Requirements (Requirements.md)
         ↓
-User Stories (US-XXX)
+Issues (User Stories) - Organized into Categories (US-XXX)
         ↓
 Acceptance Criteria (AC-XXX)
         ↓
@@ -103,16 +107,18 @@ Test Results (102/102 PASSING)
 |------------|--------|---------|-------------|
 | **FR** | FR#.# | FR1.1 | Functional Requirement |
 | **NFR** | NFR# | NFR1.1 | Non-Functional Requirement |
-| **US** | US-### | US-001 | User Story |
+| **US** | US-### | US-001 | Issue Category Label (groups related issues) |
 | **AC** | AC-### | AC-001 | Acceptance Criteria |
 | **Issue** | #### | #20 | GitHub Issue |
 | **Test** | filename.cy.js | 01-signup.cy.js | Cypress Test File |
 
 ---
 
-## 2. User Stories & Acceptance Criteria
+## 2. Feature Issues & Acceptance Criteria
 
-### 2.1 US-001: User Registration
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. US-001 through US-007 are category labels that group related issues together.
+
+### 2.1 US-001: User Registration (4 Issues, 16 SP)
 
 **As a** new user,  
 **I want to** create an account with email and password,  
@@ -121,7 +127,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | High |
-| **Story Points** | 5 |
+| **Story Points** | 16 |
 | **Sprint** | Iteration 2 |
 | **Requirements** | FR1.1 |
 | **GitHub Issues** | [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47) |
@@ -151,7 +157,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | High |
-| **Story Points** | 5 |
+| **Story Points** | 18 |
 | **Sprint** | Iteration 2 |
 | **Requirements** | FR1.1, FR1.2 |
 | **GitHub Issues** | [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) |
@@ -178,7 +184,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | High |
-| **Story Points** | 8 |
+| **Story Points** | 18 |
 | **Sprint** | Iteration 3-4 |
 | **Requirements** | FR2.3, FR4.1 |
 | **GitHub Issues** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58) |
@@ -204,7 +210,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | High |
-| **Story Points** | 13 |
+| **Story Points** | 21 |
 | **Sprint** | Iteration 3 |
 | **Requirements** | FR2.1, FR2.2, FR2.3, FR3.2 |
 | **GitHub Issues** | [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24) |
@@ -237,7 +243,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | Medium |
-| **Story Points** | 8 |
+| **Story Points** | 16 |
 | **Sprint** | Iteration 3 |
 | **Requirements** | FR3.1 |
 | **GitHub Issues** | [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78) |
@@ -267,7 +273,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | Medium |
-| **Story Points** | 13 |
+| **Story Points** | 19 |
 | **Sprint** | Iteration 4 |
 | **Requirements** | FR3.2, FR4.1, FR4.2, FR4.3 |
 | **GitHub Issues** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35) |
@@ -298,7 +304,7 @@ Test Results (102/102 PASSING)
 | Property | Value |
 |----------|-------|
 | **Priority** | High |
-| **Story Points** | 3 |
+| **Story Points** | 5 |
 | **Sprint** | Iteration 2 |
 | **Requirements** | FR1.2, NFR1.1 |
 | **GitHub Issues** | [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59) |
@@ -322,8 +328,8 @@ Test Results (102/102 PASSING)
 
 ### 3.1 Complete FR Mapping
 
-| Requirement | Description | User Stories | Acceptance Criteria | Test Files | Test Count | Status |
-|-------------|-------------|--------------|---------------------|------------|------------|--------|
+| Requirement | Description | Issue Categories | Acceptance Criteria | Test Files | Test Count | Status |
+|-------------|-------------|------------------|---------------------|------------|------------|--------|
 | **FR1.1** | Users shall sign up and log in securely using email and password | US-001, US-002 | AC-001 to AC-006 | `01-signup.cy.js`, `02-login.cy.js` | 24 | ✅ Pass |
 | **FR1.2** | Only authenticated users shall access their own data (session protection) | US-002, US-007 | AC-007 to AC-009 | `02-login.cy.js`, `07-logout.cy.js` | 31 | ✅ Pass |
 | **FR2.1** | Users shall add expense with title, amount, category, date | US-004 | AC-010 to AC-015 | `04-expenses.cy.js` | 12 | ✅ Pass |
@@ -334,7 +340,7 @@ Test Results (102/102 PASSING)
 | **FR4.1** | Users shall view expense trends via Pie, Bar, Line charts | US-006 | AC-029 to AC-031 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.2** | Users shall generate and export PDF summaries and charts | US-006 | AC-032 to AC-033 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.3** | Users shall filter expenses by date, month, year | US-006 | AC-034 to AC-035 | `06-reports.cy.js` | 16 | ✅ Pass |
-| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All US | AC-036 to AC-038 | All test files | All tests | ✅ Pass |
+| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All Categories | AC-036 to AC-038 | All test files | All tests | ✅ Pass |
 
 ### 3.2 FR Coverage Summary
 
@@ -383,9 +389,9 @@ Test Results (102/102 PASSING)
 
 ### 5.1 E2E Test Files (Cypress)
 
-| Test File | Purpose | Requirements | User Stories | Test Count | Status |
-|-----------|---------|--------------|--------------|------------|--------|
-| **smoke.cy.js** | Smoke tests for core functionality | All FR | All US | 10 | ✅ Pass |
+| Test File | Purpose | Requirements | Issue Categories | Test Count | Status |
+|-----------|---------|--------------|------------------|------------|--------|
+| **smoke.cy.js** | Smoke tests for core functionality | All FR | All Categories | 10 | ✅ Pass |
 | **01-signup.cy.js** | User registration flow | FR1.1 | US-001 | 11 | ✅ Pass |
 | **02-login.cy.js** | User authentication flow | FR1.1, FR1.2 | US-002 | 13 | ✅ Pass |
 | **03-dashboard.cy.js** | Dashboard display & navigation | FR2.3, FR4.1 | US-003 | 16 | ✅ Pass |
@@ -393,7 +399,7 @@ Test Results (102/102 PASSING)
 | **05-categories.cy.js** | Category management | FR3.1 | US-005 | 12 | ✅ Pass |
 | **06-reports.cy.js** | Report generation & export | FR3.2, FR4.1, FR4.2, FR4.3 | US-006 | 16 | ✅ Pass |
 | **07-logout.cy.js** | Logout & session management | FR1.2, NFR1.1 | US-007 | 18 | ✅ Pass |
-| **TOTAL** | **Complete acceptance coverage** | **All 21 Requirements** | **All 7 US** | **102** | ✅ **Pass** |
+| **TOTAL** | **Complete acceptance coverage** | **All 21 Requirements** | **All 7 Categories** | **102** | ✅ **Pass** |
 
 ### 5.2 Test Location
 
@@ -413,18 +419,20 @@ cypress/e2e/
 
 ## 6. GitHub Issues Mapping
 
-### 6.1 Feature Issues (User Stories)
+### 6.1 Feature Issues
 
-| User Story | GitHub Issues | Story Points | Status |
-|------------|---------------|--------------|--------|
-| **US-001: User Registration** | [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47) | 5 | ✅ Complete |
-| **US-002: User Login** | [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) | 5 | ✅ Complete |
-| **US-003: View Dashboard** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58) | 8 | ✅ Complete |
-| **US-004: Manage Expenses** | [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24) | 13 | ✅ Complete |
-| **US-005: Manage Categories** | [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78) | 8 | ✅ Complete |
-| **US-006: Generate Reports** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35) | 13 | ✅ Complete |
-| **US-007: User Logout** | [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59) | 3 | ✅ Complete |
-| **TOTAL** | **29 Issues** | **55 SP** | ✅ **Complete** |
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. US-001 through US-007 are category labels that group related issues together.
+
+| Issue Category | GitHub Issues | Story Points | Status |
+|---------------|---------------|--------------|--------|
+| **US-001: User Registration** | [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47) | 16 | ✅ Complete |
+| **US-002: User Login** | [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) | 18 | ✅ Complete |
+| **US-003: View Dashboard** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58) | 18 | ✅ Complete |
+| **US-004: Manage Expenses** | [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24) | 21 | ✅ Complete |
+| **US-005: Manage Categories** | [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78) | 16 | ✅ Complete |
+| **US-006: Generate Reports** | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35) | 19 | ✅ Complete |
+| **US-007: User Logout** | [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59) | 5 | ✅ Complete |
+| **TOTAL** | **29 Issues** | **113 SP** | ✅ **Complete** |
 
 ### 6.2 Infrastructure Issues
 
@@ -435,18 +443,17 @@ cypress/e2e/
 | **Testing Infrastructure** | [#12](https://github.com/JasleenMinhas578/BudgetBuddy/issues/12), [#13](https://github.com/JasleenMinhas578/BudgetBuddy/issues/13), [#50](https://github.com/JasleenMinhas578/BudgetBuddy/issues/50), [#49](https://github.com/JasleenMinhas578/BudgetBuddy/issues/49), [#91](https://github.com/JasleenMinhas578/BudgetBuddy/issues/91), [#94](https://github.com/JasleenMinhas578/BudgetBuddy/issues/94) | 14 | ✅ Complete |
 | **CI/CD & Deployment** | [#62](https://github.com/JasleenMinhas578/BudgetBuddy/issues/62), [#66](https://github.com/JasleenMinhas578/BudgetBuddy/issues/66) | 9 | ✅ Complete |
 | **Documentation & Quality** | [#81](https://github.com/JasleenMinhas578/BudgetBuddy/issues/81), [#85](https://github.com/JasleenMinhas578/BudgetBuddy/issues/85), [#98](https://github.com/JasleenMinhas578/BudgetBuddy/issues/98), [#100](https://github.com/JasleenMinhas578/BudgetBuddy/issues/100), [#102](https://github.com/JasleenMinhas578/BudgetBuddy/issues/102) | 14 | ✅ Complete |
-| **TOTAL** | **23 Issues** | **81 SP** | ✅ **Complete** |
+| **TOTAL** | **24 Issues** | **98 SP** | ✅ **Complete** |
 
 ### 6.3 Project Totals
 
 | Category | Issues | Story Points | Status |
 |----------|--------|--------------|--------|
-| **Feature Issues (User Stories)** | 29 | 55 | ✅ Complete |
-| **Infrastructure Issues** | 23 | 81 | ✅ Complete |
-| **Sub-total (Issues in this doc)** | **52** | **136** | ✅ **Complete** |
-| **Total Project (All Issues)** | **100** | **211** | ✅ **Complete** |
+| **Feature Issues** | 29 | 113 | ✅ Complete |
+| **Infrastructure Issues** | 24 | 98 | ✅ Complete |
+| **Total Project (All Issues)** | **53** | **211** | ✅ **Complete** |
 
-> 📋 **Note**: The total project includes 100 issues with 211 story points as documented in [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md). This document focuses on the 52 issues (136 SP) directly related to user stories and infrastructure that have acceptance tests.
+> 📋 **Note**: The total project includes 53 issues with 211 story points as documented in [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md). 
 
 ---
 
@@ -598,8 +605,8 @@ Tests run automatically on:
 │  Functional Requirements:         11/11  ✅             │
 │  Non-Functional Requirements:     10/10  ✅             │
 │                                                          │
-│  Total User Stories:              7                     │
-│  User Stories Implemented:        7                     │
+│  Total Feature Issues:            29                    │
+│  Feature Issues Implemented:      29                    │
 │                                                          │
 │  Total Acceptance Criteria:       38                    │
 │  Acceptance Criteria Tested:      38                    │
@@ -625,7 +632,7 @@ Tests run automatically on:
 
 The Requirements Traceability Matrix demonstrates:
 - ✅ **Complete Coverage**: All 21 requirements (11 FR + 10 NFR) are tested/verified
-- ✅ **Full Traceability**: Clear mapping from requirements → user stories → acceptance criteria → tests
+- ✅ **Full Traceability**: Clear mapping from requirements → issues (user stories) → acceptance criteria → tests
 - ✅ **Zero Gaps**: No critical requirements are missing tests
 - ✅ **High Quality**: 397 total tests passing (102 E2E + 295 unit) = 100%
 - ✅ **Continuous Verification**: Automated testing in CI/CD pipeline
@@ -643,12 +650,11 @@ The acceptance tests fully satisfy all requirements in `Documents/Requirements.m
 | Metric | Value |
 |--------|-------|
 | **Total Requirements** | 21 (11 FR + 10 NFR) |
-| **User Stories** | 7 |
+| **Feature Issues** | 29 |
 | **Acceptance Criteria** | 38 |
-| **GitHub Issues** | 100 |
-| **Story Points (User Stories)** | 55 SP |
+| **GitHub Issues** | 53 |
+| **Story Points (Feature Issues)** | 113 SP |
 | **Story Points (Total Project)** | 211 SP |
-| **Story Points (Cumulative)** | 731 SP (team contributions) |
 | **E2E Tests** | 102 (100% passing) |
 | **Unit Tests** | 295 (100% passing) |
 | **Total Tests** | 397 (100% passing) |
@@ -668,8 +674,7 @@ The acceptance tests fully satisfy all requirements in `Documents/Requirements.m
 
 ---
 
-**Document Version**: 2.0  
-**Last Updated**: November 26, 2025  
+**Last Updated**: December 10, 2025  
 **Project**: Budget Buddy | Group 6 | Memorial University of Newfoundland
 
 **Traceability Status**: ✅ **100% COMPLETE**  

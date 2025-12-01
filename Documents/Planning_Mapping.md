@@ -101,17 +101,20 @@ It also includes screenshots of the GitHub Project Board and a detailed contribu
 | [102](https://github.com/JasleenMinhas578/BudgetBuddy/issues/102) | Generate ESLint Report and Fix All Linting Issues  | 3           | High     | Medium   | Iteration 5      | Jasleen, Mashroor                               | Done   | [#103](https://github.com/JasleenMinhas578/BudgetBuddy/pull/103)  |
 
                                                                              
-
+#### **📌 Total Issues (User Stories):** 53 (Feature Issues: 29, Infrastructure Issues: 24)
 #### **📌 Total Completed Story Points:** 211 
+
 ---
 
 # 📋 3. GitHub Issues Mapping by Category
 
-This section provides a comprehensive mapping of all GitHub issues organized by user stories and infrastructure categories.
+This section provides a comprehensive mapping of all GitHub issues organized by feature categories and infrastructure categories.
 
-## 3.1 Feature Issues (User Stories)
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. Issues are organized into 7 feature categories (US-001 through US-007) for better tracking and planning.
 
-### US-001: User Registration (5 SP)
+## 3.1 Feature Issues
+
+### US-001: User Registration (16 SP, 4 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10) | Signup Page Implementation (Parent Issue) | 5 | [#48](https://github.com/JasleenMinhas578/BudgetBuddy/pull/48), [#52](https://github.com/JasleenMinhas578/BudgetBuddy/pull/52), [#53](https://github.com/JasleenMinhas578/BudgetBuddy/pull/53), [#54](https://github.com/JasleenMinhas578/BudgetBuddy/pull/54) |
@@ -119,9 +122,9 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46) | Sub Issue Signup Page of #10 - Firebase Authentication Integration | 5 | [#53](https://github.com/JasleenMinhas578/BudgetBuddy/pull/53) |
 | [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47) | Sub Issue Signup Page of #10 - Form Validation & Error Handling | 3 | [#54](https://github.com/JasleenMinhas578/BudgetBuddy/pull/54) |
 
-**Total**: 4 issues, 16 SP (5 SP allocated to user story)
+**Total**: 4 issues, 16 SP 
 
-### US-002: User Login (5 SP)
+### US-002: User Login (18 SP, 5 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9) | Login Page Implementation (Parent Issue) | 5 | [#55](https://github.com/JasleenMinhas578/BudgetBuddy/pull/55), [#56](https://github.com/JasleenMinhas578/BudgetBuddy/pull/56), [#57](https://github.com/JasleenMinhas578/BudgetBuddy/pull/57) |
@@ -130,9 +133,9 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44) | Sub Issue Login Page of #9 - Form Validation & Error Handling | 3 | [#57](https://github.com/JasleenMinhas578/BudgetBuddy/pull/57) |
 | [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87) | Add Forget Password Functionality | 3 | [#88](https://github.com/JasleenMinhas578/BudgetBuddy/pull/88) |
 
-**Total**: 5 issues, 18 SP (5 SP allocated to user story)
+**Total**: 5 issues, 18 SP 
 
-### US-003: View Dashboard (8 SP)
+### US-003: View Dashboard (18 SP, 4 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30) | Dashboard & Reporting - Visualize and Generate Expense Insights (Parent) | 8 | [#77](https://github.com/JasleenMinhas578/BudgetBuddy/pull/77), [#79](https://github.com/JasleenMinhas578/BudgetBuddy/pull/79), [#89](https://github.com/JasleenMinhas578/BudgetBuddy/pull/89), [#90](https://github.com/JasleenMinhas578/BudgetBuddy/pull/90) |
@@ -140,9 +143,9 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33) | Sub-Issue, Dashboard & Reporting of #30 - Expense Summary Widgets | 3 | [#89](https://github.com/JasleenMinhas578/BudgetBuddy/pull/89) |
 | [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58) | Sub Issue of #11 - Basic Dashboard Layout for logout button | 4 | [#60](https://github.com/JasleenMinhas578/BudgetBuddy/pull/60) |
 
-**Total**: 4 issues, 18 SP (8 SP allocated to user story)
+**Total**: 4 issues, 18 SP 
 
-### US-004: Manage Expenses (13 SP)
+### US-004: Manage Expenses (21 SP, 5 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20) | Expense Management - Add, Edit, Delete, and View (Parent Issue) | 8 | [#63](https://github.com/JasleenMinhas578/BudgetBuddy/pull/63), [#64](https://github.com/JasleenMinhas578/BudgetBuddy/pull/64), [#65](https://github.com/JasleenMinhas578/BudgetBuddy/pull/65), [#71](https://github.com/JasleenMinhas578/BudgetBuddy/pull/71) |
@@ -151,9 +154,9 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23) | Sub-Issue, Expense Management of #20 - Connect Expense Page to Firebase | 4 | [#64](https://github.com/JasleenMinhas578/BudgetBuddy/pull/64) |
 | [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24) | Sub-Issue, Expense Management of #20 - Unit Tests for Expense Module | 2 | [#71](https://github.com/JasleenMinhas578/BudgetBuddy/pull/71) |
 
-**Total**: 5 issues, 21 SP (13 SP allocated to user story)
+**Total**: 5 issues, 21 SP 
 
-### US-005: Manage Categories (8 SP)
+### US-005: Manage Categories (16 SP, 5 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25) | Category Management - Create and Manage Categories (Parent Issue) | 6 | [#72](https://github.com/JasleenMinhas578/BudgetBuddy/pull/72), [#73](https://github.com/JasleenMinhas578/BudgetBuddy/pull/73), [#75](https://github.com/JasleenMinhas578/BudgetBuddy/pull/75), [#76](https://github.com/JasleenMinhas578/BudgetBuddy/pull/76), [#80](https://github.com/JasleenMinhas578/BudgetBuddy/pull/80) |
@@ -162,9 +165,9 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29) | Sub-Issue, Category Management of #25 - Unit Tests for Category Module | 2 | [#76](https://github.com/JasleenMinhas578/BudgetBuddy/pull/76) |
 | [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78) | Sub-Issue, Category Management of #25 - Delete the Category | 2 | [#80](https://github.com/JasleenMinhas578/BudgetBuddy/pull/80) |
 
-**Total**: 5 issues, 16 SP (8 SP allocated to user story)
+**Total**: 5 issues, 16 SP
 
-### US-006: Generate Reports (13 SP)
+### US-006: Generate Reports (19 SP, 4 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30) | Dashboard & Reporting - Visualize and Generate Expense Insights (Parent) | 8 | [#77](https://github.com/JasleenMinhas578/BudgetBuddy/pull/77), [#79](https://github.com/JasleenMinhas578/BudgetBuddy/pull/79), [#89](https://github.com/JasleenMinhas578/BudgetBuddy/pull/89), [#90](https://github.com/JasleenMinhas578/BudgetBuddy/pull/90) |
@@ -172,33 +175,33 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34) | Sub-Issue, Dashboard & Reporting of #30 - Report Generation (PDF/CSV) | 4 | [#89](https://github.com/JasleenMinhas578/BudgetBuddy/pull/89) |
 | [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35) | Sub-Issue, Dashboard & Reporting of #30 - Unit Tests for Dashboard | 3 | [#90](https://github.com/JasleenMinhas578/BudgetBuddy/pull/90) |
 
-**Total**: 4 issues, 19 SP (13 SP allocated to user story)
+**Total**: 4 issues, 19 SP 
 
-### US-007: User Logout (3 SP)
+### US-007: User Logout (5 SP, 2 issues)
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11) | Logout & Session Management (Parent Issue) | 3 | [#60](https://github.com/JasleenMinhas578/BudgetBuddy/pull/60), [#61](https://github.com/JasleenMinhas578/BudgetBuddy/pull/61) |
 | [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59) | Sub Issue of #11 - Logout Implementation | 2 | [#61](https://github.com/JasleenMinhas578/BudgetBuddy/pull/61) |
 
-**Total**: 2 issues, 5 SP (3 SP allocated to user story)
+**Total**: 2 issues, 5 SP 
 
-### User Stories Summary
-| Category | Issues | Story Points (Allocated) | Story Points (Total) |
-|----------|--------|-------------------------|---------------------|
-| **US-001: User Registration** | 4 | 5 SP | 16 SP |
-| **US-002: User Login** | 5 | 5 SP | 18 SP |
-| **US-003: View Dashboard** | 4 | 8 SP | 18 SP |
-| **US-004: Manage Expenses** | 5 | 13 SP | 21 SP |
-| **US-005: Manage Categories** | 5 | 8 SP | 16 SP |
-| **US-006: Generate Reports** | 4 | 13 SP | 19 SP |
-| **US-007: User Logout** | 2 | 3 SP | 5 SP |
-| **TOTAL** | **29** | **55 SP** | **113 SP** |
+### Feature Issues Summary
+| Category | Issues | Story Points (Allocated) | 
+|----------|--------|-------------------------|
+| **US-001: User Registration** | 4 | 16 SP |
+| **US-002: User Login** | 5 | 18 SP |
+| **US-003: View Dashboard** | 4 | 18 SP |
+| **US-004: Manage Expenses** | 5 |  21 SP |
+| **US-005: Manage Categories** | 5 | 16 SP |
+| **US-006: Generate Reports** | 4 | 19 SP |
+| **US-007: User Logout** | 2 |  5 SP |
+| **TOTAL** | **29** | **113 SP** |
 
 ---
 
 ## 3.2 Infrastructure Issues
 
-### Project Setup & Planning (33 SP)
+### Project Setup & Planning
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#1](https://github.com/JasleenMinhas578/BudgetBuddy/issues/1) | Requirements Gathering | 5 | - |
@@ -212,7 +215,7 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 
 **Total**: 8 issues, 35 SP
 
-### Landing Page (16 SP)
+### Landing Page 
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#8](https://github.com/JasleenMinhas578/BudgetBuddy/issues/8) | Landing Page Implementation (Parent Issue) | 4 | [#37](https://github.com/JasleenMinhas578/BudgetBuddy/pull/37), [#39](https://github.com/JasleenMinhas578/BudgetBuddy/pull/39), [#41](https://github.com/JasleenMinhas578/BudgetBuddy/pull/41) |
@@ -222,7 +225,7 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 
 **Total**: 4 issues, 16 SP
 
-### Testing Infrastructure (14 SP)
+### Testing Infrastructure
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#12](https://github.com/JasleenMinhas578/BudgetBuddy/issues/12) | Unit Tests for Authentication Flow | 5 | [#70](https://github.com/JasleenMinhas578/BudgetBuddy/pull/70) |
@@ -234,7 +237,7 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 
 **Total**: 6 issues, 29 SP
 
-### CI/CD & Deployment (9 SP)
+### CI/CD & Deployment
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#62](https://github.com/JasleenMinhas578/BudgetBuddy/issues/62) | CI/CD Setup and Deployment to Vercel | 6 | [#67](https://github.com/JasleenMinhas578/BudgetBuddy/pull/67) |
@@ -242,7 +245,7 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 
 **Total**: 2 issues, 9 SP
 
-### Documentation & Quality (14 SP)
+### Documentation & Quality 
 | Issue # | Title | Story Points | PR Reference(s) |
 |---------|-------|--------------|-----------------|
 | [#81](https://github.com/JasleenMinhas578/BudgetBuddy/issues/81) | UI/UX Enhancements and Styling Fixes | 3 | [#82](https://github.com/JasleenMinhas578/BudgetBuddy/pull/82) |
@@ -261,19 +264,19 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 | **Testing Infrastructure** | 6 | 29 SP |
 | **CI/CD & Deployment** | 2 | 9 SP |
 | **Documentation & Quality** | 5 | 17 SP |
-| **TOTAL** | **25** | **106 SP** |
+| **TOTAL** | **24** | **98 SP** |
 
 ---
 
 ## 3.3 Complete Project Summary
 
-| Category | Issues | Story Points (Allocated) | Story Points (Total) |
-|----------|--------|-------------------------|---------------------|
-| **User Stories (Features)** | 29 | 55 SP | 113 SP |
-| **Infrastructure** | 25 | 98 SP | 106 SP |
-| **GRAND TOTAL** | **54** | **211 SP** | **219 SP** |
+| Category | Issues | Story Points (Allocated) |
+|----------|--------|-------------------------|
+| **Feature Issues** | 29 | 113 SP |
+| **Infrastructure** | 24 |98 SP |
+| **GRAND TOTAL** | **53** | **211 SP** |
 
-> 📋 **Note**: The "Allocated" story points represent the official story point assignment for user stories and infrastructure. The "Total" story points include all sub-issues and related work. Some issues contribute to multiple categories (e.g., #30 appears in both Dashboard and Reports).
+> 📋 **Note**: The "Allocated" story points represent the official story point assignment for feature issues and infrastructure. The "Total" story points include all sub-issues and related work. Some issues contribute to multiple categories (e.g., #30 appears in both Dashboard and Reports).
 
 ---
 
@@ -380,13 +383,13 @@ This shows consistent productivity and healthy iteration cycles.
 - Each sprint had clear deliverables and acceptance criteria  
 
 ### ✔ **Extreme Programming (XP) Practices**
-- **User Stories**: All core functionality was captured as user stories with explicit acceptance criteria and mapped to GitHub issues.
+- **Issues as User Stories**: All core functionality was captured as GitHub issues (which serve as user stories) with explicit acceptance criteria.
 - **Pair Programming**: **The majority of coding work (features, tests, and refactoring) was done using pair programming**, where two team members collaboratively implemented and reviewed code in real time.
 - **Test-Driven Development (TDD)**: Many critical components (authentication, dashboard, expense and category management) were implemented with tests written first or in very short red‑green‑refactor cycles.
 - **Refactoring**: Continuous refactoring was performed across sprints (especially during ESLint cleanup, architecture refinement, and naming-convention alignment) to improve design quality without changing observable behavior.
 
-### ✔ **User Stories + Story Points**
-- Every feature broken into user stories (5–8 SP major features)  
+### ✔ **Issues + Story Points**
+- Every feature broken into issues (5–8 SP major features)  
 - Proper estimation in planning sessions  
 
 ### ✔ **Daily Standups (Asynchronous)**
@@ -425,8 +428,7 @@ This shows consistent productivity and healthy iteration cycles.
 
 This document summarizes:
 
-- Full issue-to-planning mapping (100 issues, 211 story points)
-- Story points per team member (cumulative: 731 SP across team)
+- Full issue-to-planning mapping (54 issues, 211 story points)
 - Agile process followed (5 iterations, 42 SP average velocity)
 - Planning and execution transparency
 - Final project velocity (211 SP total)
@@ -438,12 +440,13 @@ This document summarizes:
 |--------|-------|
 | **Total Issues** | 100 |
 | **Total Story Points** | 211 SP |
-| **User Story Points** | 55 SP (7 user stories) |
-| **Infrastructure Points** | 156 SP |
+| **Total Issues** | 53 Issues |
+| **Feature Issue Points** | 113 SP (29 feature issues organized into 7 categories) |
+| **Infrastructure Points** | 98 SP (24 Issues) |
 | **Iterations** | 5 (10 weeks) |
 | **Average Velocity** | 42 SP per sprint |
 | **Team Members** | 6 |
-| **Status** | ✅ 100% Complete |
+| **Status** | ✅ Complete |
 
 > 📋 **For detailed requirements traceability**: See [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)  
 > 📋 **For complete requirements list**: See [`Documents/Requirements.md`](Documents/Requirements.md)

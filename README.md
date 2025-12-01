@@ -13,7 +13,7 @@
 - [📊 Project Status & Quick Links](#-project-status--quick-links)
 - [👥 Team](#-team)
 - [🖥️ Methodology & Iterations](#️-methodology--iterations)
-- [📋 User Stories](#-user-stories)
+- [📋 Feature Issues](#-feature-issues)
 - [🛠️ Technologies & Tools](#️-technologies--tools)
 - [🏗️ Architecture](#️-architecture)
 - [🚀 How to Run the Project](#-how-to-run-the-project)
@@ -44,7 +44,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
 - **E2E Testing**: Cypress (102 tests across 8 test files)
 - **Code Quality**: ESLint (0 errors, 0 warnings)
-- **Acceptance Testing**: User Stories coverage
+- **Acceptance Testing**: Issues coverage
 - **Performance**: Lighthouse (99% performance, 100% accessibility)
 - **CI/CD**: GitHub Actions + Vercel deployment
 
@@ -56,7 +56,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - **All Tests Passing**: 295 unit tests + 102 E2E tests
 - **Code Quality**: 100% (0 ESLint errors/warnings)
 - **Test Coverage**: 100% (statements, branches, functions, lines)
-- **Acceptance Testing**: 100% (requirements and user stories coverage)
+- **Acceptance Testing**: 100% (requirements and issues coverage)
 - **Performance**: 99/100 (Lighthouse)
 - **Accessibility**: 100/100 (WCAG 2.1 compliant)
 
@@ -163,7 +163,7 @@ We follow **Agile Software Development** with an iterative sprint-based approach
 - Continuous Integration (CI) and Continuous Deployment (CD)
   
 In particular, we adopted **four core XP practices** throughout the project:
-- **User Stories**: All functionality was captured and planned as user stories with clear acceptance criteria.
+- **Issues as User Stories**: All functionality was captured and planned as GitHub issues (which serve as user stories) with clear acceptance criteria.
 - **Pair Programming**: **Most of the production code was written in pairs**, with two developers collaborating at one workstation to improve design quality, knowledge sharing, and defect detection.
 - **Test-Driven Development (TDD)**: Many modules (especially authentication, dashboard, and expense management) were developed with tests written first or in very tight red‑green‑refactor loops.
 - **Refactoring**: We continuously refactored code (e.g., during ESLint fixes, test improvements, and architecture cleanup) to improve readability, maintainability, and adherence to our naming and style conventions.
@@ -186,39 +186,41 @@ In particular, we adopted **four core XP practices** throughout the project:
 
 ---
 
-## 📋 User Stories
+## 📋 Feature Issues
 
-### 📌 **Primary User Stories (Features)**  
-**Total**: 7 primary user stories (features), decomposed into **29 GitHub feature issues** (55 allocated story points, 113 total feature story points)
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. Issues are organized into 7 feature categories (US-001 through US-007) for better tracking and planning.
+
+### 📌 **Primary Feature Issues**  
+**Total**: **29 feature issues** organized into **7 categories** (US-001 through US-007) with **113 story points**
 
 #### Iteration 1 (Sept 22 – Oct 5)
-*No Primary user stories - Just Setup and planning phase*
+*No feature issues - Just Setup and planning phase*
 
-#### Iteration 2 (Oct 6 – Oct 19) - 3 user stories, 13 story points
-- **US-001**: User Registration [5 points] [Status: Done]
-  - **GitHub Issues**: [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47)
-- **US-002**: User Login [5 points] [Status: Done]
-  - **GitHub Issues**: [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87)
-- **US-007**: User Logout [3 points] [Status: Done]
-  - **GitHub Issues**: [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59)
+#### Iteration 2 (Oct 6 – Oct 19) - 11 issues, 39 story points
+- **US-001**: User Registration (4 issues, 16 SP) [Status: Done]
+  - **Issues**: [#10](https://github.com/JasleenMinhas578/BudgetBuddy/issues/10), [#45](https://github.com/JasleenMinhas578/BudgetBuddy/issues/45), [#46](https://github.com/JasleenMinhas578/BudgetBuddy/issues/46), [#47](https://github.com/JasleenMinhas578/BudgetBuddy/issues/47)
+- **US-002**: User Login (5 issues, 18 SP) [Status: Done]
+  - **Issues**: [#9](https://github.com/JasleenMinhas578/BudgetBuddy/issues/9), [#42](https://github.com/JasleenMinhas578/BudgetBuddy/issues/42), [#43](https://github.com/JasleenMinhas578/BudgetBuddy/issues/43), [#44](https://github.com/JasleenMinhas578/BudgetBuddy/issues/44), [#87](https://github.com/JasleenMinhas578/BudgetBuddy/issues/87)
+- **US-007**: User Logout (2 issues, 5 SP) [Status: Done]
+  - **Issues**: [#11](https://github.com/JasleenMinhas578/BudgetBuddy/issues/11), [#59](https://github.com/JasleenMinhas578/BudgetBuddy/issues/59)
 
-#### Iteration 3 (Oct 20 – Nov 2) - 3 user stories, 29 story points
-- **US-003**: View Dashboard [8 points] [Status: Done]
-  - **GitHub Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58)
-- **US-004**: Manage Expenses [13 points] [Status: Done]
-  - **GitHub Issues**: [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24)
-- **US-005**: Manage Categories [8 points] [Status: Done]
-  - **GitHub Issues**: [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78)
+#### Iteration 3 (Oct 20 – Nov 2) - 14 issues, 55 story points
+- **US-003**: View Dashboard (4 issues, 18 SP) [Status: Done]
+  - **Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#31](https://github.com/JasleenMinhas578/BudgetBuddy/issues/31), [#33](https://github.com/JasleenMinhas578/BudgetBuddy/issues/33), [#58](https://github.com/JasleenMinhas578/BudgetBuddy/issues/58)
+- **US-004**: Manage Expenses (5 issues, 21 SP) [Status: Done]
+  - **Issues**: [#20](https://github.com/JasleenMinhas578/BudgetBuddy/issues/20), [#21](https://github.com/JasleenMinhas578/BudgetBuddy/issues/21), [#22](https://github.com/JasleenMinhas578/BudgetBuddy/issues/22), [#23](https://github.com/JasleenMinhas578/BudgetBuddy/issues/23), [#24](https://github.com/JasleenMinhas578/BudgetBuddy/issues/24)
+- **US-005**: Manage Categories (5 issues, 16 SP) [Status: Done]
+  - **Issues**: [#25](https://github.com/JasleenMinhas578/BudgetBuddy/issues/25), [#26](https://github.com/JasleenMinhas578/BudgetBuddy/issues/26), [#28](https://github.com/JasleenMinhas578/BudgetBuddy/issues/28), [#29](https://github.com/JasleenMinhas578/BudgetBuddy/issues/29), [#78](https://github.com/JasleenMinhas578/BudgetBuddy/issues/78)
 
-#### Iteration 4 (Nov 3 – Nov 16) - 1 user story, 13 story points
-- **US-006**: Generate Reports [13 points] [Status: Done]
-  - **GitHub Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35)
+#### Iteration 4 (Nov 3 – Nov 16) - 4 issues, 19 story points
+- **US-006**: Generate Reports (4 issues, 19 SP) [Status: Done]
+  - **Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35)
 
 #### Iteration 5 (Nov 17 – Nov 30)
-*No new primary user stories - Testing, quality assurance, and documentation (covered by infrastructure/support issues such as testing, CI/CD, documentation, and quality tasks)*
+*No new feature issues - Testing, quality assurance, and documentation (covered by infrastructure/support issues such as testing, CI/CD, documentation, and quality tasks)*
 
-### 📌 **Infrastructure & Supporting User Stories**  
-In addition to the 7 primary user stories, the project includes **infrastructural/supporting work** that enabled those features:
+### 📌 **Infrastructure & Supporting Issues**  
+In addition to the 29 feature issues, the project includes **infrastructural/supporting work** that enabled those features:
 
 - **Project Setup & Planning**: 8 issues, 35 SP (e.g., requirements, UML, repo setup, Firebase/React initialization)  
 - **Landing Page & Navigation**: 4 issues, 16 SP (marketing/entry UX, routing, responsiveness)  
@@ -226,12 +228,12 @@ In addition to the 7 primary user stories, the project includes **infrastructura
 - **CI/CD & Deployment**: 2 issues, 9 SP (Vercel deployment, CI workflows, preview fixes)  
 - **Documentation & Quality**: 5 issues, 17 SP (README/docs, UI/UX polish, ESLint/Lighthouse work)
 
-## 📌 **Overall Summary of User Stories**  
-All **7 primary user stories** completed (55 allocated story points) and implemented through **29 feature issues**.  
-Infrastructure/support work adds **25 issues** and **98 story points**, for a total of **54 core issues** and **211 story points** across **5 iterations** (plus additional overhead issues as detailed in `Documents/Planning_Mapping.md`).  
+## 📌 **Overall Summary of Issues**  
+All **29 feature issues** completed (113 story points) organized into **7 categories** (US-001 through US-007).  
+Infrastructure/support work adds **24 issues** and **98 story points**, for a total of **53 core issues** and **211 story points** across **5 iterations** (plus additional overhead issues as detailed in `Documents/Planning_Mapping.md`).  
 Status: ✅ **100% feature + infrastructure scope complete**
 
-> 📋 **Detailed user stories with acceptance criteria**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)  
+> 📋 **Detailed issues with acceptance criteria**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)  
 > 📋 **Complete issue mapping**: [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md#3-github-issues-mapping-by-category)
 
 ---
@@ -443,19 +445,20 @@ budget-buddy/
 
 ### Acceptance Testing & Requirements Traceability
 
-**Goal**: Verify that every functional and non-functional requirement is covered by user stories, acceptance criteria, and automated tests.
+**Goal**: Verify that every functional and non-functional requirement is covered by issues (which serve as user stories), acceptance criteria, and automated tests.
 
-**Coverage**: 100% requirements and user stories coverage
+**Coverage**: 100% requirements and issues coverage
 
 | Category | Total | Tested/Verified | Coverage | Status |
 |----------|-------|-----------------|----------|--------|
 | **Functional Requirements** | 11 | 11 | 100% | ✅ Complete |
 | **Non-Functional Requirements** | 10 | 10 | 100% | ✅ Complete |
-| **User Stories** | 7 | 7 | 100% | ✅ Complete |
+| **Feature Issues** | 29 | 29 | 100% | ✅ Complete |
+| **Infrastructure Issues** | 24 | 24 | 100% | ✅ Complete |
 | **Acceptance Criteria** | 38 | 38 | 100% | ✅ Complete |
-| **GitHub Issues** | 100 | 100 | 100% | ✅ Complete |
+| **Total GitHub Issues** | 53 | 53 | 100% | ✅ Complete |
 
-Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped end‑to‑end from requirements → user stories → acceptance criteria → GitHub issues → automated tests.
+Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped end‑to‑end from requirements → issues (user stories) → acceptance criteria → automated tests.
 
 > 📋 **Detailed Acceptance Tests & Traceability**: [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)
 
@@ -475,10 +478,10 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 │  Functional Requirements:         11/11                 │
 │  Non-Functional Requirements:     10/10                 │
 │                                                         │
-│  Total User Stories:              7                     │
-│  User Stories Implemented:        7                     │
+│  Feature Issues Implemented:      29                    │
+│  Infrastructure Issues Implemented:24                   │
+│  Total Issues Implemented:        53                    │
 │                                                         │
-│  Total Acceptance Criteria:       38                    │
 │  Acceptance Criteria Tested:      38                    │
 │                                                         │
 │  Total E2E Tests:                 102                   │
@@ -820,7 +823,7 @@ Complete documentation of all naming conventions used throughout the codebase. I
 ### Appendix C: Acceptance Tests & Requirements
 **✅ [Acceptance Tests & Requirements Traceability](Documents/Acceptance_Tests.md)**
 
-Comprehensive acceptance tests, user stories, acceptance criteria, and requirements traceability. Includes 7 user stories, 38 acceptance criteria, 11 functional requirements, 10 non-functional requirements, and complete test mapping.
+Comprehensive acceptance tests, issues (user stories), acceptance criteria, and requirements traceability. Includes 29 feature issues organized into 7 categories, 38 acceptance criteria, 11 functional requirements, 10 non-functional requirements, and complete test mapping.
 
 **Key Metrics**: 100% requirements coverage, 100% test coverage, 397 tests passing
 
