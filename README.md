@@ -90,7 +90,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **Sumaiya Khan** | 202480995 | sumaiyak@mun.ca | Frontend (UI/UX) |
 | **Kaustubh Patil** | 202580621 | kspatil@mun.ca | Frontend (Expenses) |
 | **Joel George Sam** | 202483190 | jgeorgesam@mun.ca | QA/Testing |
-| **Mashroor Rahman** | 202482239 | masroorr@mun.ca | Backend/Database |
+| **Masroor Rahman** | 202482239 | masroorr@mun.ca | Backend/Database |
 | **Ronit Gajjar** | 202488048 | rhgajjar@mun.ca | Reporting/Features |
 
 ### Team Responsibilities
@@ -105,7 +105,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - Set up Vercel CI/CD pipeline and deployment troubleshooting
 - Managed GitHub boards, issues, story points & documentation
 
-**2. Mashroor Rahman (Backend/Database)**
+**2. Masroor Rahman (Backend/Database)**
 - Set up Firebase initialization, configuration & .env
 - Contributed to Login/Signup Firebase authentication logic
 - Worked on Landing Page, Logout flow, UI fixes
@@ -141,7 +141,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | Member | Story Points |
 |--------|--------------|
 | **Jasleen** | ≈ 198 SP |
-| **Mashroor** | ≈ 147 SP |
+| **Masroor** | ≈ 147 SP |
 | **Sumaiya** | ≈ 104 SP |
 | **Joel** | ≈ 92 SP |
 | **Kaustubh** | ≈ 95 SP |
@@ -329,42 +329,64 @@ src/
 - **npm** (comes with Node.js)
 - **Git**
 
-### Installation
+## Installation
 
-   ```bash
-# 1. Clone repository
-   git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
-   cd BudgetBuddy
-
-# 2. Install dependencies
-   npm install
-
-# 3. Start development server
-   npm start
-   ```
-
-The application will open at `http://localhost:3000`
-
-> ✅ **Note**: The `.env` file with Firebase configuration is included in this repository.
-
-### Available Scripts
+### 1. Clone the repository
 
 ```bash
-# Development
-npm start              # Start dev server
-npm run build          # Production build
-
-# Testing
-npm test               # Run unit tests
-npm test -- --coverage # Run with coverage
-npm run cypress:open   # Open Cypress (interactive)
-npm run cypress:run    # Run Cypress (headless)
-npm run test:e2e       # Run E2E tests with server
-
-# Code Quality
-npx eslint src/ --ext .js,.jsx  # Run ESLint
+git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
+cd BudgetBuddy
 ```
 
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start development server
+
+```bash
+npm start
+```
+
+The application will open at:
+👉 **[http://localhost:3000](http://localhost:3000)**
+
+> **Note:** The `.env` file containing Firebase configuration is included in the repo.
+
+---
+
+## ✅ Available Scripts (What Each One Actually Does)
+
+### **Development**
+
+| Command         | Purpose                                                                     |
+| --------------- | --------------------------------------------------------------------------- |
+| `npm start`     | Runs the development server with hot reloading.                             |
+| `npm run build` | Builds an optimized production version of the app into the `/build` folder. |
+
+---
+
+### **Testing**
+
+| Command                  | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `npm test`               | Runs unit tests in watch mode.                           |
+| `npm test -- --coverage` | Runs tests and generates a code coverage report.         |
+| `npm run cypress:open`   | Opens the Cypress UI for interactive end-to-end testing. |
+| `npm run cypress:run`    | Runs Cypress tests in headless (CI) mode.                |
+| `npm run test:e2e`       | Runs end-to-end tests with the development server.       |
+
+---
+
+### **Code Quality**
+
+| Command                          | Purpose                                                            |
+| -------------------------------- | ------------------------------------------------------------------ |
+| `npx eslint src/ --ext .js,.jsx` | Runs ESLint on all JS/JSX files to detect errors and style issues. |
+
+---
 ### Project Structure
 
 ```
