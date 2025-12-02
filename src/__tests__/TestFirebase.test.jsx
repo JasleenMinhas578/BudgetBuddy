@@ -1,3 +1,9 @@
+// Tests for the `TestFirebase` harness component used to validate Firebase setup locally.
+// - Mocks Firebase Auth and Firestore as well as the shared `auth`/`db` config to avoid real network usage.
+// - Verifies an end-to-end anonymous authentication + Firestore write/read flow and that fetched document data is rendered.
+// - Exercises email/password flows, including handling of `auth/email-already-in-use` by falling back to sign-in.
+// - Confirms that missing-doc cases, generic errors, and non-coded errors are surfaced in the UI as readable error messages.
+// - Ensures that signing out clears local state and updates the status text appropriately.
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TestFirebase from '../testFirebase';
 

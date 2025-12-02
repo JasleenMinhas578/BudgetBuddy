@@ -1,3 +1,8 @@
+// Tests for the top navigation `Navbar` component within the dashboard layout.
+// - Mocks `AuthContext` to simulate different auth states and verify logout handling.
+// - Asserts that context-specific icons/titles render based on the current route.
+// - Verifies sidebar toggle behavior, including the functional updater logic for open/closed state.
+// - Confirms that logout prompts for confirmation and respects the user's choice, and that the user section hides when no currentUser exists.
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Navbar from '../components/Layout/Navbar';

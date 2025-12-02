@@ -1,3 +1,9 @@
+// High-level tests for the `Expenses` dashboard page.
+// - Mocks Firebase Auth/Firestore, chart components, Toast, Modal, ExpenseForm, and framer-motion to isolate page logic.
+// - Verifies base layout (headers, summary cards, and empty-state messaging) for users with no expenses.
+// - Exercises opening/closing the expense entry modal from both the header "Add Expense" and empty-state "Add First Expense" CTAs.
+// - Confirms correct wiring to Firebase listeners, including unsubscribe cleanup on unmount and graceful handling of connection errors.
+// - Ensures summary statistics and empty-state card values remain consistent with the underlying (mocked) expense data.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

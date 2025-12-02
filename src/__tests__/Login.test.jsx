@@ -1,3 +1,10 @@
+// Detailed tests for the `Login` authentication form component.
+// - Mocks Firebase Auth, config, framer-motion, and navigation to isolate form validation, UX, and routing behavior.
+// - Verifies initial rendering, accessibility attributes, input wiring, and basic typing interactions.
+// - Covers navigation flows (to dashboard on success, back to home, and to signup) as well as reading and clearing messages from router state.
+// - Exercises loading state, disabling the submit button, and displaying "Signing in..." while a login is pending.
+// - Maps a variety of Firebase error codes to user-friendly messages and ensures generic errors are handled, then cleared on resubmission.
+// - Confirms the form forwards the correct credentials into `signInWithEmailAndPassword`, even when fields are empty.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';

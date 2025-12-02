@@ -1,3 +1,8 @@
+// Unit tests for the transient `Toast` notification component.
+// - Mocks framer-motion to simplify animation behavior and focus on timing and click handling.
+// - Verifies that messages and status icons render when visible and that nothing renders when not visible.
+// - Exercises automatic dismissal after a configurable duration, manual close via body click, and via the close button.
+// - Confirms default prop behavior when optional values are omitted (e.g., default duration).
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import Toast from '../components/UI/Toast';
 

@@ -1,11 +1,31 @@
 /**
- * E2E Tests for User Login Flow
+ * E2E Acceptance Tests: User Login Flow
  * 
- * Tests the complete user login process including:
- * - Form validation
- * - Successful login
- * - Error handling
- * - Session persistence
+ * This test suite validates the complete user authentication workflow as an end-to-end acceptance test.
+ * It ensures that existing users can securely log in and that the system properly handles
+ * authentication errors and session management.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Authenticated users can log in with valid credentials
+ * - AC2: System rejects invalid email formats
+ * - AC3: System rejects incorrect passwords
+ * - AC4: System provides clear error messages for authentication failures
+ * - AC5: System redirects to dashboard upon successful login
+ * - AC6: User session persists after successful login
+ * - AC7: Password visibility can be toggled for better UX
+ * - AC8: Submit button shows loading state during authentication
+ * - AC9: Users can navigate between login and signup pages
+ * - AC10: Forgot password functionality is accessible (if implemented)
+ * - AC11: Form data is preserved when navigating between fields
+ * 
+ * User Flows Covered:
+ * 1. Happy Path: Valid login → Dashboard access
+ * 2. Error Scenarios: Wrong password, non-existent email, invalid email format
+ * 3. Session Management: Login persistence, navigation after login
+ * 4. UX Features: Password visibility toggle, loading states, form persistence
+ * 5. Navigation: Switching between login and signup, forgot password access
+ * 
+ * Pre-conditions: Test user account is created in before() hook
  */
 
 describe('User Login Flow', () => {

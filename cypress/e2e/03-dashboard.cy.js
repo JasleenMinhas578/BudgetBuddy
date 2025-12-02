@@ -1,11 +1,31 @@
 /**
- * E2E Tests for Dashboard Display
+ * E2E Acceptance Tests: Dashboard Overview
  * 
- * Tests the dashboard overview including:
- * - Dashboard layout and components
- * - Data display
- * - Navigation
- * - Summary statistics
+ * This test suite validates the main dashboard functionality as an end-to-end acceptance test.
+ * It ensures that authenticated users can view their financial overview, navigate between sections,
+ * and that the dashboard displays correctly across different devices.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Authenticated users can access the dashboard after login
+ * - AC2: Dashboard displays summary statistics (total expenses, transactions, averages)
+ * - AC3: Dashboard shows navigation menu/sidebar with all main sections
+ * - AC4: Users can navigate to Expenses, Categories, and Reports from dashboard
+ * - AC5: Dashboard displays user profile/account information
+ * - AC6: Dashboard is responsive on mobile and tablet viewports
+ * - AC7: Dashboard shows empty state when no data exists
+ * - AC8: Dashboard persists user session on page reload
+ * - AC9: Dashboard loads without errors
+ * - AC10: Quick action buttons (e.g., "Add Expense") are accessible
+ * - AC11: Dashboard displays current date/time period information
+ * 
+ * User Flows Covered:
+ * 1. Dashboard Access: Login → Dashboard display
+ * 2. Navigation: Dashboard → Expenses/Categories/Reports navigation
+ * 3. Data Display: Summary cards, statistics, empty states
+ * 4. Responsive Design: Mobile, tablet, desktop viewports
+ * 5. Session Persistence: Page reload maintains authentication
+ * 
+ * Pre-conditions: Test user account is created and logged in before each test
  */
 
 describe('Dashboard Display', () => {

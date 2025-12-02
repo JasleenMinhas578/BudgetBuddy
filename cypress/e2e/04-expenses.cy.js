@@ -1,11 +1,29 @@
 /**
- * E2E Tests for Add Expense Flow
+ * E2E Acceptance Tests: Expense Management Flow
  * 
- * Tests the expense management including:
- * - Adding new expenses
- * - Viewing expense list
- * - Form validation
- * - Data persistence
+ * This test suite validates the complete expense management workflow as an end-to-end acceptance test.
+ * It ensures that users can add, view, and manage their expenses, and that data persists correctly.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Users can access the expenses page from dashboard navigation
+ * - AC2: "Add Expense" button is visible and accessible
+ * - AC3: Expense form modal opens when "Add Expense" is clicked
+ * - AC4: Expense form contains all required fields (title, amount, category, date)
+ * - AC5: Users can cancel expense addition without saving
+ * - AC6: Expense list displays after expenses are added
+ * - AC7: Total expenses are calculated and displayed correctly
+ * - AC8: Expenses persist after page reload
+ * - AC9: Form validation prevents invalid expense submissions
+ * 
+ * User Flows Covered:
+ * 1. Expense Addition: Navigate to expenses → Add expense → Fill form → Submit
+ * 2. Form Interaction: Open modal → Fill fields → Cancel/Submit
+ * 3. Data Persistence: Add expense → Reload page → Verify expense still exists
+ * 4. List Display: View expense list with totals and summaries
+ * 
+ * Pre-conditions: 
+ * - Test user account is created
+ * - At least one category exists (required for expense creation)
  */
 
 describe('Add Expense Flow', () => {

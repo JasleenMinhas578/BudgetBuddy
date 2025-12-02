@@ -3,7 +3,6 @@
 **Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
 **Team**: Group 6  
-**Date**: November 26, 2025  
 **Purpose**: Comprehensive acceptance tests documentation with complete traceability from requirements to issues (user stories) to acceptance criteria to tests  
 **Status**: ✅ 100% Complete Coverage | ✅ 102/102 E2E Tests Passing | ✅ 295/295 Unit Tests Passing
 
@@ -303,7 +302,7 @@ Test Results (102/102 PASSING)
 
 | Property | Value |
 |----------|-------|
-| **Priority** | High |
+| **Priority** | Medium |
 | **Story Points** | 5 |
 | **Sprint** | Iteration 2 |
 | **Requirements** | FR1.2, NFR1.1 |
@@ -318,6 +317,32 @@ Test Results (102/102 PASSING)
 |----|----------|---------------|
 | **AC-034** | User can filter by date range | ✅ `it('should filter reports by date range')` (in `06-reports.cy.js`) |
 | **AC-035** | User can filter by month/year | ✅ `it('should filter by specific month')`, `it('should filter by specific year')` (in `06-reports.cy.js`) |
+| **AC-036** | UI adapts to desktop viewport (1920x1080) | ✅ Tested across all test files with viewport changes |
+| **AC-037** | UI adapts to tablet viewport (768x1024) | ✅ Tested across all test files with viewport changes |
+| **AC-038** | UI adapts to mobile viewport (375x667) | ✅ Tested across all test files with viewport changes |
+
+--- 
+
+### Extra: Responsiveness
+
+**As a** user,  
+**I want to** the application to be Responsive,  
+**So that** my I can use the application on Desktop, Tablet, and Mobile too.
+
+| Property | Value |
+|----------|-------|
+| **Priority** | High |
+| **Story Points** | 5 |
+| **Sprint** | Iteration 2 |
+| **Requirements** | FR5.1 |
+| **Test File** | `smoke.cy.js` |
+| **Test Count** | 10 tests |
+| **Status** | ✅ Complete |
+
+#### Acceptance Criteria
+
+| ID | Criteria | Test Coverage |
+|----|----------|---------------|
 | **AC-036** | UI adapts to desktop viewport (1920x1080) | ✅ Tested across all test files with viewport changes |
 | **AC-037** | UI adapts to tablet viewport (768x1024) | ✅ Tested across all test files with viewport changes |
 | **AC-038** | UI adapts to mobile viewport (375x667) | ✅ Tested across all test files with viewport changes |
@@ -340,7 +365,7 @@ Test Results (102/102 PASSING)
 | **FR4.1** | Users shall view expense trends via Pie, Bar, Line charts | US-006 | AC-029 to AC-031 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.2** | Users shall generate and export PDF summaries and charts | US-006 | AC-032 to AC-033 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.3** | Users shall filter expenses by date, month, year | US-006 | AC-034 to AC-035 | `06-reports.cy.js` | 16 | ✅ Pass |
-| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All Categories | AC-036 to AC-038 | All test files | All tests | ✅ Pass |
+| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All Categories | AC-036 to AC-038 | `smoke.cy.js` | 10 | ✅ Pass |
 
 ### 3.2 FR Coverage Summary
 

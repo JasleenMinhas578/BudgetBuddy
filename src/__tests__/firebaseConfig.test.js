@@ -1,3 +1,7 @@
+// Tests for the Firebase configuration module that bootstraps the app's Firebase services.
+// - Mocks `firebase/app`, `firebase/auth`, and `firebase/firestore` to assert initialization calls without touching real services.
+// - Sets up a fake `process.env` with the expected REACT_APP_* configuration and verifies `initializeApp` receives them.
+// - Confirms that exported `auth` and `db` instances are created via `getAuth` and `getFirestore` using the initialized app.
 const originalEnv = { ...process.env };
 
 jest.mock('firebase/app', () => ({

@@ -1,3 +1,10 @@
+// Behavioral tests for the `ExpenseForm` component.
+// - Mocks `AuthContext`, the database service, Firestore category listener, and Firebase config so only form logic is exercised.
+// - Verifies default values for new expenses (today's date, default category) and correct filling from `initialExpense` in edit mode.
+// - Covers validation rules for amount, title, and date (including future and missing dates) and ensures helpful error messages.
+// - Checks that submissions call `addExpense` or `onExpenseEdited` with correctly shaped payloads and that optional callbacks are handled safely.
+// - Tests UI-only behaviors like numeric-only amount input, category selection, loading states ("Adding Expense...", "Saving..."), and cancel behavior during loading.
+// - Ensures Firestore category listener errors and cleanup are logged/handled without breaking unmount, including non-function unsubscribe return values.
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ExpenseForm from '../components/Expense/ExpenseForm';
 

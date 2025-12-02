@@ -1,11 +1,36 @@
 /**
- * E2E Tests for User Logout Flow
+ * E2E Acceptance Tests: User Logout and Session Management Flow
  * 
- * Tests the logout functionality including:
- * - Successful logout
- * - Session clearing
- * - Redirect after logout
- * - Access control after logout
+ * This test suite validates the complete logout and session management workflow as an end-to-end acceptance test.
+ * It ensures that users can securely log out, that sessions are properly cleared, and that protected
+ * routes are inaccessible after logout.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Logout button is visible when user is authenticated
+ * - AC2: Users can successfully log out from any page
+ * - AC3: User session is cleared after logout
+ * - AC4: Authentication tokens are removed after logout
+ * - AC5: Users are redirected to landing/login page after logout
+ * - AC6: Protected routes (dashboard, expenses, categories, reports) are inaccessible after logout
+ * - AC7: Users can log in again after logout
+ * - AC8: Logout works from different pages (dashboard, categories, etc.)
+ * - AC9: Local storage is cleared on logout
+ * - AC10: Session storage is cleared on logout
+ * - AC11: Logout button click is handled only once (prevents double-logout)
+ * - AC12: Logout state persists after page reload
+ * - AC13: Logout button is not visible after logout
+ * - AC14: Logout handles pending operations gracefully
+ * - AC15: Full authentication cycle (login → logout → login) works correctly
+ * - AC16: Logout works on different viewports (mobile, tablet, desktop)
+ * 
+ * User Flows Covered:
+ * 1. Logout Flow: Click logout → Session cleared → Redirect to landing
+ * 2. Access Control: Logout → Attempt to access protected route → Redirected
+ * 3. Session Persistence: Logout → Reload page → Still logged out
+ * 4. Re-authentication: Logout → Login again → Access restored
+ * 5. Multi-page Logout: Logout from different pages → Consistent behavior
+ * 
+ * Pre-conditions: Test user account is created and logged in before each test
  */
 
 describe('User Logout Flow', () => {

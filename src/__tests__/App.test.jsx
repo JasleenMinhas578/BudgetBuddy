@@ -1,3 +1,7 @@
+// Tests the top-level `App` component routing configuration.
+// - Verifies that public routes (landing, login, signup) render the correct mocked pages.
+// - Ensures that dashboard routes are wrapped in the `PrivateRoute` guard and render nested pages via the dashboard shell.
+// - Uses `window.history.pushState` to simulate navigation between routes and assert the correct content is shown.
 import { render, screen } from '@testing-library/react';
 
 import App from '../App';

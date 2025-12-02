@@ -1,3 +1,7 @@
+// Tests for the `reportWebVitals` utility that wires the `web-vitals` library into a callback.
+// - Verifies that, when given a function callback, it calls all web-vital measurement functions with that callback.
+// - Ensures that nothing happens when the callback is not a function.
+// - Confirms that `loadWebVitals` correctly resolves the dynamic `web-vitals` import and that the default loader path is used when no loader is supplied.
 describe('reportWebVitals', () => {
   beforeEach(() => {
     jest.resetModules();

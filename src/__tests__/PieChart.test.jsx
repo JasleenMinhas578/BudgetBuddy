@@ -1,3 +1,8 @@
+// Unit tests for the `PieChart` chart wrapper component.
+// - Mocks Chart.js and `react-chartjs-2` so the tests can focus on the data passed into the chart.
+// - Verifies rendering for typical category spending data, as well as empty, single-category, multi-category, and undefined inputs.
+// - Confirms that serialized labels and datasets are forwarded correctly to the underlying chart component.
+// - Ensures the wrapper mounts cleanly and exposes the expected chart DOM structure.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 

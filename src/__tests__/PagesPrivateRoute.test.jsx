@@ -1,4 +1,7 @@
 import { render, screen } from '@testing-library/react';
+// Tests for the page-level `PrivateRoute` used in the routing configuration.
+// - Mocks `AuthContext` to simulate authenticated vs unauthenticated users.
+// - Verifies that protected children render when a user is present and that navigation redirects to `/login` when the user is missing.
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import PrivateRoute from '../pages/PrivateRoute';
 

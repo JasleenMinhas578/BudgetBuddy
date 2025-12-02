@@ -1,3 +1,8 @@
+// Unit tests for the `LineChart` chart wrapper component.
+// - Mocks Chart.js and `react-chartjs-2` to verify that the component passes correctly structured data and options into the rendered chart.
+// - Exercises rendering for normal data, empty datasets, single and multiple points, zero values, and undefined input to ensure robustness.
+// - Confirms that the custom tick callback is wired to the y-axis scale configuration via a serialized `data-callback` attribute.
+// - Ensures the component mounts successfully and applies the expected wrapper structure.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 

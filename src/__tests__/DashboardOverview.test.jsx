@@ -1,3 +1,10 @@
+// Integration-style tests for the `DashboardOverview` component.
+// - Mocks Firebase Auth/Firestore and framer-motion to focus on data calculations and UI rendering.
+// - Verifies welcome messaging for first-time users vs returning users with existing expenses.
+// - Checks summary cards for total, monthly, average, and top-category computations across various datasets (including empty and zero cases).
+// - Ensures the "Recent Expenses" widget shows the correct number of items, orders them by date, and formats details properly.
+// - Confirms that expenses are sorted and aggregated correctly, including handling of missing dates and zero-expense scenarios.
+// - Tests that Firebase listeners are wired up with the right paths, cleaned up on unmount, and not attached when no user is authenticated.
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

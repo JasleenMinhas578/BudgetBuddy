@@ -1,3 +1,10 @@
+// Detailed tests for the `Signup` registration form component.
+// - Mocks Firebase Auth, config, framer-motion, and navigation to isolate validation and UX behavior from external services.
+// - Verifies initial rendering, accessibility attributes, password visibility toggles (click + keyboard), and basic typing interactions.
+// - Exercises password strength validation rules (length, uppercase, lowercase, numeric, confirm match) and appropriate error messages.
+// - Confirms successful signups navigate to the dashboard and that navigation helpers (back to home, link to login) point to the right routes.
+// - Maps various Firebase error codes (email in use, invalid email, weak password) to human-readable errors, including a generic fallback.
+// - Checks loading state during signup, disabling the submit button, and that calling signup uses the correct arguments.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

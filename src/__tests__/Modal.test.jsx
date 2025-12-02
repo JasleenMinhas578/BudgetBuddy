@@ -1,3 +1,7 @@
+// Unit tests for the reusable `Modal` UI component.
+// - Verifies conditional rendering behavior when the modal is closed vs open.
+// - Checks that title-based and default aria labels are applied for accessibility.
+// - Ensures `onClose` is called appropriately via the close button and not triggered when clicking inside the dialog body.
 import { render, screen, fireEvent } from '@testing-library/react';
 import Modal from '../components/UI/Modal';
 

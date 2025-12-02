@@ -1,3 +1,6 @@
+// Tests for the React entrypoint (`index.tsx/js`) that boots the application.
+// - Mocks the `App` component and ReactDOM's `createRoot` to verify that the root DOM node is created and rendered correctly.
+// - Ensures that the index file wires in `reportWebVitals` after rendering so performance metrics can be collected.
 jest.mock('../App', () => {
   const React = require('react');
   return function MockApp() {

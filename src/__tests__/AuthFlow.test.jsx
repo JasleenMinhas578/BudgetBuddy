@@ -1,3 +1,8 @@
+// Comprehensive integration tests for the authentication flow and `AuthContext`.
+// - Mocks Firebase Auth and config to isolate UI and context behavior from real network calls.
+// - Exercises successful and failing login/signup/logout flows, including error messaging and navigation.
+// - Verifies password validation rules, reset/update password helpers, auth state changes, loading states, and concurrency protection.
+// - Confirms that the context exposes the correct helper functions and that they call the underlying Firebase APIs with expected arguments.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

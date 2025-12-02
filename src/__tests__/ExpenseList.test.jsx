@@ -1,3 +1,9 @@
+// Tests for the `ExpenseList` component that renders and manages a list of expenses.
+// - Mocks `AuthContext`, the database service, and framer-motion to focus on filtering, sorting, and deletion logic.
+// - Verifies loading state, successful fetch of expenses for the current user, and basic rendering of items and summary values.
+// - Exercises category filtering, multiple sort keys (category, description, amount), sort order toggling, and a safe default for unknown sort keys.
+// - Covers the delete-confirmation modal flow, including cancel vs confirm, backend error surfacing, and removal behavior.
+// - Ensures error handling when initial load fails, behavior for unauthenticated users, formatting when dates are missing, and hints when filters yield no matches.
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import ExpenseList from '../components/Expense/ExpenseList';
 

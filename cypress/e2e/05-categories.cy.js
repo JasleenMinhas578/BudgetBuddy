@@ -1,11 +1,29 @@
 /**
- * E2E Tests for Add Categories Flow
+ * E2E Acceptance Tests: Category Management Flow
  * 
- * Tests the category management including:
- * - Adding new categories
- * - Viewing category list
- * - Form validation
- * - Budget tracking
+ * This test suite validates the complete category management workflow as an end-to-end acceptance test.
+ * It ensures that users can create expense categories, view them in a list, and that categories
+ * are used for organizing expenses.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Users can access the categories page from dashboard navigation
+ * - AC2: "Add Category" button is visible and accessible
+ * - AC3: Category form modal opens when "Add Category" is clicked
+ * - AC4: Category form contains required fields (name)
+ * - AC5: Users can successfully add a new category
+ * - AC6: Newly added categories appear in the category list
+ * - AC7: Users can cancel category addition without saving
+ * - AC8: Categories persist after page reload
+ * - AC9: Categories are displayed with visualizations (charts) if available
+ * - AC10: Category list displays in a readable format (list or grid)
+ * 
+ * User Flows Covered:
+ * 1. Category Addition: Navigate to categories → Add category → Fill form → Submit
+ * 2. Form Interaction: Open modal → Enter category name → Cancel/Submit
+ * 3. Data Persistence: Add category → Reload page → Verify category still exists
+ * 4. List Display: View category list with visualizations
+ * 
+ * Pre-conditions: Test user account is created and logged in
  */
 
 describe('Add Categories Flow', () => {

@@ -1,3 +1,10 @@
+// High-level tests for the `Categories` dashboard widget.
+// - Mocks Firebase Auth/Firestore, charts, toast, modal, and framer-motion to focus on UI logic and data wiring.
+// - Covers rendering basics, modal open/close behavior, form interaction, and resetting state between openings.
+// - Verifies happy-path category addition, loading behavior, success toasts, and correct Firestore calls.
+// - Exercises error states for missing Firebase config, unauthenticated users, Firestore failures, and listener errors.
+// - Confirms listeners are only attached when a user is authenticated and that unsubscribe cleanup is performed on unmount/rerender.
+// - Checks that form validation and toast notifications behave correctly for edge cases like empty names.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

@@ -1,4 +1,8 @@
 import { render, screen } from '@testing-library/react';
+// Tests for the layout-level `PrivateRoute` wrapper used inside the dashboard shell.
+// - Mocks `AuthContext` to simulate loading, unauthenticated, and authenticated states.
+// - Asserts that a loading indicator is shown while auth is resolving, that unauthenticated users are redirected, and that children render for logged-in users.
+// - Verifies the default redirect behavior when `redirectTo` is not explicitly provided.
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import PrivateRoute from '../components/Layout/PrivateRoute';
 

@@ -1,3 +1,9 @@
+// Tests for the responsive top-level `Navigation` component used on public and dashboard pages.
+// - Mocks `AuthContext`, framer-motion, and `useNavigate` to focus on rendered links and logout behavior.
+// - Verifies that authenticated users see logout controls and that clicking them calls `logout` then navigates to `/login`.
+// - Ensures guests see login/signup links, including on mobile.
+// - Exercises the mobile menu toggle, body overflow lock/unlock behavior, and closing the menu via navigation clicks.
+// - Confirms that logout errors are logged without navigating away.
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Navigation from '../components/Layout/Navigation';
 import { MemoryRouter } from 'react-router-dom';

@@ -1,11 +1,36 @@
 /**
- * E2E Tests for Export Reports Flow
+ * E2E Acceptance Tests: Reports and Analytics Flow
  * 
- * Tests the report generation and export including:
- * - Viewing reports page
- * - Generating reports
- * - PDF export functionality
- * - Report data accuracy
+ * This test suite validates the complete reporting and analytics workflow as an end-to-end acceptance test.
+ * It ensures that users can view financial reports, export data, and analyze their spending patterns.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Users can access the reports page from dashboard navigation
+ * - AC2: Reports page displays expense summary and statistics
+ * - AC3: Reports show expense data in readable format
+ * - AC4: Export/Download button is available for report generation
+ * - AC5: Users can export reports as PDF
+ * - AC6: Date range filters are available for custom report periods
+ * - AC7: Total expenses are displayed in reports
+ * - AC8: Reports are responsive on mobile devices
+ * - AC9: Report data persists after page reload
+ * - AC10: Charts and visualizations display correctly in reports
+ * - AC11: Monthly or period summaries are shown
+ * - AC12: Users can filter reports by date range
+ * - AC13: Expense count and statistics are displayed
+ * - AC14: Empty report state is handled gracefully
+ * - AC15: Visual feedback is provided during report generation
+ * 
+ * User Flows Covered:
+ * 1. Report Viewing: Navigate to reports → View summary and statistics
+ * 2. Report Export: Click export → Generate PDF → Download
+ * 3. Date Filtering: Select date range → View filtered reports
+ * 4. Data Visualization: View charts and graphs showing spending patterns
+ * 5. Responsive Design: View reports on mobile and desktop
+ * 
+ * Pre-conditions: 
+ * - Test user account is created
+ * - Test data (categories and expenses) exists for meaningful reports
  */
 
 describe('Export Reports Flow', () => {

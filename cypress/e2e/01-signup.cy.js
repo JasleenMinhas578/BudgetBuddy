@@ -1,11 +1,28 @@
 /**
- * E2E Tests for User Signup Flow
+ * E2E Acceptance Tests: User Signup Flow
  * 
- * Tests the complete user registration process including:
- * - Form validation
- * - Successful registration
- * - Error handling
- * - Navigation after signup
+ * This test suite validates the complete user registration workflow as an end-to-end acceptance test.
+ * It verifies that users can successfully create accounts and that the system properly handles
+ * various validation scenarios and error cases.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: New users can register with valid email and password
+ * - AC2: System validates email format before submission
+ * - AC3: System enforces password strength requirements (min 8 chars, uppercase, lowercase, number)
+ * - AC4: System requires password confirmation to match
+ * - AC5: System prevents duplicate email registrations
+ * - AC6: System provides clear error messages for validation failures
+ * - AC7: System redirects to dashboard upon successful registration
+ * - AC8: Password visibility can be toggled for better UX
+ * - AC9: Form maintains data when user switches between fields
+ * - AC10: Submit button shows loading state during registration
+ * 
+ * User Flows Covered:
+ * 1. Happy Path: Valid registration → Dashboard access
+ * 2. Validation Errors: Invalid email, weak password, mismatched passwords
+ * 3. Duplicate Registration: Attempting to register with existing email
+ * 4. UX Features: Password visibility toggle, form persistence, loading states
+ * 5. Navigation: Switching between signup and login pages
  */
 
 describe('User Signup Flow', () => {

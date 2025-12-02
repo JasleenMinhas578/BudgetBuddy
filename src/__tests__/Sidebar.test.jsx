@@ -1,3 +1,9 @@
+// Tests for the collapsible `Sidebar` component used in the dashboard layout.
+// - Mocks `AuthContext` to provide a user and logout function.
+// - Verifies navigation links render, with active route highlighting for the current location.
+// - Exercises desktop and mobile toggle buttons for opening/closing the sidebar and ensures callbacks receive the expected arguments.
+// - Confirms that logout is invoked when the logout control is clicked and that mobile navigation closes the sidebar after route changes.
+// - Asserts that drag/mobile CSS classes still produce a valid navigation region in the DOM.
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Sidebar from '../components/Layout/Sidebar';

@@ -1,8 +1,35 @@
 /**
- * Smoke Tests for Budget Buddy Application
+ * E2E Smoke Tests: Application Health and Basic Functionality
  * 
- * These tests verify that the basic functionality of the application works.
- * They serve as a quick sanity check before running more comprehensive tests.
+ * This test suite contains smoke tests that verify the fundamental health and basic functionality
+ * of the Budget Buddy application. These tests run quickly and serve as a sanity check to ensure
+ * the application is in a deployable state before running more comprehensive test suites.
+ * 
+ * Acceptance Criteria Tested:
+ * - AC1: Application loads successfully without errors
+ * - AC2: Landing page displays with key branding elements (BudgetBuddy logo/heading)
+ * - AC3: Primary navigation links (Get Started, Login) are visible and functional
+ * - AC4: Users can navigate to signup page from landing page
+ * - AC5: Users can navigate to login page from landing page
+ * - AC6: Application is responsive across different viewport sizes (mobile, tablet, desktop)
+ * - AC7: Protected routes require authentication (redirect unauthenticated users)
+ * - AC8: Page metadata (charset, viewport) is properly configured
+ * - AC9: Application loads without critical console errors
+ * - AC10: Critical resources (favicon, manifest) are loaded
+ * - AC11: Navigation between authentication pages works correctly
+ * 
+ * User Flows Covered:
+ * 1. Application Load: Visit root URL → Landing page displays
+ * 2. Navigation: Landing → Signup → Login → Signup (round-trip navigation)
+ * 3. Access Control: Attempt to access protected route → Redirected
+ * 4. Responsive Design: View application on different screen sizes
+ * 
+ * Test Purpose:
+ * These smoke tests are designed to run quickly (typically < 30 seconds) and catch critical
+ * regressions that would prevent the application from functioning at a basic level. They should
+ * be run as part of CI/CD pipelines before deploying to staging or production environments.
+ * 
+ * Note: These tests do not require authentication and test only public-facing functionality.
  */
 
 describe('Budget Buddy - Smoke Tests', () => {

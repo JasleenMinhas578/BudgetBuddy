@@ -1,3 +1,8 @@
+// Unit tests for the Firestore-backed `database` service functions.
+// - Mocks Firestore and the shared `db` reference so tests only verify queries, writes, and listeners.
+// - Covers CRUD operations for expenses and categories, including required-field validation and timestamp metadata.
+// - Verifies subscription helpers that stream expenses and categories, including error callbacks and invalid-parameter guards.
+// - Ensures that service functions rethrow Firestore failures so calling code can respond appropriately.
 import {
   addExpense,
   getExpenses,

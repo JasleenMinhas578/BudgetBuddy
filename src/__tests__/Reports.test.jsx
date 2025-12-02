@@ -1,3 +1,10 @@
+// Comprehensive tests for the `Reports` analytics dashboard.
+// - Mocks Firebase Auth/Firestore, chart components, jsPDF, date-fns, framer-motion, and browser APIs used for CSV export.
+// - Verifies header rendering, summary cards (total/average/transactions/top category), and the main chart widgets.
+// - Exercises date filtering presets (All Time, Today, This Month, Custom Range) and custom date input handling.
+// - Checks CSV and PDF export flows, including DOM interactions for CSV links and proper jsPDF usage and loading states.
+// - Confirms that the detailed expenses table renders filtered data, shows empty states, and that category/month aggregations feeding charts are computed correctly.
+// - Ensures Firebase listeners are set up with the correct paths, handle error callbacks gracefully, and still allow the UI to render.
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';

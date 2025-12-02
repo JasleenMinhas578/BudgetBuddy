@@ -1,3 +1,8 @@
+// Unit tests for the `BarChart` chart wrapper component.
+// - Mocks Chart.js and `react-chartjs-2` so that tests only assert the props passed to the rendered chart.
+// - Verifies that charts render for typical, empty, single-point, multi-point, zero, negative, and undefined data inputs.
+// - Confirms that the serialized labels and datasets passed to the mocked Bar component match the provided props.
+// - Ensures the component mounts cleanly, implying Chart.js registration side effects do not break rendering.
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 

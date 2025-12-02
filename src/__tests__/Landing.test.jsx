@@ -1,3 +1,6 @@
+// Snapshot-style rendering tests for the marketing `Landing` page.
+// - Mocks framer-motion to avoid animation side effects while checking static content.
+// - Verifies the main hero text, call-to-action links, and key supporting copy render correctly with expected routes.
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Landing from '../pages/Landing';
