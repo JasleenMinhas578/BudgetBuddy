@@ -13,11 +13,13 @@
 - [📊 Project Status & Quick Links](#-project-status--quick-links)
 - [👥 Team](#-team)
 - [🖥️ Methodology & Iterations](#️-methodology--iterations)
+    - [🗒️ Iterations Summary](#-intertaions-summary)
 - [📋 Feature Issues](#-feature-issues)
 - [🛠️ Technologies & Tools](#️-technologies--tools)
 - [🏗️ Architecture](#️-architecture)
 - [🚀 How to Run the Project](#-how-to-run-the-project)
 - [🧪 Testing](#-testing)
+- [👤 Beta Acceptance Testing](#beta-acceptance-testing)
 - [🔄 CI/CD Pipeline](#-cicd-pipeline)
 - [📊 Quality Reports](#-quality-reports)
 - [📂 Deliverables](#-deliverables)
@@ -168,11 +170,12 @@ In particular, we adopted **four core XP practices** throughout the project:
 - **Test-Driven Development (TDD)**: Many modules (especially authentication, dashboard, and expense management) were developed with tests written first or in very tight red‑green‑refactor loops.
 - **Refactoring**: We continuously refactored code (e.g., during ESLint fixes, test improvements, and architecture cleanup) to improve readability, maintainability, and adherence to our naming and style conventions.
 
-## 📈 Visual: How We Worked Each Sprint
+### 📈 Visual: How We Worked Each Sprint
 
 ![Development Methodology Flow](Documents/Methodology.png)
 
-### Iterations Summary
+--- 
+## 🖥️ Iterations Summary
 
 | Iteration | Dates | Story Points | Key Deliverables | GitHub Issues |
 |-----------|-------|--------------|------------------|--------------|
@@ -520,6 +523,36 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 > 📋 **Detailed E2E Guide**: [`Documents/Cypress_E2E_Testing/Cypress_E2E_Testing.md`](Documents/Cypress_E2E_Testing/Cypress_E2E_Testing.md)
 
 ![E2E Tests](Documents/Cypress_E2E_Testing/Cypress_Tests_Passing.png)
+
+---
+
+## 👤 Beta Acceptance Testing
+
+We conducted a small beta test of Budget Buddy by sharing the deployed site ([https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)) with 10 volunteer users. The goal was to see whether first-time users could complete the basic flows (sign up, add expenses, view the dashboard) and to collect quick feedback on usability before making future improvements.
+
+#### 📋 Method
+
+Testers were asked to:
+
+- ✅ Create an account or log in.
+- ✅ Add a few sample expenses and categories.
+- ✅ View the dashboard and charts.
+
+Afterwards, each person provided brief written feedback about their experience.
+
+#### 💬 Key Feedback
+
+Overall, testers were able to complete the main tasks without major issues. The most consistent piece of feedback was that the **site needs better responsiveness on mobile devices**. Several users noted that the layout feels cramped on smaller screens and that some elements (buttons and text) are harder to use on a phone than on a laptop.
+
+#### 🚀 Planned Improvements
+
+Although we have not yet implemented changes in this version, this feedback will guide our future iterations. Our planned improvements include:
+
+- 📱 Refining layout and breakpoints to better support small screens.
+- 👆 Adjusting spacing, font sizes, and button sizes for comfortable touch use.
+- 🔄 Re-testing the main user flows specifically on mobile devices.
+
+This beta round confirmed that the core functionality is usable and clearly identified mobile responsiveness as the main priority for future development.
 
 ---
 
