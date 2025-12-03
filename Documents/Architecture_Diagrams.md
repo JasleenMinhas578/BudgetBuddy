@@ -21,20 +21,13 @@ This document provides comprehensive architecture documentation following the 4+
 
 1. [Overall System Architecture](#1-overall-system-architecture)
 2. [4+1 Architectural View Model](#2-41-architectural-view-model)
-   - [Logical View](#21-logical-view)
-   - [Process View](#22-process-view)
-   - [Development View](#23-development-view)
-   - [Physical View](#24-physical-view)
-   - [Scenarios (Use Case View)](#25-scenarios-use-case-view)
-3. [UML Diagrams](#3-uml-diagrams)
-   - [Use Case Diagram](#31-use-case-diagram)
-   - [Class Diagram](#32-class-diagram)
-   - [Class Diagram Relationships](#33-class-diagram---relationships)
-   - [Sequence Diagrams](#34-sequence-diagrams)
-4. [Component Interaction Diagrams](#4-component-interaction-diagrams)
-5. [Summary](#5-summary)
-6. [UML Diagrams Location](#6-uml-diagrams-location)
-7. [Infrastructure & Technology Choices](#7-infrastructure--technology-choices)
+   - [2.1 Logical View](#21-logical-view)
+   - [2.2 Process View](#22-process-view)
+   - [2.3 Development View](#23-development-view)
+   - [2.4 Physical View](#24-physical-view)
+   - [2.5 Scenarios (Use Case View)](#25-scenarios-use-case-view)
+3. [UML Diagrams Reference](#3-uml-diagrams-reference)
+4. [Summary & Key Decisions](#4-summary--key-decisions)
 
 ---
 
@@ -42,9 +35,28 @@ This document provides comprehensive architecture documentation following the 4+
 
 ### 1.1 High-Level Architecture Diagram
 
+Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application:
+
+**Primary Architecture Pattern: Client-Server**
+- **Client**: React running in the browser
+- **Server**: Firebase cloud services (Authentication, Firestore Database)
+
+**Secondary Architecture Pattern: Layered Architecture (within Client)**
+- **Presentation Layer**: React components, pages, UI elements
+- **Business Logic Layer**: Services, utilities, validation, context
+- **Data Access Layer**: Firebase SDK integration, API calls
+
+![System Architecture](UML/High_Level_System_Architecture.png)
+
+**Architecture Pattern Justification**:
+- **Client-Server**: Clear separation between client (React) and server (Firebase), enabling scalability, security, and independent deployment
+- **Layered Architecture (Client)**: Separation of concerns within the client application promotes maintainability, testability, and code organization
+
+### Detailed Flowchart of System Architecture Overview
 ![Detailed System Architecture](UML/Detailed_System_Architecture.png)
 
-### 1.2 Technology Stack Mapping
+
+### 1.2 Technology Stack
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -56,7 +68,6 @@ This document provides comprehensive architecture documentation following the 4+
 │  ├─ React Router 6.8.0  (Client-side Routing)               │
 │  ├─ React Context API   (State Management)                  │
 │  ├─ Chart.js 4.5.0      (Data Visualization)                │
-│  ├─ Framer Motion       (Animations)                        │
 │  └─ CSS3                (Styling)                           │
 │                                                              │
 │  Backend Services (Firebase)                                 │
@@ -65,16 +76,13 @@ This document provides comprehensive architecture documentation following the 4+
 │  └─ Firebase SDK 11.10  (Client Library)                    │
 │                                                              │
 │  Testing & Quality                                           │
-│  ├─ Jest                (Unit Testing)                       │
-│  ├─ React Testing Lib   (Component Testing)                 │
+│  ├─ Jest + RTL          (Unit Testing)                       │
 │  ├─ Cypress 15.6.0      (E2E Testing)                       │
-│  ├─ ESLint 8.57.1       (Code Quality)                      │
-│  └─ Lighthouse          (Performance)                       │
+│  └─ ESLint 8.57.1       (Code Quality)                      │
 │                                                              │
 │  CI/CD & Deployment                                          │
 │  ├─ GitHub Actions      (CI/CD Pipeline)                    │
-│  ├─ Vercel              (Hosting & CDN)                     │
-│  └─ npm                 (Package Management)                │
+│  └─ Vercel              (Hosting & CDN)                     │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -84,11 +92,12 @@ This document provides comprehensive architecture documentation following the 4+
 ## 2. 4+1 Architectural View Model
 
 The 4+1 architectural view model describes the architecture using five concurrent views:
-1. **Logical View** - Functionality provided to end users
+
+1. **Logical View** - Functionality provided to end users (static structure)
 2. **Process View** - Dynamic aspects (concurrency, synchronization)
 3. **Development View** - Programmer's perspective (software management)
 4. **Physical View** - System deployment (network, servers)
-5. **Scenarios (Use Case View)** - Ties all views together
+5. **Scenarios (Use Case View)** - Ties all views together (user interactions)
 
 ---
 
@@ -96,22 +105,29 @@ The 4+1 architectural view model describes the architecture using five concurren
 
 **Purpose**: Shows the key abstractions in the system as objects or object classes.
 
-### 2.1.1 Class Diagram Overview
+### 2.1.1 Class Diagram
 
-The logical view is best represented by the Class Diagram, which shows the core domain model:
+The Class Diagram shows the core domain model with all classes, attributes, methods, and relationships.
 
 ![Class Diagram](UML/Class_Diagram.png)
 
-For detailed relationships, see the [Class Diagram Relationships](#33-class-diagram---relationships) section.
+**Key Domain Entities**:
+- **User**: Authentication and user management
+- **Expense**: Core expense records with CRUD operations
+- **Category**: Expense categorization
+- **CategoryStats**: Calculated statistics
+- **Report**: Report generation and export
 
-### 2.1.2 Component Diagram
+**Detailed Relationships**: See [Class Diagram Relationships](UML/Class_Diagram_Relationships.png)
+
+### 2.1.2 Component Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Budget Buddy System                         │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────┐    │
-│  │           Presentation Components                       │    │
+│  │           Presentation Layer                            │    │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐ │    │
 │  │  │  Auth    │  │Dashboard │  │   Expense Mgmt       │ │    │
 │  │  │  Pages   │  │  Pages   │  │   Components         │ │    │
@@ -146,81 +162,51 @@ For detailed relationships, see the [Class Diagram Relationships](#33-class-diag
 │  │  │ • JWT Tokens     │  │ • Query Execution        │   │    │
 │  │  └──────────────────┘  └──────────────────────────┘   │    │
 │  └────────────────────────────────────────────────────────┘    │
-│                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.1.3 Class Diagram (Core Domain Model)
+### 2.1.3 Firestore Database Structure
 
-The Class Diagram shows the complete domain model with all classes, attributes, and methods. See the detailed diagram above in [Section 3.2](#32-class-diagram).
+![Firestore Structure](UML/Firestore_Structure.png)
 
-**Key Domain Entities**:
-- **User**: Authentication and user management
-- **Expense**: Core expense records with CRUD operations
-- **Category**: Expense categorization
-- **CategoryStats**: Calculated statistics
-- **Report**: Report generation and export
+The Firestore Structure diagram illustrates the NoSQL database schema used in Budget Buddy, showing the three main collections and their relationships.
 
-### 2.1.4 Package Diagram
+**Collections**:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Budget Buddy Packages                     │
-└─────────────────────────────────────────────────────────────┘
+1. **`users/` Collection**
+   - **Document ID**: `<userId>` (auto-generated by Firebase Auth)
+   - **Fields**:
+     - `email: string` - User's email address
+     - `displayName: string` - User's display name
+     - `photoURL: string` - URL to user's profile photo
+   - **Purpose**: Stores user profile information managed by Firebase Authentication
 
-┌──────────────────────────────────────────────────────────────┐
-│  «package»                                                    │
-│  components                                                   │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────────────┐  │
-│  │   Auth     │  │ Dashboard  │  │      Expense         │  │
-│  │            │  │            │  │                      │  │
-│  │ • Login    │  │ • Overview │  │ • ExpenseForm        │  │
-│  │ • Signup   │  │ • Reports  │  │ • ExpenseList        │  │
-│  │            │  │ • Categories│  │                      │  │
-│  └────────────┘  └────────────┘  └──────────────────────┘  │
-│                                                              │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────────────┐  │
-│  │  Charts    │  │  Layout    │  │         UI           │  │
-│  │            │  │            │  │                      │  │
-│  │ • PieChart │  │ • Navbar   │  │ • Modal              │  │
-│  │ • BarChart │  │ • Sidebar  │  │ • Toast              │  │
-│  │ • LineChart│  │ • Navigation│  │                      │  │
-│  └────────────┘  └────────────┘  └──────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-                        ↓ uses
-┌──────────────────────────────────────────────────────────────┐
-│  «package»                                                    │
-│  context                                                      │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  AuthContext                                          │   │
-│  │  • AuthProvider                                       │   │
-│  │  • useAuth hook                                       │   │
-│  └──────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-                        ↓ uses
-┌──────────────────────────────────────────────────────────────┐
-│  «package»                                                    │
-│  services                                                     │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  database.js                                          │   │
-│  │  • addExpense()                                       │   │
-│  │  • getExpenses()                                      │   │
-│  │  • updateExpense()                                    │   │
-│  │  • deleteExpense()                                    │   │
-│  │  • subscribeToExpenses()                              │   │
-│  │  • addCategory()                                      │   │
-│  │  • getCategories()                                    │   │
-│  └──────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────┘
-                        ↓ uses
-┌──────────────────────────────────────────────────────────────┐
-│  «external»                                                   │
-│  Firebase SDK                                                 │
-│  ┌──────────────────────┐  ┌──────────────────────────┐     │
-│  │  firebase/auth       │  │  firebase/firestore      │     │
-│  └──────────────────────┘  └──────────────────────────┘     │
-└──────────────────────────────────────────────────────────────┘
-```
+2. **`expenses/` Collection**
+   - **Document ID**: `<expenseId>` (auto-generated)
+   - **Fields**:
+     - `userId: <userId> (ref)` - Reference to the user who owns this expense
+     - `title: string` - Expense description/title
+     - `amount: number` - Expense amount in dollars
+     - `category: string` - Expense category name
+     - `date: timestamp` - Date when the expense occurred
+   - **Purpose**: Stores all expense records with user-specific data isolation
+   - **Relationship**: Each expense document references a user via `userId`
+
+3. **`categories/` Collection**
+   - **Document ID**: `<categoryId>` (auto-generated)
+   - **Fields**:
+     - `userId: <userId> (ref)` - Reference to the user who owns this category
+     - `name: string` - Category name
+   - **Purpose**: Stores user-defined expense categories
+   - **Relationship**: Each category document references a user via `userId`
+
+**Key Design Principles**:
+- **User Isolation**: Both `expenses` and `categories` collections use `userId` references to ensure data isolation between users
+- **NoSQL Structure**: Flexible schema allows for easy extension without migrations
+- **Real-time Capabilities**: Firestore's real-time listeners enable instant updates across all connected clients
+- **Scalability**: Document-based structure supports horizontal scaling and efficient querying
+
+**Data Access Pattern**: All queries are filtered by `userId` to ensure users can only access their own data, enforced by Firestore Security Rules.
 
 ---
 
@@ -228,117 +214,45 @@ The Class Diagram shows the complete domain model with all classes, attributes, 
 
 **Purpose**: Shows the dynamic aspects of the system, processes, and how they communicate.
 
-### 2.2.1 Activity Diagram - Add Expense Flow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│              Add Expense Process Flow                        │
-└─────────────────────────────────────────────────────────────┘
-
-    [Start]
-       │
-       ↓
-   ┌─────────────────────┐
-   │ User clicks         │
-   │ "Add Expense"       │
-   └─────────────────────┘
-       │
-       ↓
-   ┌─────────────────────┐
-   │ Open Expense Form   │
-   │ Modal               │
-   └─────────────────────┘
-       │
-       ↓
-   ┌─────────────────────┐
-   │ User fills form:    │
-   │ • Title             │
-   │ • Amount            │
-   │ • Category          │
-   │ • Date              │
-   └─────────────────────┘
-       │
-       ↓
-   ┌─────────────────────┐
-   │ User clicks Submit  │
-   └─────────────────────┘
-       │
-       ↓
-   ┌─────────────────────┐
-   │ Validate Form Data  │
-   └─────────────────────┘
-       │
-       ├─────────────────────────┐
-       │                         │
-   [Valid?]                  [Invalid?]
-       │                         │
-       ↓                         ↓
-   ┌─────────────────────┐   ┌─────────────────────┐
-   │ Set Loading State   │   │ Display Error       │
-   └─────────────────────┘   │ Message             │
-       │                     └─────────────────────┘
-       ↓                         │
-   ┌─────────────────────┐       │
-   │ Call addExpense()   │       │
-   │ Service             │       │
-   └─────────────────────┘       │
-       │                         │
-       ↓                         │
-   ┌─────────────────────┐       │
-   │ Firebase Firestore  │       │
-   │ • Add document      │       │
-   │ • Generate ID       │       │
-   │ • Add timestamps    │       │
-   └─────────────────────┘       │
-       │                         │
-       ├─────────────────────────┤
-       │                         │
-   [Success?]              [Error?]
-       │                         │
-       ↓                         ↓
-   ┌─────────────────────┐   ┌─────────────────────┐
-   │ Real-time Listener  │   │ Display Error       │
-   │ Triggers            │   │ Toast               │
-   └─────────────────────┘   └─────────────────────┘
-       │                         │
-       ↓                         │
-   ┌─────────────────────┐       │
-   │ Update UI with      │       │
-   │ New Expense         │       │
-   └─────────────────────┘       │
-       │                         │
-       ↓                         │
-   ┌─────────────────────┐       │
-   │ Close Modal         │       │
-   └─────────────────────┘       │
-       │                         │
-       ↓                         │
-   ┌─────────────────────┐       │
-   │ Show Success Toast  │       │
-   └─────────────────────┘       │
-       │                         │
-       └─────────────────────────┘
-                 │
-                 ↓
-              [End]
-```
-
-### 2.2.2 Sequence Diagrams - User Authentication
-
-The authentication flows are detailed in the following sequence diagrams:
-
-#### Sign Up Flow
-See [Section 3.4.1](#341-user-authentication---sign-up) for the complete Sign Up sequence diagram.
-
-#### Log In Flow
-See [Section 3.4.2](#342-user-authentication---log-in) for the complete Log In sequence diagram.
-
-#### Log Out Flow
-See [Section 3.4.3](#343-user-authentication---log-out) for the complete Log Out sequence diagram.
-
-### 2.2.3 State Diagram - Expense Management
+### 2.2.1 State Diagram - Expense Management
 
 ![Expense State Transitions](UML/State_Diagram_Expense_Management.png)
+
+### 2.2.2 Sequence Diagrams
+
+Sequence diagrams illustrate the dynamic interactions between system components for various user operations. All sequence diagrams are located in [`Documents/UML/`](Documents/UML/):
+
+| Operation | Diagram | Description |
+|-----------|---------|-------------|
+| **Sign Up** | ![Sign Up](UML/Sequence_Diagram_for_Sign_up.png) | User registration flow from form submission to account creation |
+| **Log In** | ![Log In](UML/Sequence_Diagram_for_Log_In.png) | Authentication process and session management |
+| **Log Out** | ![Log Out](UML/Sequence_Diagram_for_Log_Out.png) | Logout process and session cleanup |
+| **Add Expense** | ![Add Expense](UML/Sequence_Diagram_for_Adding_Expense.png) | Adding new expense with validation and real-time sync |
+| **Edit Expense** | ![Edit Expense](UML/Sequence_Diagram_for_Editing_Expense.png) | Editing existing expense workflow |
+| **Delete Expense** | ![Delete Expense](UML/Sequence_Diagram_for_Deleting_an_Expense.png) | Expense deletion with confirmation |
+| **Add Category** | ![Add Category](UML/Sequence_Diagram_for_Adding_Category.png) | Creating new expense category |
+| **View Dashboard** | ![View Dashboard](UML/Sequence_Diagram_for_Viewing_the_Dashbaord.png) | Dashboard initialization and data loading |
+| **Export PDF** | ![Export PDF](UML/Sequence_Diagram_for_Exporting_Report_to_PDF.png) | PDF report generation and export |
+| **Filter Charts** | ![Filter Charts](UML/Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png) | Date-based filtering for charts and reports |
+
+### 2.2.3 Real-time Data Synchronization Flow
+
+```
+Component Mount → useEffect() → Check currentUser → Create Firestore Query
+    ↓
+Setup onSnapshot Listener
+    ↓
+┌─────────────────────┬─────────────────────┐
+│ Initial Data        │ Data Changes        │
+│ Received            │ (Add/Edit/Delete)   │
+└─────────────────────┴─────────────────────┘
+    ↓
+Process Snapshot → Update State → Re-render UI
+    ↓
+Component Unmount → Cleanup Listener (unsubscribe)
+```
+
+**Key Mechanism**: Firestore `onSnapshot()` listeners provide real-time updates. When data changes in Firestore, all active listeners receive updates automatically, triggering React state updates and UI re-renders.
 
 ---
 
@@ -346,94 +260,46 @@ See [Section 3.4.3](#343-user-authentication---log-out) for the complete Log Out
 
 **Purpose**: Describes the system from a programmer's perspective (software management).
 
-### 2.3.1 Component Organization
+### 2.3.1 Package Diagram
+
+![Development View (Package Diagram)](UML/Development_View(Package_Diagram).png)
+
+The Package Diagram illustrates the high-level architecture and dependencies of the application's source code, showing the layered structure from components to external Firebase SDK.
+
+**Key Layers**:
+- **Components Layer**: React frontend components (Auth, Dashboard, Expense, Charts, Layout, UI)
+- **Context Layer**: State management and business logic (AuthContext, AuthProvider, useAuth hook)
+- **Services Layer**: Data access layer (database.js with Firestore operations)
+- **External Layer**: Firebase SDK (firebase/auth and firebase/firestore)
+
+**Dependency Flow**: Components → Context → Services → Firebase SDK
+
+### 2.3.2 Component Organization
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│              Development Structure                          │
-└─────────────────────────────────────────────────────────────┘
-
 budget-buddy/
-│
-├── public/                    # Static assets
-│   ├── index.html
-│   ├── favicon.ico
-│   └── manifest.json
-│
-├── src/                       # Source code
-│   │
-│   ├── components/            # React components
-│   │   ├── Auth/             # Authentication components
-│   │   │   ├── Login.jsx
-│   │   │   ├── Signup.jsx
-│   │   │   ├── ForgotPassword.jsx
-│   │   │   └── ResetPassword.jsx
-│   │   │
-│   │   ├── Dashboard/        # Dashboard components
-│   │   │   ├── DashboardOverview.jsx
-│   │   │   ├── Expenses.jsx
-│   │   │   ├── Categories.jsx
-│   │   │   └── Reports.jsx
-│   │   │
-│   │   ├── Expense/          # Expense management
-│   │   │   ├── ExpenseForm.jsx
-│   │   │   └── ExpenseList.jsx
-│   │   │
-│   │   ├── Charts/           # Data visualization
-│   │   │   ├── PieChart.jsx
-│   │   │   ├── BarChart.jsx
-│   │   │   └── LineChart.jsx
-│   │   │
-│   │   ├── Layout/           # Layout components
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── Navigation.jsx
-│   │   │   └── PrivateRoute.jsx
-│   │   │
-│   │   └── UI/               # Reusable UI components
-│   │       ├── Modal.jsx
-│   │       └── Toast.jsx
-│   │
-│   ├── context/              # React Context
-│   │   └── AuthContext.js
-│   │
-│   ├── services/             # Business logic
-│   │   └── database.js       # Firestore operations
-│   │
-│   ├── styles/               # CSS stylesheets
-│   │   └── main.css
-│   │
-│   ├── __tests__/            # Test files
-│   │   ├── *.test.jsx        # Component tests
-│   │   └── *.test.js         # Service tests
-│   │
-│   ├── firebaseConfig.js     # Firebase configuration
-│   ├── setupTests.js         # Test setup
-│   ├── App.js                # Root component
-│   └── index.js              # Entry point
-│
-├── cypress/                   # E2E tests
-│   ├── e2e/                  # Test specs
-│   ├── fixtures/             # Test data
-│   └── support/              # Test utilities
-│
-├── .github/                   # GitHub configuration
-│   └── workflows/            # CI/CD workflows
-│       ├── ci.yml
-│       └── e2e.yml
-│
-├── Documents/                 # Project documentation
-├── coverage/                  # Test coverage reports
-├── build/                     # Production build
-│
-├── package.json              # Dependencies
-├── .gitignore               # Git ignore rules
-└── README.md                # Project documentation
+├── src/
+│   ├── components/
+│   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword
+│   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports
+│   │   ├── Expense/       # ExpenseForm, ExpenseList
+│   │   ├── Charts/        # PieChart, BarChart, LineChart
+│   │   ├── Layout/        # Navbar, Sidebar, Navigation, PrivateRoute
+│   │   └── UI/            # Modal, Toast
+│   ├── context/           # AuthContext.js
+│   ├── services/          # database.js (Firestore operations)
+│   ├── styles/            # main.css
+│   └── __tests__/         # Unit tests
+├── cypress/               # E2E tests
+├── .github/workflows/     # CI/CD workflows
+└── Documents/             # Project documentation
 ```
 
-### 2.3.2 Module Dependencies
+### 2.3.3 Module Dependencies
 
 ![Module Dependency Graph](UML/Module_Dependency_Graph.png)
+
+**Dependency Flow**: Components → Context → Services → Firebase SDK
 
 ---
 
@@ -441,130 +307,36 @@ budget-buddy/
 
 **Purpose**: Shows the system from a system engineer's perspective (deployment).
 
-### 2.4.1 Deployment Diagram
+### 2.4.1 Deployment Architecture
+
+![Physical View (Deployment Diagram)](UML/Physical_View(Deployment_Diagram).png)
+
+### 2.4.2 Deployment Flow
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Deployment Architecture                        │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌───────────────────────────────────────────────────────────────────┐
-│                        Client Devices                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐              │
-│  │  Desktop    │  │   Tablet    │  │   Mobile    │              │
-│  │  Browser    │  │   Browser   │  │   Browser   │              │
-│  │             │  │             │  │             │              │
-│  │ Chrome/     │  │ Safari/     │  │ Chrome/     │              │
-│  │ Firefox/    │  │ Chrome      │  │ Safari      │              │
-│  │ Edge/Safari │  │             │  │             │              │
-│  └─────────────┘  └─────────────┘  └─────────────┘              │
-└───────────────────────────────────────────────────────────────────┘
-         │                  │                  │
-         └──────────────────┼──────────────────┘
-                            │ HTTPS
-                            ↓
-┌───────────────────────────────────────────────────────────────────┐
-│                    Vercel Edge Network (CDN)                      │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │  Global CDN Nodes (100+ locations worldwide)                 │ │
-│  │  • Static Asset Caching                                      │ │
-│  │  • SSL/TLS Termination                                       │ │
-│  │  • DDoS Protection                                           │ │
-│  │  • Load Balancing                                            │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────────┘
-                            │
-                            ↓
-┌───────────────────────────────────────────────────────────────────┐
-│                    Vercel Hosting Platform                         │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │  «artifact» React Build                                      │ │
-│  │  • Optimized JavaScript bundles                              │ │
-│  │  • CSS stylesheets                                           │ │
-│  │  • Static assets (images, fonts)                             │ │
-│  │  • Service Workers (if applicable)                           │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                                                                    │
-│  Environment Variables:                                            │
-│  • REACT_APP_FIREBASE_API_KEY                                     │
-│  • REACT_APP_FIREBASE_AUTH_DOMAIN                                 │
-│  • REACT_APP_FIREBASE_PROJECT_ID                                  │
-│  • ... (other Firebase config)                                    │
-└───────────────────────────────────────────────────────────────────┘
-                            │ Firebase SDK
-                            ↓
-┌───────────────────────────────────────────────────────────────────┐
-│                    Firebase Cloud Platform                         │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │  «service» Firebase Authentication                           │ │
-│  │  • Multi-region deployment                                   │ │
-│  │  • JWT token generation                                      │ │
-│  │  • Session management                                        │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-│                            │                                       │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │  «database» Cloud Firestore                                  │ │
-│  │  • Multi-region replication                                  │ │
-│  │  • Automatic scaling                                         │ │
-│  │  • Real-time synchronization                                 │ │
-│  │  • Security Rules enforcement                                │ │
-│  │                                                              │ │
-│  │  Collections:                                                │ │
-│  │  • users/{userId}/expenses                                   │ │
-│  │  • users/{userId}/categories                                 │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────────┘
-                            │
-                            ↓
-┌───────────────────────────────────────────────────────────────────┐
-│                    CI/CD Infrastructure                            │
-│  ┌──────────────────────────────────────────────────────────────┐ │
-│  │  «server» GitHub Actions Runners                             │ │
-│  │  • Ubuntu Latest                                             │ │
-│  │  • Node.js 20 LTS                                            │ │
-│  │  • Automated Testing                                         │ │
-│  │  • Build Verification                                        │ │
-│  │                                                              │ │
-│  │  Workflows:                                                  │ │
-│  │  • CI Pipeline (Jest Tests)                                 │ │
-│  │  • E2E Pipeline (Cypress Tests)                             │ │
-│  │  • Deployment Trigger                                       │ │
-│  └──────────────────────────────────────────────────────────────┘ │
-└───────────────────────────────────────────────────────────────────┘
+Client Devices (Desktop/Tablet/Mobile)
+    ↓ HTTPS
+Vercel Edge Network (CDN - 100+ locations)
+    ↓
+Vercel Hosting Platform
+    ├─ React Build (Optimized bundles)
+    └─ Environment Variables (Firebase config)
+    ↓ Firebase SDK
+Firebase Cloud Platform
+    ├─ Firebase Authentication (Multi-region)
+    └─ Cloud Firestore (Multi-region, Auto-scaling)
+    ↓
+CI/CD Infrastructure (GitHub Actions)
+    ├─ CI Pipeline (Jest Tests)
+    └─ E2E Pipeline (Cypress Tests)
 ```
 
-### 2.4.2 Network Topology
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Network Architecture                      │
-└─────────────────────────────────────────────────────────────┘
-
-Internet
-   │
-   │ HTTPS (443)
-   ↓
-┌──────────────────────┐
-│  Vercel CDN Edge     │ ← Closest geographic location
-│  (Edge Node)         │
-└──────────────────────┘
-   │
-   │ Internal Network
-   ↓
-┌──────────────────────┐
-│  Vercel Origin       │
-│  Server              │
-└──────────────────────┘
-   │
-   ├─────────────────────────────┐
-   │                             │
-   │ Firebase SDK (HTTPS)        │
-   ↓                             ↓
-┌──────────────────────┐  ┌──────────────────────┐
-│ Firebase Auth        │  │ Cloud Firestore      │
-│ (us-central1)        │  │ (multi-region)       │
-└──────────────────────┘  └──────────────────────┘
-```
+**Key Deployment Characteristics**:
+- **Global CDN**: Vercel edge network for fast content delivery
+- **Serverless**: No server management required
+- **Auto-scaling**: Firebase handles traffic spikes automatically
+- **Multi-region**: Firebase services replicated globally
+- **Zero-downtime**: Vercel enables instant rollbacks
 
 ---
 
@@ -574,470 +346,93 @@ Internet
 
 ### 2.5.1 Use Case Diagram
 
-The Use Case Diagram shows all actors and use cases in the Budget Buddy system. See the detailed diagram in [Section 3.1](#31-use-case-diagram).
-
 ![Use Case Diagram](UML/Use_Case_Diagram.png)
 
-### 2.5.2 Key Use Case Descriptions
+**Actors**:
+- **Guest User**: Can sign up, login, view landing page
+- **Registered User**: Full access to all features
 
-#### Use Case 1: Add Expense
+**Use Cases**:
+- **Authentication**: Sign Up, Login, Logout
+- **Expense Management**: Add, Edit, Delete, View, Filter Expenses
+- **Category Management**: Create, Delete, View Categories
+- **Dashboard & Reports**: View Overview, Charts, Generate PDF, Export CSV, View Statistics
 
-```
-Use Case: Add Expense
-Actor: Authenticated User
-Preconditions: User is logged in
-Postconditions: Expense is saved to database
+### 2.5.2 Key Use Case: Add Expense
 
-Main Flow:
+**Actor**: Authenticated User  
+**Preconditions**: User is logged in  
+**Postconditions**: Expense is saved to database
+
+**Main Flow**:
 1. User navigates to Expenses page
 2. User clicks "Add Expense" button
 3. System displays expense form modal
-4. User enters expense details:
-   - Title
-   - Amount
-   - Category
-   - Date
+4. User enters expense details (Title, Amount, Category, Date)
 5. User clicks "Submit"
 6. System validates input
 7. System saves expense to Firestore
-8. System updates UI with new expense
+8. Real-time listener updates UI
 9. System displays success message
 10. System closes modal
 
-Alternative Flows:
-6a. Validation fails:
-    - System displays error message
-    - User corrects input
-    - Resume at step 5
-
-7a. Database error:
-    - System displays error toast
-    - User can retry
-```
-
-#### Use Case 2: View Dashboard
-
-```
-Use Case: View Dashboard
-Actor: Authenticated User
-Preconditions: User is logged in
-Postconditions: Dashboard displays user's financial data
-
-Main Flow:
-1. User logs in successfully
-2. System redirects to Dashboard
-3. System fetches user's expenses from Firestore
-4. System calculates statistics:
-   - Total expenses
-   - This month's expenses
-   - Average expense
-   - Top spending category
-5. System displays summary cards
-6. System displays recent expenses list
-7. System renders charts (if data available)
-
-Alternative Flows:
-3a. No expenses found:
-    - System displays empty state
-    - System prompts user to add first expense
-```
+**Alternative Flows**:
+- **6a. Validation fails**: System displays error message, user corrects input
+- **7a. Database error**: System displays error toast, user can retry
 
 ---
 
-## 3. UML Diagrams
+## 3. UML Diagrams Reference
 
-This section contains the official UML diagrams for the Budget Buddy system. All diagrams are located in the [`Documents/UML/`](Documents/UML/) folder.
+All UML diagrams are stored in [`Documents/UML/`](Documents/UML/):
 
-### 3.1 Use Case Diagram
-
-The Use Case Diagram illustrates all the use cases and actors in the Budget Buddy system, showing the interactions between guest users, registered users, and the system functionalities.
-
-![Use Case Diagram](UML/Use_Case_Diagram.png)
-
-**Description**:
-- **Actors**: Guest User, Registered User
-- **Guest User Use Cases**: Sign Up, Login, View Info
-- **Registered User Use Cases**: 
-  - Expense Management (Add, Edit, Delete, View, Filter)
-  - Category Management (Create, Delete, View)
-  - Dashboard & Reports (View Overview, Charts, Generate PDF, Export CSV, Statistics)
-  - Logout
-
----
-
-### 3.2 Class Diagram
-
-The Class Diagram shows the core domain model with classes, their attributes, methods, and relationships.
-
-![Class Diagram](UML/Class_Diagram.png)
-
-**Key Classes**:
-- **User**: Represents authenticated users with authentication methods
-- **Expense**: Core entity for expense records with CRUD operations
-- **Category**: Expense categorization with management operations
-- **CategoryStats**: Calculated statistics for categories
-- **Report**: Report generation and export functionality
+| Diagram Type | File Name | Description |
+|--------------|-----------|-------------|
+| **Use Case** | `Use_Case_Diagram.png` | All actors and use cases |
+| **Class Diagram** | `Class_Diagram.png` | Core domain model |
+| **Class Relationships** | `Class_Diagram_Relationships.png` | Detailed class relationships |
+| **State Diagram** | `State_Diagram_Expense_Management.png` | Expense state transitions |
+| **Sequence - Sign Up** | `Sequence_Diagram_for_Sign_up.png` | User registration flow |
+| **Sequence - Log In** | `Sequence_Diagram_for_Log_In.png` | Authentication flow |
+| **Sequence - Log Out** | `Sequence_Diagram_for_Log_Out.png` | Session cleanup |
+| **Sequence - Add Expense** | `Sequence_Diagram_for_Adding_Expense.png` | Adding expense flow |
+| **Sequence - Edit Expense** | `Sequence_Diagram_for_Editing_Expense.png` | Editing expense flow |
+| **Sequence - Delete Expense** | `Sequence_Diagram_for_Deleting_an_Expense.png` | Deleting expense flow |
+| **Sequence - Add Category** | `Sequence_Diagram_for_Adding_Category.png` | Creating category flow |
+| **Sequence - View Dashboard** | `Sequence_Diagram_for_Viewing_the_Dashbaord.png` | Dashboard initialization |
+| **Sequence - Export PDF** | `Sequence_Diagram_for_Exporting_Report_to_PDF.png` | PDF generation flow |
+| **Sequence - Filter Charts** | `Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png` | Date filtering flow |
+| **Development View** | `Development_View(Package_Diagram).png` | Package structure and dependencies |
+| **Module Dependencies** | `Module_Dependency_Graph.png` | Component dependency graph |
+| **Physical View** | `Physical_View(Deployment_Diagram).png` | Deployment architecture |
+| **System Architecture** | `Detailed_System_Architecture.png` | High-level system architecture |
+| **Firestore Structure** | `Firestore_Structure.png` | Database schema |
 
 ---
 
-### 3.3 Class Diagram - Relationships
+## 4. Summary & Key Decisions
 
-This diagram provides a detailed view of the relationships between classes, including associations, aggregations, and dependencies.
+### 4.1 Architectural Patterns
 
-![Class Diagram Relationships](UML/Class_Diagram_Relationships.png)
+1. **Primary Pattern: Client-Server Architecture**
+   - React SPA (client) communicates with Firebase cloud services (server)
+   - Clear separation of concerns, scalability, independent deployment
 
-**Key Relationships**:
-- User **owns** multiple Expenses (1-to-many)
-- Expense **belongs to** a Category (many-to-one)
-- Category **contains** multiple Expenses (1-to-many)
-- Expense **generates** Reports
-- CategoryStats **calculated from** Category and Expenses
-
----
-
-### 3.4 Sequence Diagrams
-
-Sequence diagrams illustrate the dynamic interactions between system components for various user operations.
-
-#### 3.4.1 User Authentication - Sign Up
-
-This sequence diagram shows the complete user registration flow from form submission to account creation.
-
-![Sign Up Sequence Diagram](UML/Sequence_Diagram_for_Sign_up.png)
-
-**Flow**:
-1. User fills signup form
-2. Form validation
-3. Firebase Authentication creates account
-4. User profile creation in Firestore
-5. Redirect to dashboard
-
----
-
-#### 3.4.2 User Authentication - Log In
-
-This sequence diagram illustrates the login process and session management.
-
-![Log In Sequence Diagram](UML/Sequence_Diagram_for_Log_In.png)
-
-**Flow**:
-1. User enters credentials
-2. Firebase Authentication validates
-3. JWT token generation
-4. Session establishment
-5. User data retrieval from Firestore
-6. Dashboard initialization
-
----
-
-#### 3.4.3 User Authentication - Log Out
-
-This sequence diagram shows the logout process and session cleanup.
-
-![Log Out Sequence Diagram](UML/Sequence_Diagram_for_Log_Out.png)
-
-**Flow**:
-1. User clicks logout
-2. Firebase sign out
-3. Session cleanup
-4. Firestore listeners cleanup
-5. Redirect to login page
-
----
-
-#### 3.4.4 Expense Management - Adding Expense
-
-This sequence diagram details the process of adding a new expense to the system.
-
-![Add Expense Sequence Diagram](UML/Sequence_Diagram_for_Adding_Expense.png)
-
-**Flow**:
-1. User opens expense form
-2. Form validation
-3. Expense data submission to Firestore
-4. Real-time listener update
-5. UI refresh with new expense
-6. Success notification
-
----
-
-#### 3.4.5 Expense Management - Editing Expense
-
-This sequence diagram shows the expense editing workflow.
-
-![Edit Expense Sequence Diagram](UML/Sequence_Diagram_for_Editing_Expense.png)
-
-**Flow**:
-1. User selects expense to edit
-2. Form populated with existing data
-3. User modifies fields
-4. Validation and update to Firestore
-5. Real-time sync
-6. UI update
-
----
-
-#### 3.4.6 Expense Management - Deleting Expense
-
-This sequence diagram illustrates the expense deletion process with confirmation.
-
-![Delete Expense Sequence Diagram](UML/Sequence_Diagram_for_Deleting_an_Expense.png)
-
-**Flow**:
-1. User clicks delete button
-2. Confirmation dialog
-3. User confirms deletion
-4. Firestore document deletion
-5. Real-time listener update
-6. UI refresh
-7. Success notification
-
----
-
-#### 3.4.7 Category Management - Adding Category
-
-This sequence diagram shows the process of creating a new expense category.
-
-![Add Category Sequence Diagram](UML/Sequence_Diagram_for_Adding_Category.png)
-
-**Flow**:
-1. User opens category form
-2. Category name validation
-3. Category creation in Firestore
-4. Real-time listener update
-5. Category list refresh
-6. Success notification
-
----
-
-#### 3.4.8 Dashboard - Viewing Dashboard
-
-This sequence diagram illustrates the dashboard initialization and data loading process.
-
-![View Dashboard Sequence Diagram](UML/Sequence_Diagram_for_Viewing_the_Dashbaord.png)
-
-**Flow**:
-1. User navigates to dashboard
-2. Authentication check
-3. Firestore queries for expenses and categories
-4. Statistics calculation
-5. Chart data preparation
-6. Dashboard rendering with all widgets
-
----
-
-#### 3.4.9 Reports - Exporting to PDF
-
-This sequence diagram shows the PDF report generation and export process.
-
-![Export PDF Sequence Diagram](UML/Sequence_Diagram_for_Exporting_Report_to_PDF.png)
-
-**Flow**:
-1. User clicks "Export PDF"
-2. Data collection from Firestore
-3. Chart rendering
-4. PDF generation using jsPDF
-5. File download
-6. Success notification
-
----
-
-#### 3.4.10 Reports - Filtering Charts by Dates
-
-This sequence diagram illustrates the date-based filtering for charts and reports.
-
-![Filter Charts Sequence Diagram](UML/Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png)
-
-**Flow**:
-1. User selects date range
-2. Date validation
-3. Firestore query with date filters
-4. Data aggregation
-5. Chart data update
-6. Chart re-rendering
-
----
-
----
-
-## 4. Component Interaction Diagrams
-
-### 4.1 Real-time Data Synchronization
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│              Real-time Data Synchronization Flow                     │
-└─────────────────────────────────────────────────────────────────────┘
-
-Component Mount
-      │
-      ↓
-┌──────────────────┐
-│  useEffect()     │
-│  Hook Triggered  │
-└──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│ Check currentUser│
-└──────────────────┘
-      │
-      ↓ (if authenticated)
-┌──────────────────┐
-│ Create Firestore │
-│ Query            │
-│ • collection()   │
-│ • where()        │
-│ • orderBy()      │
-└──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│ Setup onSnapshot │
-│ Listener         │
-└──────────────────┘
-      │
-      ├─────────────────────────────┐
-      │                             │
-      ↓                             ↓
-┌──────────────────┐      ┌──────────────────┐
-│ Initial Data     │      │ Data Changes     │
-│ Received         │      │ (Add/Edit/Delete)│
-└──────────────────┘      └──────────────────┘
-      │                             │
-      └─────────────┬───────────────┘
-                    │
-                    ↓
-            ┌──────────────────┐
-            │ Process Snapshot │
-            │ • forEach()      │
-            │ • Extract data   │
-            │ • Add IDs        │
-            └──────────────────┘
-                    │
-                    ↓
-            ┌──────────────────┐
-            │ Update State     │
-            │ • setExpenses()  │
-            │ • setCategories()│
-            └──────────────────┘
-                    │
-                    ↓
-            ┌──────────────────┐
-            │ Re-render UI     │
-            │ • Updated list   │
-            │ • Updated charts │
-            │ • Updated stats  │
-            └──────────────────┘
-                    │
-                    ↓
-            Component Unmount
-                    │
-                    ↓
-            ┌──────────────────┐
-            │ Cleanup Listener │
-            │ • unsubscribe()  │
-            └──────────────────┘
-```
-
-### 4.2 Authentication Flow
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                  Authentication Flow Diagram                         │
-└─────────────────────────────────────────────────────────────────────┘
-
-App Initialization
-      │
-      ↓
-┌──────────────────┐
-│ AuthProvider     │
-│ Mounts           │
-└──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│ useEffect()      │
-│ Setup Auth       │
-│ Listener         │
-└──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│onAuthStateChanged│
-│ (Firebase Auth)  │
-└──────────────────┘
-      │
-      ├─────────────────────────────┐
-      │                             │
-      ↓                             ↓
-┌──────────────────┐      ┌──────────────────┐
-│ User Logged In   │      │ No User          │
-│ (user object)    │      │ (null)           │
-└──────────────────┘      └──────────────────┘
-      │                             │
-      ↓                             ↓
-┌──────────────────┐      ┌──────────────────┐
-│setCurrentUser    │      │setCurrentUser    │
-│(user)            │      │(null)            │
-└──────────────────┘      └──────────────────┘
-      │                             │
-      ↓                             ↓
-┌──────────────────┐      ┌──────────────────┐
-│setLoading(false) │      │setLoading(false) │
-└──────────────────┘      └──────────────────┘
-      │                             │
-      ↓                             ↓
-┌──────────────────┐      ┌──────────────────┐
-│ Render Protected │      │ Redirect to      │
-│ Routes           │      │ Login Page       │
-└──────────────────┘      └──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│ Dashboard        │
-│ Loads            │
-└──────────────────┘
-      │
-      ↓
-┌──────────────────┐
-│ Initialize       │
-│ Firestore        │
-│ Listeners        │
-└──────────────────┘
-```
-
----
-
-## 5. Summary
-
-This architecture document provides comprehensive views of the Budget Buddy system:
-
-1. **Overall Architecture** - Client-Server architecture with layered client structure
-2. **Logical View** - Component diagrams, class diagrams, and package structure
-3. **Process View** - Activity diagrams, sequence diagrams, and state machines
-4. **Development View** - Code organization and module dependencies
-5. **Physical View** - Deployment architecture and network topology
-6. **Use Case View** - User interactions and system scenarios
-
-### Key Architectural Decisions
-
-1. **Primary Pattern: Client-Server Architecture**: React SPA (client) communicates with Firebase cloud services (server) via HTTPS/REST APIs. This provides clear separation of concerns, enables scalability, and allows independent deployment of client and server components.
-
-2. **Secondary Pattern: Layered Architecture (within Client)**: The React client application is organized into three layers:
-   - **Presentation Layer**: React components, pages, and UI elements
-   - **Business Logic Layer**: Services, utilities, validation, and React Context
+2. **Secondary Pattern: Layered Architecture (within Client)**
+   - **Presentation Layer**: React components, pages, UI elements
+   - **Business Logic Layer**: Services, utilities, validation, React Context
    - **Data Access Layer**: Firebase SDK integration and API communication
-   
-   This layered approach promotes separation of concerns, testability, and maintainability within the client application.
+   - Promotes separation of concerns, testability, and maintainability
 
-3. **Real-time Synchronization**: Firestore onSnapshot listeners for instant data updates
-4. **Stateless Frontend**: All state managed in React Context and Firestore
-5. **Serverless Backend**: Firebase handles all backend operations (authentication, database, hosting)
-6. **CDN Deployment**: Vercel edge network for global distribution
-7. **CI/CD Integration**: Automated testing and deployment pipelines
+### 4.2 Key Architectural Decisions
 
-### Architecture Benefits
+- **Real-time Synchronization**: Firestore `onSnapshot()` listeners for instant data updates
+- **Stateless Frontend**: State managed in React Context and Firestore
+- **Serverless Backend**: Firebase handles all backend operations
+- **CDN Deployment**: Vercel edge network for global distribution
+- **CI/CD Integration**: Automated testing and deployment pipelines
+
+### 4.3 Architecture Benefits
 
 - ✅ **Scalability**: Firebase auto-scales with user load
 - ✅ **Real-time**: Instant data synchronization across devices
@@ -1046,29 +441,16 @@ This architecture document provides comprehensive views of the Budget Buddy syst
 - ✅ **Maintainability**: Clear separation of concerns
 - ✅ **Testability**: Comprehensive testing at all levels
 
+### 4.4 Technology Justification
 
+For detailed technology choices and alternatives considered, see the [Technologies & Tools section in README.md](../README.md#️-technologies--tools).
 
----
-
-## 6. UML Diagrams Location
-
-All UML diagrams are stored in the [`Documents/UML/`](Documents/UML/) folder:
-
-| Diagram Type | File Name | Description |
-|--------------|-----------|-------------|
-| **Use Case** | `Use_Case_Diagram.png` | Complete use case diagram with all actors and use cases |
-| **Class Diagram** | `Class_Diagram.png` | Core domain model with classes and attributes |
-| **Class Relationships** | `Class_Diagram_Relationships.png` | Detailed class relationships and associations |
-| **Sequence - Sign Up** | `Sequence_Diagram_for_Sign_up.png` | User registration flow |
-| **Sequence - Log In** | `Sequence_Diagram_for_Log_In.png` | User authentication flow |
-| **Sequence - Log Out** | `Sequence_Diagram_for_Log_Out.png` | User logout and session cleanup |
-| **Sequence - Add Expense** | `Sequence_Diagram_for_Adding_Expense.png` | Adding new expense flow |
-| **Sequence - Edit Expense** | `Sequence_Diagram_for_Editing_Expense.png` | Editing existing expense flow |
-| **Sequence - Delete Expense** | `Sequence_Diagram_for_Deleting_an_Expense.png` | Deleting expense flow |
-| **Sequence - Add Category** | `Sequence_Diagram_for_Adding_Category.png` | Creating new category flow |
-| **Sequence - View Dashboard** | `Sequence_Diagram_for_Viewing_the_Dashbaord.png` | Dashboard initialization flow |
-| **Sequence - Export PDF** | `Sequence_Diagram_for_Exporting_Report_to_PDF.png` | PDF report generation flow |
-| **Sequence - Filter Charts** | `Sequence_Diagram_for_Filtering_the_Charts_based_on_Dates.png` | Date-based filtering flow |
+**Key Technologies**:
+- **React.js**: Component-based architecture, extensive ecosystem
+- **Firebase Auth**: Production-ready authentication with minimal setup
+- **Cloud Firestore**: Real-time NoSQL database with automatic scaling
+- **Vercel**: Zero-config React deployment with global CDN
+- **GitHub Actions**: CI/CD integrated with repository
 
 ---
 
@@ -1077,77 +459,3 @@ All UML diagrams are stored in the [`Documents/UML/`](Documents/UML/) folder:
 
 > 📋 **UML Diagrams**: All diagrams are located in [`Documents/UML/`](Documents/UML/)  
 > 📋 **Related Documents**: See [`Documents/Requirements.md`](Documents/Requirements.md) and [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)
-
----
-
-## 7. Infrastructure & Technology Choices
-
-This section provides detailed justification for each technology, framework, library, database, and tool used in the Budget Buddy project, including alternatives considered and reasons for rejection.
-
-> 📋 **Note**: For a more detailed version with all technologies, see the [Technologies & Tools section in README.md](../README.md#️-technologies--tools).
-
-### 7.1 Frontend Framework
-
-#### React.js
-**Link**: [React.js](https://react.dev/)
-
-**Why we use this framework**:  
-Component-based architecture for reusability, virtual DOM for efficient rendering, extensive ecosystem, strong community support, and excellent developer tools. Ideal for rapid development with declarative syntax and unidirectional data flow.
-
-**Alternatives and why they don't work**:  
-Vue.js has a smaller ecosystem and fewer integrations. Angular has a steeper learning curve and is more suited for enterprise applications. React's balance of simplicity and power, plus better Firebase integration, made it optimal for our team.
-
----
-
-### 7.2 Backend & Database
-
-#### Firebase Authentication
-**Link**: [Firebase Auth](https://firebase.google.com/docs/auth)
-
-**Why we use this framework**:  
-Production-ready authentication with minimal setup. Handles password hashing, session management, JWT tokens, and email verification automatically. Seamless React integration with real-time auth state changes. Reduces development time and security risks.
-
-**Alternatives and why they don't work**:  
-Auth0 adds cost and complexity for simple email/password needs. AWS Cognito requires AWS knowledge and complex setup. Custom authentication would require implementing security best practices, significantly increasing development time and risks.
-
----
-
-#### Cloud Firestore
-**Link**: [Cloud Firestore](https://firebase.google.com/docs/firestore)
-
-**Why we use this framework**:  
-NoSQL document database with real-time synchronization, automatic scaling, and offline support. Real-time listeners provide instant UI updates. Security rules enable fine-grained access control. Seamless integration with Firebase Auth for user-scoped data access.
-
-**Alternatives and why they don't work**:  
-MongoDB Atlas requires server setup and lacks real-time sync. PostgreSQL requires complex schema design and doesn't offer real-time capabilities. Firebase Realtime Database has inferior querying, offline support, and scalability compared to Firestore.
-
----
-
-### 7.3 Deployment & CI/CD
-
-#### Vercel
-**Link**: [Vercel](https://vercel.com/)
-
-**Why we use this platform**:  
-Zero-configuration deployment for React applications. Automatic deployments from Git, preview URLs for PRs, global CDN, and built-in SSL. Seamless GitHub integration with automatic scaling. Generous free tier.
-
-**Alternatives and why they don't work**:  
-Netlify has less React-specific optimization. AWS Amplify requires more configuration and AWS knowledge. Traditional hosting requires server management and lacks CDN/automatic scaling. Vercel's simplicity and React optimization make it ideal.
-
----
-
-#### GitHub Actions
-**Link**: [GitHub Actions](https://docs.github.com/en/actions)
-
-**Why we use this tool**:  
-CI/CD directly integrated with GitHub repository. Supports matrix builds for cross-browser testing, artifact management, and workflow automation. YAML-based configuration is version-controlled and easy to maintain. Generous free tier.
-
-**Alternatives and why they don't work**:  
-Jenkins requires server setup and maintenance. CircleCI and Travis CI are external services that add complexity and security concerns. GitHub Actions' native integration, zero setup for public repos, and workflow flexibility make it the best choice.
-
----
-
-**For complete infrastructure documentation including all technologies, frameworks, and tools, see the [Technologies & Tools section in README.md](../README.md#️-technologies--tools).**
-
----
-

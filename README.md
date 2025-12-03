@@ -13,13 +13,13 @@
 - [📊 Project Status & Quick Links](#-project-status--quick-links)
 - [👥 Team](#-team)
 - [🖥️ Methodology & Iterations](#️-methodology--iterations)
-    - [🗒️ Iterations Summary](#-intertaions-summary)
+- [🗒️ Iterations Summary](#-itertaions-summary)
 - [📋 Feature Issues](#-feature-issues)
 - [🛠️ Technologies & Tools](#️-technologies--tools)
 - [🏗️ Architecture](#️-architecture)
 - [🚀 How to Run the Project](#-how-to-run-the-project)
 - [🧪 Testing](#-testing)
-- [👤 Beta Acceptance Testing](#beta-acceptance-testing)
+- [👤 Beta Acceptance Testing](#-beta-acceptance-testing)
 - [🔄 CI/CD Pipeline](#-cicd-pipeline)
 - [📊 Quality Reports](#-quality-reports)
 - [📂 Deliverables](#-deliverables)
@@ -60,7 +60,6 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - **Test Coverage**: 100% (statements, branches, functions, lines)
 - **Acceptance Testing**: 100% (requirements and issues coverage)
 - **Performance**: 99/100 (Lighthouse)
-- **Accessibility**: 100/100 (WCAG 2.1 compliant)
 
 ### 🔗 Quick Links
 
@@ -72,6 +71,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **Planning Board** | [GitHub Projects](https://github.com/users/JasleenMinhas578/projects/4/views/1) |
 | **Requirements Document** | [`Documents/Requirements.md`](Documents/Requirements.md) |
 | **Planning & Issues Mapping** | [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md) |
+| **Architecture Diagrams** | [`Documents/Architecture_Diagrams.md`](Documents/Architecture_Diagrams.md) |
 | **ESLint Report** | [`eslint-report/ESLint_Report.md`](eslint-report/ESLint_Report.md) |
 | **Lighthouse Report** | [`Documents/Lighthouse_Metrics/`](Documents/Lighthouse_Metrics/) |
 | **Acceptance Tests & Requirements** | [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) |
@@ -172,7 +172,7 @@ In particular, we adopted **four core XP practices** throughout the project:
 
 ### 📈 Visual: How We Worked Each Sprint
 
-![Development Methodology Flow](Documents/Methodology.png)
+![Development Methodology Flow](Documents/Iteration_Workflow.png)
 
 --- 
 ## 🖥️ Iterations Summary
@@ -260,7 +260,6 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
 
-> 📋 **Detailed justifications**: See [`Documents/Architecture_Diagrams.md`](Documents/Architecture_Diagrams.md#7-infrastructure--technology-choices) for complete technology choice rationale.
 
 ## 🏗️ Architecture
 
