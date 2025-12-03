@@ -104,7 +104,7 @@ describe('Signup Component', () => {
       );
 
       // Check for main elements
-      expect(screen.getByText('Join FinTrack')).toBeInTheDocument();
+      expect(screen.getByText('Join BudgetBuddy')).toBeInTheDocument();
       expect(screen.getByText('Create your account and start tracking your finances')).toBeInTheDocument();
       
       // Check for form elements

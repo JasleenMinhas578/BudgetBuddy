@@ -13,7 +13,7 @@
 - [📊 Project Status & Quick Links](#-project-status--quick-links)
 - [👥 Team](#-team)
 - [🖥️ Methodology & Iterations](#️-methodology--iterations)
-- [🗒️ Iterations Summary](#-itertaions-summary)
+- [🗒️ Iterations Summary](#-iterations-summary)
 - [📋 Feature Issues](#-feature-issues)
 - [🛠️ Technologies & Tools](#️-technologies--tools)
 - [🏗️ Architecture](#️-architecture)
@@ -541,7 +541,11 @@ Afterwards, each person provided brief written feedback about their experience.
 
 #### 💬 Key Feedback
 
-Overall, testers were able to complete the main tasks without major issues. The most consistent piece of feedback was that the **site needs better responsiveness on mobile devices**. Several users noted that the layout feels cramped on smaller screens and that some elements (buttons and text) are harder to use on a phone than on a laptop.
+Overall, testers were able to complete the main tasks without major issues. 
+
+- The most consistent piece of feedback was that the **site needs better responsiveness on mobile devices**. Several users noted that the layout feels cramped on smaller screens and that some elements (buttons and text) are harder to use on a phone than on a laptop.
+- When trying to add a new expense, the category selection Dropdown is not visible for the Light Theme System.
+- The Expenses list view is not sorted. (Already Fixed)
 
 #### 🚀 Planned Improvements
 
@@ -550,6 +554,7 @@ Although we have not yet implemented changes in this version, this feedback will
 - 📱 Refining layout and breakpoints to better support small screens.
 - 👆 Adjusting spacing, font sizes, and button sizes for comfortable touch use.
 - 🔄 Re-testing the main user flows specifically on mobile devices.
+- 📱 Make the application in sync to the system theme.
 
 This beta round confirmed that the core functionality is usable and clearly identified mobile responsiveness as the main priority for future development.
 
@@ -893,4 +898,3 @@ This project is for academic purposes as part of **COMP6905 - Software Engineeri
 ---
 
 **Made with ❤️ by Group 6 | Memorial University of Newfoundland | Fall 2025**
-

@@ -160,7 +160,7 @@ export default function Signup() {
         
         <div className="auth-brand">
           <div className="auth-logo">💰</div>
-          <h2 className="auth-title">Join FinTrack</h2>
+          <h2 className="auth-title">Join BudgetBuddy</h2>
           <p className="auth-subtitle">Create your account and start tracking your finances</p>
         </div>
 

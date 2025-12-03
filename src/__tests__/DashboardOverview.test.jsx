@@ -247,6 +247,13 @@ describe('DashboardOverview Component', () => {
         expect(screen.getByText('This Month')).toBeInTheDocument();
       });
       
+      // Verify the this month expenses amount is calculated correctly
+      // All 3 expenses are in January 2024, so total should be $175.00
+      await waitFor(() => {
+        const thisMonthElements = screen.getAllByText('$175.00');
+        expect(thisMonthElements.length).toBeGreaterThan(0);
+      }, { timeout: 3000 });
+      
       expect(screen.getByText('Current month spending')).toBeInTheDocument();
 
       jest.useRealTimers();
@@ -605,6 +612,119 @@ describe('DashboardOverview Component', () => {
       });
       
       expect(screen.getByText('With Date')).toBeInTheDocument();
+    });
+
+    it('handles expenses with neither date nor createdAt (fallback to return 0)', async () => {
+      const mockExpenses = [
+        { id: '1', title: 'No Date No Created', amount: 20, category: 'Misc' },
+        { id: '2', title: 'With Date', amount: 40, category: 'Food', date: '2024-01-10' }
+      ];
+
+      onSnapshot.mockImplementation((query, callback) => {
+        setTimeout(() => {
+          callback({
+            forEach: (fn) => {
+              mockExpenses.forEach(expense => {
+                fn({
+                  id: expense.id,
+                  data: () => expense
+                });
+              });
+            }
+          });
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('No Date No Created')).toBeInTheDocument();
+      }, { timeout: 3000 });
+      
+      expect(screen.getByText('With Date')).toBeInTheDocument();
+    });
+
+    it('sorts expenses using createdAt fallback when date is missing', async () => {
+      // Create mock Timestamp objects
+      const mockTimestamp1 = {
+        toDate: () => new Date('2024-01-05')
+      };
+      const mockTimestamp2 = {
+        toDate: () => new Date('2024-01-10')
+      };
+
+      const mockExpenses = [
+        { id: '1', title: 'Earlier Expense', amount: 20, category: 'Misc', createdAt: mockTimestamp1 },
+        { id: '2', title: 'Later Expense', amount: 40, category: 'Food', createdAt: mockTimestamp2 }
+      ];
+
+      onSnapshot.mockImplementation((query, callback) => {
+        setTimeout(() => {
+          callback({
+            forEach: (fn) => {
+              mockExpenses.forEach(expense => {
+                fn({
+                  id: expense.id,
+                  data: () => expense
+                });
+              });
+            }
+          });
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Later Expense')).toBeInTheDocument();
+      }, { timeout: 3000 });
+      
+      expect(screen.getByText('Earlier Expense')).toBeInTheDocument();
+    });
+
+    it('sorts expenses using createdAt as Date object when toDate is not available', async () => {
+      const mockExpenses = [
+        { id: '1', title: 'Earlier Expense', amount: 20, category: 'Misc', createdAt: new Date('2024-01-05') },
+        { id: '2', title: 'Later Expense', amount: 40, category: 'Food', createdAt: new Date('2024-01-10') }
+      ];
+
+      onSnapshot.mockImplementation((query, callback) => {
+        setTimeout(() => {
+          callback({
+            forEach: (fn) => {
+              mockExpenses.forEach(expense => {
+                fn({
+                  id: expense.id,
+                  data: () => expense
+                });
+              });
+            }
+          });
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Later Expense')).toBeInTheDocument();
+      }, { timeout: 3000 });
+      
+      expect(screen.getByText('Earlier Expense')).toBeInTheDocument();
     });
   });
 

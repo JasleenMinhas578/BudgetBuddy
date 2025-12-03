@@ -1,5 +1,5 @@
 import { useState, useEffect} from 'react';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/main.css';
@@ -21,8 +21,7 @@ export default function DashboardOverview() {
     if (currentUser) {
       // Set up real-time listener for expenses
       const qExpenses = query(
-        collection(db, 'users', currentUser.uid, 'expenses'),
-        orderBy('createdAt', 'desc')
+        collection(db, 'users', currentUser.uid, 'expenses')
       );
       
       const unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
@@ -31,10 +30,16 @@ export default function DashboardOverview() {
           expensesData.push({ id: doc.id, ...doc.data() });
         });
         
-        // Sort expenses by date (most recent first)
+        // Sort expenses by date in descending order (newest first)
         const sortedExpenses = expensesData.sort((a, b) => {
           if (a.date && b.date) {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
+          }
+          // Fallback to createdAt if date is not available
+          if (a.createdAt && b.createdAt) {
+            const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+            const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+            return bTime - aTime;
           }
           return 0;
         });

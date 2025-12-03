@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import Toast from '../UI/Toast';
@@ -26,8 +26,7 @@ export default function Expenses() {
     try {
       // Fetch expenses
       const qExpenses = query(
-        collection(db, 'users', currentUser.uid, 'expenses'),
-        orderBy('createdAt', 'desc')
+        collection(db, 'users', currentUser.uid, 'expenses')
       );
       
       unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
@@ -36,12 +35,16 @@ export default function Expenses() {
           expensesData.push({ id: doc.id, ...doc.data() });
         });
         
+        // Sort expenses by date in descending order (newest first)
         const sortedExpenses = expensesData.sort((a, b) => {
-          if (a.createdAt && b.createdAt) {
-            return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
-          }
           if (a.date && b.date) {
             return new Date(b.date).getTime() - new Date(a.date).getTime();
+          }
+          // Fallback to createdAt if date is not available
+          if (a.createdAt && b.createdAt) {
+            const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+            const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+            return bTime - aTime;
           }
           return 0;
         });
