@@ -77,6 +77,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **Acceptance Tests & Requirements** | [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) |
 | **E2E Test Docs** | [`Documents/Cypress_E2E_Testing/`](Documents/Cypress_E2E_Testing/) |
 | **Unit Test Docs** | [`Documents/Jest_Unit_Testing/`](Documents/Jest_Unit_Testing/) |
+| **Suggested Improvements Document** | [`Documents/Suggested_Improvements_Documents.pdf`](Documents/Suggested_Improvements_Documents.pdf) |
 
 ---
 
