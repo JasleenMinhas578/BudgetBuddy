@@ -23,7 +23,6 @@ import './commands'
 Cypress.on('uncaught:exception', (err, runnable) => {
   // returning false here prevents Cypress from failing the test
   // This is useful when the application has errors that don't affect the test
-  console.log('Uncaught exception:', err.message);
   return false;
 });
 

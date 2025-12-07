@@ -12,6 +12,7 @@ import { AuthProvider } from './context/AuthContext';
 import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Reports from './components/Dashboard/Reports';
+import NotFound from './pages/NotFound';
 import './styles/main.css';
 
 /**
@@ -51,6 +52,9 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="reports" element={<Reports />} />
           </Route>
+
+          {/* 404 - Catch all route */}
+          <Route path="*" element={<NotFound />} />
 
         </Routes>
       </AuthProvider>

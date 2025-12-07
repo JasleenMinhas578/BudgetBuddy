@@ -68,10 +68,6 @@ export default function ForgotPassword() {
         handleCodeInApp: false, // For web apps, set to false so the link opens in browser
       };
       
-      console.log('Sending password reset email to:', email);
-      console.log('Reset URL will be:', resetUrl);
-      console.log('Current origin:', window.location.origin);
-      
       // Send password reset email via Firebase
       // Note: If you get "unauthorized-continue-uri" error, you need to add your domain
       // to Firebase Console → Authentication → Settings → Authorized domains

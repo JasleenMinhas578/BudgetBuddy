@@ -74,13 +74,13 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
         {currentUser && (
           <div className="user-section">
           <div className="user-info">
-              <div className="user-avatar">
-                <span>{currentUser.email.charAt(0).toUpperCase()}</span>
+              <div className="user-avatar-container">
+                <div className="user-avatar">
+                  <span>{currentUser.email.charAt(0).toUpperCase()}</span>
+                </div>
+                <span className="user-status">Online</span>
               </div>
-              <div className="user-details">
-                <p className="user-email">{currentUser.email}</p>
-                <p className="user-status">Online</p>
-              </div>
+              <p className="user-email">{currentUser.email}</p>
             </div>
             <button onClick={logout} className="btn btn-secondary btn-logout">
               <span>🚪</span>

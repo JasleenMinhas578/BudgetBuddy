@@ -103,7 +103,6 @@ describe('DashboardOverview Component', () => {
     // Restore console methods
     console.error.mockRestore();
     console.warn.mockRestore();
-    console.log.mockRestore();
   });
 
   describe('Basic Rendering Tests', () => {

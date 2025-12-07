@@ -20,6 +20,7 @@ export default function ExpenseForm({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [amountError, setAmountError] = useState('');
   
   // Get current user from authentication context
   const { currentUser } = useAuth();
@@ -117,6 +118,7 @@ export default function ExpenseForm({
       setMessage('');
       setMessageType('');
     }
+    setAmountError('');
   };
 
   /**
@@ -124,6 +126,7 @@ export default function ExpenseForm({
    * 
    * Checks:
    * - Amount is a positive number
+   * - Amount does not exceed 1 billion
    * - Description is not empty
    * - Date is not in the future
    * - Category is selected
@@ -135,6 +138,12 @@ export default function ExpenseForm({
     const amountValue = parseFloat(amount);
     if (!amount || amountValue <= 0) {
       return { isValid: false, message: 'Please enter a valid amount' };
+    }
+    
+    // Check if amount exceeds 1 billion
+    const MAX_AMOUNT = 1000000000; // 1 billion
+    if (amountValue > MAX_AMOUNT) {
+      return { isValid: false, message: 'Amount cannot exceed $1,000,000,000' };
     }
     
     // Check if title is provided
@@ -165,12 +174,17 @@ export default function ExpenseForm({
     // Clear any previous messages
     setMessage('');
     setMessageType('');
+    setAmountError('');
     
     // Validate form inputs
     const validation = validateForm();
     if (!validation.isValid) {
       setMessage(validation.message);
       setMessageType('error');
+      // If it's an amount error, also set the amount error state
+      if (validation.message.includes('exceed')) {
+        setAmountError(validation.message);
+      }
       return;
     }
     
@@ -234,6 +248,20 @@ export default function ExpenseForm({
     }
     
     setAmount(cleanValue);
+    
+    // Validate amount in real-time
+    const MAX_AMOUNT = 1000000000; // 1 billion
+    const amountValue = parseFloat(cleanValue);
+    
+    if (cleanValue && !isNaN(amountValue)) {
+      if (amountValue > MAX_AMOUNT) {
+        setAmountError('Amount cannot exceed $1,000,000,000');
+      } else {
+        setAmountError('');
+      }
+    } else {
+      setAmountError('');
+    }
   };
 
   const handleCancel = () => {
@@ -270,7 +298,13 @@ export default function ExpenseForm({
             required
             disabled={loading}
             autoComplete="off"
+            className={amountError ? 'input-error' : ''}
           />
+          {amountError && (
+            <div className="field-error">
+              {amountError}
+            </div>
+          )}
         </div>
         
         {/* Title input field (was Description) */}
