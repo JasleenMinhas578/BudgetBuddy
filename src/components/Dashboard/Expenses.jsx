@@ -8,10 +8,13 @@ import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 import ExpenseForm from '../Expense/ExpenseForm';
 import Modal from '../UI/Modal';
+import Pagination from '../UI/Pagination';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const [toast, setToast] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const { currentUser } = useAuth();
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
@@ -140,6 +143,19 @@ export default function Expenses() {
 
   const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
+  // Pagination logic
+  const totalPages = Math.ceil(expenses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedExpenses = expenses.slice(startIndex, endIndex);
+
+  // Reset to first page when expenses change
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [expenses.length, currentPage, totalPages]);
+
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
     // Optionally, refresh expenses here if needed
@@ -207,6 +223,7 @@ export default function Expenses() {
       
       <div className="expenses-table-container">
         {expenses.length > 0 ? (
+          <>
         <table className="expenses-table">
           <thead>
             <tr>
@@ -218,7 +235,7 @@ export default function Expenses() {
             </tr>
           </thead>
           <tbody>
-            {expenses.map((expense) => (
+            {paginatedExpenses.map((expense) => (
               <tr key={expense.id}>
                   <td>
                     <div className="category-cell">
@@ -259,6 +276,17 @@ export default function Expenses() {
             ))}
           </tbody>
         </table>
+        
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={expenses.length}
+          />
+        )}
+        </>
         ) : (
           <div className="empty-state">
             <div className="empty-icon">📝</div>

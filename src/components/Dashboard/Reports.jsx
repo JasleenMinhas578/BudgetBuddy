@@ -7,6 +7,7 @@ import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, su
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import jsPDF from 'jspdf';
+import Pagination from '../UI/Pagination';
 import '../../styles/main.css';
 
 export default function Reports() {
@@ -19,6 +20,8 @@ export default function Reports() {
   });
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
   const { currentUser } = useAuth();
 
 
@@ -396,6 +399,19 @@ export default function Reports() {
   const monthlyData = getMonthlyData();
   const { topCategory, maxAmount } = getTopCategory();
 
+  // Pagination logic for expenses table
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
+
+  // Reset to first page when filtered expenses change
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredExpenses.length, currentPage, totalPages]);
+
   const getFilterLabel = () => {
     switch (dateFilter) {
       case 'today': return 'Today';
@@ -636,6 +652,7 @@ export default function Reports() {
           </div>
           
           {filteredExpenses.length > 0 ? (
+            <>
             <div className="expenses-table-container">
               <table className="expenses-table">
                 <thead>
@@ -647,7 +664,7 @@ export default function Reports() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredExpenses.map((expense) => (
+                  {paginatedExpenses.map((expense) => (
                     <tr key={expense.id}>
                       <td>
                         <span className="date-cell">
@@ -673,6 +690,17 @@ export default function Reports() {
                 </tbody>
               </table>
             </div>
+            
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredExpenses.length}
+              />
+            )}
+            </>
           ) : (
             <div className="empty-state">
               <div className="empty-icon">📊</div>
