@@ -153,10 +153,14 @@ export default function AIChat() {
           <div className="ai-chat-messages">
             {messages.length === 0 && (
               <div className="ai-chat-welcome">
-                <p>
-                  Hi! I can help you <strong>add expenses</strong> and answer <strong>questions about your spending</strong>.
-                  Try one of these:
-                </p>
+                <div className="ai-chat-welcome-header">
+                  <span className="ai-chat-welcome-emoji">💸</span>
+                  <div className="ai-chat-welcome-text">
+                    <h4>Hey! I'm your budget assistant.</h4>
+                    <p>Add expenses in plain English or ask questions about your spending — I'll look up your real data.</p>
+                  </div>
+                </div>
+                <p className="ai-suggestions-label">Try asking</p>
                 <div className="ai-chat-suggestions">
                   {SUGGESTED_QUESTIONS.map((q) => (
                     <button
@@ -267,8 +271,9 @@ export default function AIChat() {
         className={`ai-chat-toggle${isOpen ? ' ai-chat-toggle--open' : ''}`}
         onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? 'Close AI chat' : 'Open AI chat'}
+        title={isOpen ? 'Close chat' : 'Open BudgetBuddy AI'}
       >
-        {isOpen ? '✕' : '🤖'}
+        🤖
       </button>
     </div>
   );
