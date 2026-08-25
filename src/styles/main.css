@@ -529,7 +529,7 @@
   
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
   
@@ -4630,7 +4630,7 @@
   
   .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
   }
   
@@ -15492,7 +15492,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 0;
   padding: 1.25rem 2rem;
   background: rgba(79, 209, 197, 0.05);
   border: 1px solid rgba(79, 209, 197, 0.15);
@@ -15504,11 +15504,12 @@
 .stat-pill {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  white-space: nowrap;
+  padding: 0 1.5rem;
 }
 
-.stat-divider {
-  color: var(--glass-20);
-  font-size: var(--font-size-lg);
+.stat-pill:not(:first-child) {
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Responsive adjustments for new sections */
@@ -15524,11 +15525,34 @@
     text-align: center;
   }
 
-  .stat-divider {
+  .hero-badge {
+    font-size: var(--font-size-xs);
+  }
+}
+
+/* Nav fix for small phones (≤480px) — prevents overflow on iPhone SE/375px */
+@media (max-width: 480px) {
+  .landing-nav {
+    padding: 0.875rem 1rem;
+  }
+
+  .logo {
+    font-size: var(--font-size-lg);
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    font-size: var(--font-size-base);
+  }
+
+  /* Hide plain "Login" link — hero already has a Sign In CTA */
+  .landing-nav .nav-link:not(.primary) {
     display: none;
   }
 
-  .hero-badge {
-    font-size: var(--font-size-xs);
+  .landing-nav .nav-link.primary {
+    padding: 0.5rem 0.875rem;
+    font-size: var(--font-size-sm);
   }
 }

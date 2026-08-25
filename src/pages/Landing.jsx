@@ -137,9 +137,7 @@ export default function Landing() {
         {/* Stats bar */}
         <div className="stats-bar">
           <div className="stat-pill"><strong>Free forever</strong> · No hidden fees</div>
-          <div className="stat-divider">·</div>
           <div className="stat-pill">Works on all devices</div>
-          <div className="stat-divider">·</div>
           <div className="stat-pill">Bank-level encryption</div>
         </div>
 
