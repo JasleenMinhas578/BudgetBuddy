@@ -13,6 +13,7 @@ import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Reports from './components/Dashboard/Reports';
 import NotFound from './pages/NotFound';
+import AIChat from './components/AI/AIChat';
 import './styles/main.css';
 
 /**
@@ -57,6 +58,8 @@ function App() {
           <Route path="*" element={<NotFound />} />
 
         </Routes>
+        {/* AI chat widget — visible on all pages when logged in */}
+        <AIChat />
       </AuthProvider>
     </Router>
   );
