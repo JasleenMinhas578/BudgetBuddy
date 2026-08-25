@@ -379,7 +379,9 @@ export default function Reports() {
     setAiSummaryError(null);
     setAiSummary(null);
     try {
-      const summary = await generateSummary(filteredExpenses, getFilterLabel());
+      const raw = await generateSummary(filteredExpenses, getFilterLabel());
+      // Ensure the paragraph starts with a capital letter
+      const summary = raw.charAt(0).toUpperCase() + raw.slice(1);
       setAiSummary(summary);
     } catch (err) {
       setAiSummaryError(err.message);
@@ -476,19 +478,26 @@ export default function Reports() {
         {(aiSummary || aiSummaryError) && (
           <div className="ai-summary-card">
             <div className="ai-summary-header">
-              <span className="ai-summary-icon">✨</span>
-              <h3>AI Spending Summary</h3>
+              <div className="ai-summary-title">
+                <span>✨</span>
+                <h3>AI Spending Summary</h3>
+              </div>
               <button
                 className="ai-summary-close"
                 onClick={() => { setAiSummary(null); setAiSummaryError(null); }}
                 aria-label="Close summary"
               >✕</button>
             </div>
-            {aiSummaryError ? (
-              <p className="ai-summary-error">{aiSummaryError}</p>
-            ) : (
-              <>
+            <div className="ai-summary-body">
+              {aiSummaryError ? (
+                <p className="ai-summary-error">{aiSummaryError}</p>
+              ) : (
                 <p className="ai-summary-text">{aiSummary}</p>
+              )}
+            </div>
+            {!aiSummaryError && (
+              <div className="ai-summary-footer">
+                <span className="ai-summary-powered">⚡ Powered by Gemini</span>
                 <button
                   className="ai-summary-regenerate"
                   onClick={handleGenerateSummary}
@@ -496,7 +505,7 @@ export default function Reports() {
                 >
                   ↻ Regenerate
                 </button>
-              </>
+              </div>
             )}
           </div>
         )}

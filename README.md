@@ -41,6 +41,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ Report generation (PDF & CSV export)
 - ✅ Responsive design (desktop, tablet, mobile)
 - ✅ Real-time data synchronization
+- ✅ **AI chat assistant** — add expenses in plain English, query spending data, auto-categorize expenses (powered by Google Gemini)
 
 ### Testing & Quality Assurance
 - **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
@@ -78,6 +79,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **E2E Test Docs** | [`Documents/Cypress_E2E_Testing/`](Documents/Cypress_E2E_Testing/) |
 | **Unit Test Docs** | [`Documents/Jest_Unit_Testing/`](Documents/Jest_Unit_Testing/) |
 | **Suggested Improvements Document** | [`Documents/Suggested_Improvements_Documents.pdf`](Documents/Suggested_Improvements_Documents.pdf) |
+| **AI Feature Documentation** | [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md) |
 
 ---
 
@@ -260,6 +262,7 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **Vercel** | [Vercel](https://vercel.com/) | Zero-config React deployment. Automatic Git deployments, preview URLs, global CDN, built-in SSL. Excellent React optimization with generous free tier. | Netlify (less React optimization), AWS Amplify (more config), Traditional hosting (no CDN/scaling) |
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
+| **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM (Large Language Model — AI that understands natural language) for the AI chat feature. Handles expense intent detection, auto-categorization, and spending queries. Called directly from the browser via REST with no backend required. | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
 
 
 ## 🏗️ Architecture
@@ -291,6 +294,7 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 ```
 src/
 ├── components/
+│   ├── AI/            # AIChat — floating AI chat widget (Gemini)
 │   ├── Auth/          # Login, Signup
 │   ├── Dashboard/     # Overview, Expenses, Categories, Reports
 │   ├── Expense/       # ExpenseForm, ExpenseList
@@ -298,7 +302,9 @@ src/
 │   ├── Layout/        # Navbar, Sidebar
 │   └── UI/            # Modal, Toast
 ├── context/           # AuthContext
-├── services/          # database.js (Firebase CRUD)
+├── services/
+│   ├── database.js    # Firebase CRUD operations
+│   └── aiService.js   # Gemini API integration
 └── firebaseConfig.js  # Firebase initialization
 ```
 
@@ -788,10 +794,12 @@ This beta round confirmed that the core functionality is usable and clearly iden
 
 ## 🚀 Future Enhancements
 
-### AI-Powered Features
-- Smart expense categorization using ML
-- Predictive analytics for spending patterns
-- Natural language expense input
+### AI-Powered Features *(Partially Implemented)*
+- ✅ Natural language expense input (e.g., "spent $45 on lunch")
+- ✅ Automatic expense categorization via Gemini AI
+- ✅ Natural language spending queries (totals, averages, highest expense)
+- 🔜 Predictive analytics for spending patterns
+- 🔜 Budget alerts when nearing category limits
 
 ### Advanced Financial Features
 - Budget goals & tracking

@@ -14478,32 +14478,37 @@
 
 /* AI Summary Card */
 .ai-summary-card {
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  border-radius: 14px;
-  padding: 1.25rem 1.5rem;
+  background: rgba(20, 18, 40, 0.65);
+  border: 1px solid rgba(139, 92, 246, 0.38);
+  border-radius: 16px;
+  overflow: hidden;
   margin-bottom: 1.5rem;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.18);
 }
 .ai-summary-header {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.85rem;
+  justify-content: space-between;
+  padding: 0.9rem 1.25rem;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(139, 92, 246, 0.16));
+  border-bottom: 1px solid rgba(139, 92, 246, 0.22);
 }
-.ai-summary-icon {
-  font-size: 1.1rem;
+.ai-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.ai-summary-header h3 {
-  flex: 1;
+.ai-summary-title h3 {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: #c4b5fd;
+  letter-spacing: 0.01em;
 }
 .ai-summary-close {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.5);
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -14512,36 +14517,52 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 .ai-summary-close:hover {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;
 }
+.ai-summary-body {
+  padding: 1.25rem 1.5rem;
+}
 .ai-summary-text {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  font-size: 0.925rem;
+  line-height: 1.78;
+  color: rgba(255, 255, 255, 0.88);
 }
 .ai-summary-error {
-  margin: 0 0 0.5rem;
+  margin: 0;
   font-size: 0.875rem;
   color: #fca5a5;
 }
+.ai-summary-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.18);
+}
+.ai-summary-powered {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.02em;
+}
 .ai-summary-regenerate {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.55);
+  background: rgba(139, 92, 246, 0.14);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
   border-radius: 8px;
-  padding: 0.4rem 0.85rem;
+  padding: 0.35rem 0.85rem;
   font-size: 0.8rem;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 .ai-summary-regenerate:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(139, 92, 246, 0.28);
+  color: #c4b5fd;
 }
 .ai-summary-regenerate:disabled {
   opacity: 0.4;
@@ -15176,4 +15197,20 @@
 .expenses-container .filter-controls,
 .categories-container .filter-controls {
   margin-top: 0.5rem;
+}
+
+/* Tighten gap between summary stats and filter card */
+.expenses-container .expenses-summary,
+.categories-container .categories-summary {
+  margin-bottom: 0.75rem;
+}
+
+/* Reports: 4-column grid so all summary cards stay on one row */
+.reports-container .summary-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Remove divider lines inside modals */
+.modal-header {
+  border-bottom: none;
 }

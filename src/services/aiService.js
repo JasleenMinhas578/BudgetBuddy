@@ -82,3 +82,49 @@ User message: "${userMessage}"`;
 
   return JSON.parse(jsonMatch[0]);
 };
+
+export const generateSummary = async (expenses, filterLabel) => {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
+    throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const trimmed = expenses
+    .slice(-200)
+    .map(e => ({ title: e.title, amount: e.amount, category: e.category, date: e.date }));
+
+  const total = trimmed.reduce((sum, e) => sum + e.amount, 0);
+
+  const prompt = `You are BudgetBuddy AI, a personal finance assistant. Today is ${today}.
+
+The user wants a summary of their spending for: ${filterLabel}
+
+EXPENSE DATA (${trimmed.length} transactions, total $${total.toFixed(2)}):
+${JSON.stringify(trimmed)}
+
+Write a 3-4 sentence paragraph that:
+1. States the total amount spent and the period
+2. Identifies the top spending category and any notable pattern (e.g. frequent small purchases, one large expense)
+3. Gives one specific and actionable suggestion to reduce spending
+
+Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no markdown.`;
+
+  const res = await fetch(GEMINI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.4, maxOutputTokens: 256 },
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Gemini API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('Empty response from AI');
+  return text;
+};
