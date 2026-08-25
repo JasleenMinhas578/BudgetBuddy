@@ -61,7 +61,7 @@ import {
   
   export const getExpenses = async (userId) => {
     try {
-      const q = query(collection(db, 'expenses'), where('userId', '==', userId));
+      const q = query(collection(db, 'users', userId, 'expenses'));
       const querySnapshot = await getDocs(q);
       const expenses = [];
       querySnapshot.forEach((doc) => {
@@ -163,7 +163,7 @@ import {
   
   export const getCategories = async (userId) => {
     try {
-      const q = query(collection(db, 'categories'), where('userId', '==', userId));
+      const q = query(collection(db, 'users', userId, 'categories'));
       const querySnapshot = await getDocs(q);
       const categories = [];
       querySnapshot.forEach((doc) => {

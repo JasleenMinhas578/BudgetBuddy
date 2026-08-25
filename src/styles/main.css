@@ -847,7 +847,20 @@
     color: var(--danger);
     font-size: 0.875rem;
   }
-  
+
+  .auth-success {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #065f46;
+    font-size: 0.875rem;
+  }
+
   .error-icon {
     font-size: 1.125rem;
     flex-shrink: 0;
@@ -4935,7 +4948,20 @@
     color: var(--danger);
     font-size: 0.875rem;
   }
-  
+
+  .auth-success {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #065f46;
+    font-size: 0.875rem;
+  }
+
   .error-icon {
     font-size: 1.125rem;
     flex-shrink: 0;

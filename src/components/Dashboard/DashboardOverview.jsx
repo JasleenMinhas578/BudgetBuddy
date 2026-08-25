@@ -1,4 +1,5 @@
 import { useState, useEffect} from 'react';
+import { Link } from 'react-router-dom';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -9,7 +10,8 @@ export default function DashboardOverview() {
   // State management for data
   const [expenses, setExpenses] = useState([]);
   const [recentExpenses, setRecentExpenses] = useState([]);
-  
+  const [loading, setLoading] = useState(true);
+
   // Get current user from authentication context
   const { currentUser } = useAuth();
 
@@ -29,7 +31,7 @@ export default function DashboardOverview() {
         querySnapshot.forEach((doc) => {
           expensesData.push({ id: doc.id, ...doc.data() });
         });
-        
+
         // Sort expenses by date in descending order (newest first)
         const sortedExpenses = expensesData.sort((a, b) => {
           if (a.date && b.date) {
@@ -43,10 +45,11 @@ export default function DashboardOverview() {
           }
           return 0;
         });
-        
+
         setExpenses(sortedExpenses);
         // Get the 5 most recent expenses for the recent activity section
         setRecentExpenses(sortedExpenses.slice(0, 5));
+        setLoading(false);
       });
 
 
@@ -83,8 +86,8 @@ export default function DashboardOverview() {
     ? Object.entries(topCategory).sort(([,a], [,b]) => b - a)[0][0]
     : 'None';
 
-  // Check if this is a first-time user (no expenses yet)
-  const isFirstTimeUser = expenses.length === 0;
+  // Only show "Welcome!" after data has loaded to avoid flashing for returning users
+  const isFirstTimeUser = !loading && expenses.length === 0;
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -167,7 +170,7 @@ export default function DashboardOverview() {
       <div className="recent-activity">
         <div className="activity-header">
           <h3>Recent Expenses</h3>
-          <a href="/dashboard/expenses" className="btn btn-primary view-all-link">View All</a>
+          <Link to="/dashboard/expenses" className="btn btn-primary view-all-link">View All</Link>
         </div>
         
         <div className="activity-list">
@@ -193,7 +196,7 @@ export default function DashboardOverview() {
               <div className="empty-icon">📝</div>
               <h4>No expenses yet</h4>
               <p>Start tracking your expenses to see them here</p>
-              <a href="/dashboard/expenses" className="btn btn-primary">Add First Expense</a>
+              <Link to="/dashboard/expenses" className="btn btn-primary">Add First Expense</Link>
             </div>
           )}
         </div>

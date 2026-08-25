@@ -95,7 +95,7 @@ export default function ForgotPassword() {
       
       // Display error message to user
       switch (error.code) {
-        case 'auth/user-not-found':
+        case 'auth/invalid-credential':
           setError('No account found with this email');
           break;
         case 'auth/invalid-email':
@@ -163,20 +163,10 @@ export default function ForgotPassword() {
         )}
 
         {message && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="auth-success"
-            style={{
-              backgroundColor: '#d1fae5',
-              color: '#065f46',
-              padding: '1rem',
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
           >
             <span>✅</span>
             {message}

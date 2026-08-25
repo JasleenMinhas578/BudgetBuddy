@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -18,7 +18,6 @@ export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(null);
   const { currentUser } = useAuth();
  
 
@@ -89,19 +88,6 @@ export default function Categories() {
     };
   }, [currentUser]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuOpen && !event.target.closest('.category-menu')) {
-        setMenuOpen(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [menuOpen]);
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
     // Reset form when closing modal
@@ -120,7 +106,7 @@ export default function Categories() {
     try {
       await addDoc(collection(db, 'users', currentUser.uid, 'categories'), {
         name: categoryName,
-        createdAt: new Date()
+        createdAt: serverTimestamp()
       });
       setToast({ message: `Category "${categoryName}" added successfully!`, type: 'success' });
     } catch (error) {

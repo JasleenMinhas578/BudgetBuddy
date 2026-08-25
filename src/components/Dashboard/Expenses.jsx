@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import Toast from '../UI/Toast';
@@ -113,7 +113,7 @@ export default function Expenses() {
         amount: parseFloat(updatedExpense.amount),
         category: updatedExpense.category,
         date: updatedExpense.date,
-        updatedAt: new Date()
+        updatedAt: serverTimestamp()
       });
       setToast({
         message: `Expense "${updatedExpense.title}" updated successfully!`,

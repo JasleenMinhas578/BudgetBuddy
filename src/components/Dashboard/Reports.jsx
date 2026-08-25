@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +20,7 @@ export default function Reports() {
   });
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const exportDropdownRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
   const { currentUser } = useAuth();
@@ -65,7 +66,16 @@ export default function Reports() {
     };
   }, [currentUser]);
 
-
+  useEffect(() => {
+    if (!showExportOptions) return;
+    const handleClickOutside = (e) => {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(e.target)) {
+        setShowExportOptions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExportOptions]);
 
   const filterExpenses = useCallback(() => {
     let filtered = [...expenses];
@@ -440,6 +450,8 @@ export default function Reports() {
     return insights;
   };
 
+  const spendingInsights = getSpendingInsights();
+
   return (
     <div className="reports-container">
       <div className="section-header">
@@ -447,9 +459,9 @@ export default function Reports() {
           <h2>Reports & Analytics</h2>
           <p className="section-subtitle">Comprehensive analysis of your spending patterns</p>
         </div>
-        <div className="export-actions">
-          <button 
-            onClick={() => setShowExportOptions(!showExportOptions)} 
+        <div className="export-actions" ref={exportDropdownRef}>
+          <button
+            onClick={() => setShowExportOptions(!showExportOptions)}
             className="btn btn-secondary"
           >
             <span>📤</span>
@@ -560,11 +572,11 @@ export default function Reports() {
         </div>
 
         {/* Spending Insights */}
-        {getSpendingInsights().length > 0 && (
+        {spendingInsights.length > 0 && (
           <div className="insights-section">
             <h3>💡 Spending Insights</h3>
             <div className="insights-list">
-              {getSpendingInsights().map((insight, index) => (
+              {spendingInsights.map((insight, index) => (
                 <div key={index} className="insight-item">
                   <span>💡</span>
                   <p>{insight}</p>

@@ -118,8 +118,8 @@ export default function ExpenseList({ refreshTrigger }) {
         case 'category':
           comparison = a.category.localeCompare(b.category);
           break;
-        case 'description':
-          comparison = a.description.localeCompare(b.description);
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
           break;
         default:
           comparison = 0;
@@ -158,7 +158,7 @@ export default function ExpenseList({ refreshTrigger }) {
   const confirmDelete = async () => {
     try {
       // Delete expense from Firebase database
-      await deleteExpense(expenseToDelete.id);
+      await deleteExpense(currentUser.uid, expenseToDelete.id);
       
       // Remove expense from local state
       setExpenses(expenses.filter(exp => exp.id !== expenseToDelete.id));
@@ -246,7 +246,7 @@ export default function ExpenseList({ refreshTrigger }) {
               <option value="date">Date</option>
               <option value="amount">Amount</option>
               <option value="category">Category</option>
-              <option value="description">Description</option>
+              <option value="title">Title</option>
             </select>
           </div>
           
@@ -305,7 +305,7 @@ export default function ExpenseList({ refreshTrigger }) {
                   {/* Expense details */}
                   <div className="expense-details">
                     <div className="expense-header">
-                      <h4>{expense.description}</h4>
+                      <h4>{expense.title}</h4>
                       <span className="expense-amount">
                         {formatAmount(expense.amount)}
                       </span>
@@ -342,7 +342,7 @@ export default function ExpenseList({ refreshTrigger }) {
           <div className="modal">
             <h3>Delete Expense</h3>
             <p>
-              Are you sure you want to delete "{expenseToDelete?.description}" 
+              Are you sure you want to delete "{expenseToDelete?.title}"
               for {formatAmount(expenseToDelete?.amount)}?
             </p>
             <p>This action cannot be undone.</p>

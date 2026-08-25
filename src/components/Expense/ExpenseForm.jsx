@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/database';
 import { collection, query, onSnapshot } from 'firebase/firestore';
@@ -100,7 +100,7 @@ export default function ExpenseForm({
     }
   }, [initialExpense]);
 
-  const modalButtonLabel = useMemo(() => (isEditMode ? 'Save Changes' : 'Add Expense'), [isEditMode]);
+  const modalButtonLabel = isEditMode ? 'Save Changes' : 'Add Expense';
 
   const resetForm = ({ preserveMessage = false } = {}) => {
     if (initialExpense) {

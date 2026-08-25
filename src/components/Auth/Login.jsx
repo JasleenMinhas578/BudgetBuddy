@@ -77,14 +77,14 @@ export default function Login() {
     } catch (error) {
       // Display error message to user
       switch (error.code) {
-        case 'auth/user-not-found':
-          setError('No account found with this email');
-          break;
-        case 'auth/wrong-password':
-          setError('Incorrect password');
+        case 'auth/invalid-credential':
+          setError('Invalid email or password');
           break;
         case 'auth/invalid-email':
           setError('Invalid email format');
+          break;
+        case 'auth/too-many-requests':
+          setError('Too many attempts. Please try again later.');
           break;
         default:
           setError('Failed to log in. Please try again.');
@@ -139,20 +139,10 @@ export default function Login() {
         )}
 
         {message && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="auth-success"
-            style={{
-              backgroundColor: '#d1fae5',
-              color: '#065f46',
-              padding: '1rem',
-              borderRadius: '0.5rem',
-              marginBottom: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
           >
             <span>✅</span>
             {message}
