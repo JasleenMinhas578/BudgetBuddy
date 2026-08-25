@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { addCategory, deleteCategory, subscribeToExpenses, subscribeToCategories } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import PieChart from '../Charts/PieChart';
@@ -25,70 +24,29 @@ export default function Categories() {
 
   useEffect(() => {
     if (!currentUser) return;
-  
+
     let unsubscribeExpenses = () => {};
     let unsubscribeCategories = () => {};
-  
-    const setupListeners = () => {
-      try {
-        // Expenses listener
-        const qExpenses = query(
-          collection(db, 'users', currentUser.uid, 'expenses')
-        );
-        
-        unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
-          const expensesData = [];
-          querySnapshot.forEach((doc) => {
-            expensesData.push({ id: doc.id, ...doc.data() });
-          });
-          
-          const sortedExpenses = expensesData.sort((a, b) => {
-            if (a.createdAt && b.createdAt) {
-              const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
-              const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
-              return bTime - aTime;
-            }
-            if (a.date && b.date) {
-              return new Date(b.date).getTime() - new Date(a.date).getTime();
-            }
-            return 0;
-          });
-          
-          setExpenses(sortedExpenses);
-        });
-  
-        // Categories listener
-        const qCategories = query(
-          collection(db, 'users', currentUser.uid, 'categories')
-        );
-        
-        unsubscribeCategories = onSnapshot(qCategories, (querySnapshot) => {
-          const categoriesData = [];
-          querySnapshot.forEach((doc) => {
-            categoriesData.push({ id: doc.id, ...doc.data() });
-          });
-          setCategories(categoriesData);
-        });
-  
-      } catch (error) {
-        console.error("Error setting up listeners:", error);
-        setToast({
-          message: 'Error loading data. Please refresh the page.',
-          type: 'error'
-        });
-      }
-    };
-  
-    setupListeners();
-  
+
+    try {
+      unsubscribeExpenses = subscribeToExpenses(currentUser.uid, (expensesData) => {
+        setExpenses(expensesData);
+      });
+
+      unsubscribeCategories = subscribeToCategories(currentUser.uid, (categoriesData) => {
+        setCategories(categoriesData);
+      });
+    } catch (error) {
+      console.error("Error setting up listeners:", error);
+      setToast({
+        message: 'Error loading data. Please refresh the page.',
+        type: 'error'
+      });
+    }
+
     return () => {
-      // Cleanup function
-      try {
-        if (typeof unsubscribeExpenses === 'function') unsubscribeExpenses();
-        if (typeof unsubscribeCategories === 'function') unsubscribeCategories();
-      } catch (error) {
-        console.error("Error during cleanup:", error);
-      }
+      unsubscribeExpenses();
+      unsubscribeCategories();
     };
   }, [currentUser]);
 
@@ -101,18 +59,21 @@ export default function Categories() {
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!db) { setToast({ message: 'Firebase not configured. Please set up your Firebase project.', type: 'error' }); return; }
     if (!currentUser) { setToast({ message: 'Please log in to add categories.', type: 'error' }); return; }
     const categoryName = newCategory.trim();
     if (!categoryName) return;
+
+    const existingNames = allCategories.map(c => c.name.toLowerCase());
+    if (existingNames.includes(categoryName.toLowerCase())) {
+      setToast({ message: `Category "${categoryName}" already exists.`, type: 'error' });
+      return;
+    }
+
     setIsModalOpen(false);
     setNewCategory('');
     setIsLoading(true);
     try {
-      await addDoc(collection(db, 'users', currentUser.uid, 'categories'), {
-        name: categoryName,
-        createdAt: serverTimestamp()
-      });
+      await addCategory(currentUser.uid, { name: categoryName });
       setToast({ message: `Category "${categoryName}" added successfully!`, type: 'success' });
     } catch (error) {
       setToast({ message: 'Failed to add category. Please try again.', type: 'error' });
@@ -122,32 +83,18 @@ export default function Categories() {
   };
 
   const handleDeleteCategory = async (categoryId, categoryName) => {
-    if (!db) { 
-      setToast({ message: 'Firebase not configured. Please set up your Firebase project.', type: 'error' }); 
-      return; 
-    }
-    if (!currentUser) { 
-      setToast({ message: 'Please log in to delete categories.', type: 'error' }); 
-      return; 
-    }
-
-    // Check if this is a default category
-    const defaultCategories = [
-      'food', 'transport', 'entertainment', 'utilities', 'rent', 'other'
-    ];
-    if (defaultCategories.includes(categoryId)) {
-      setToast({ message: 'Cannot delete default categories.', type: 'error' });
+    if (!currentUser) {
+      setToast({ message: 'Please log in to delete categories.', type: 'error' });
       return;
     }
 
-    // Confirm deletion
     if (!window.confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
       return;
     }
 
     setIsLoading(true);
     try {
-      await deleteDoc(doc(db, 'users', currentUser.uid, 'categories', categoryId));
+      await deleteCategory(currentUser.uid, categoryId);
       setToast({ message: `Category "${categoryName}" deleted successfully!`, type: 'success' });
     } catch (error) {
       console.error('Error deleting category:', error);

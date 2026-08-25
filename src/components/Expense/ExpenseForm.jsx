@@ -64,10 +64,7 @@ export default function ExpenseForm({
     // Return cleanup function
     return () => {
       try {
-        // Only call if it's a function
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
-        }
+        unsubscribe();
       } catch (error) {
         console.error("Error during cleanup:", error);
       }
@@ -84,11 +81,11 @@ export default function ExpenseForm({
    * Set default date to today only if not already set (for add mode)
    */
   useEffect(() => {
-    if (!initialExpense && !date) {
-    const today = new Date().toISOString().split('T')[0];
-    setDate(today);
+    if (!initialExpense) {
+      const today = new Date().toISOString().split('T')[0];
+      setDate(today);
     }
-  }, [initialExpense, date]);
+  }, [initialExpense]);
 
   // Update form fields if initialExpense changes (for edit mode)
   useEffect(() => {
@@ -221,7 +218,7 @@ export default function ExpenseForm({
       
     } catch (error) {
       // Display error message
-      setMessage('Failed to add expense: ' + error.message);
+      setMessage(`Failed to ${isEditMode ? 'save changes' : 'add expense'}: ${error.message}`);
       setMessageType('error');
     } finally {
       // Always reset loading state

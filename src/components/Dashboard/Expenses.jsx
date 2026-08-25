@@ -1,9 +1,8 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { collection, query, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/database';
 import { formatDate } from '../../utils/formatDate';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
-import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import Toast from '../UI/Toast';
@@ -28,39 +27,13 @@ export default function Expenses() {
 
   useEffect(() => {
     if (!currentUser) return;
-  
-    let unsubscribeExpenses = () => {};
-  
+
+    let unsubscribe = () => {};
+
     try {
-      // Fetch expenses
-      const qExpenses = query(
-        collection(db, 'users', currentUser.uid, 'expenses')
-      );
-      
-      unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
-        const expensesData = [];
-        querySnapshot.forEach((doc) => {
-          expensesData.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Sort expenses by date in descending order (newest first)
-        const sortedExpenses = expensesData.sort((a, b) => {
-          if (a.date && b.date) {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          }
-          // Fallback to createdAt if date is not available
-          if (a.createdAt && b.createdAt) {
-            const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
-            const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
-            return bTime - aTime;
-          }
-          return 0;
-        });
-        
-        setExpenses(sortedExpenses);
+      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
+        setExpenses(expensesData);
       });
-  
-  
     } catch (error) {
       console.error("Error setting up listeners:", error);
       setToast({
@@ -68,24 +41,18 @@ export default function Expenses() {
         type: 'error'
       });
     }
-  
-    return () => {
-      // Safely unsubscribe
-      try {
-        unsubscribeExpenses();
-      } catch (error) {
-        console.error("Error unsubscribing:", error);
-      }
-    };
+
+    return () => unsubscribe();
   }, [currentUser]);
 
 
 
   const handleDeleteExpense = async (id) => {
+    if (!currentUser) return;
     const expense = expenses.find(exp => exp.id === id);
     if (window.confirm(`Are you sure you want to delete the expense "${expense?.title}" for $${expense?.amount.toFixed(2)}?`)) {
       try {
-      await deleteDoc(doc(db, 'users', currentUser.uid, 'expenses', id));
+        await deleteExpense(currentUser.uid, id);
         setToast({
           message: 'Expense deleted successfully!',
           type: 'success'
@@ -113,12 +80,11 @@ export default function Expenses() {
 
   const handleUpdateExpense = async (updatedExpense) => {
     try {
-      await updateDoc(doc(db, 'users', currentUser.uid, 'expenses', updatedExpense.id), {
+      await updateExpense(currentUser.uid, updatedExpense.id, {
         title: updatedExpense.title,
         amount: parseFloat(updatedExpense.amount),
         category: updatedExpense.category,
         date: updatedExpense.date,
-        updatedAt: serverTimestamp()
       });
       setToast({
         message: `Expense "${updatedExpense.title}" updated successfully!`,

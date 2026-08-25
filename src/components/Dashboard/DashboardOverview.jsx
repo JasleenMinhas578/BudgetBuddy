@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { formatDate } from '../../utils/formatDate';
@@ -23,45 +22,22 @@ export default function DashboardOverview() {
    * This effect runs when the component mounts and when currentUser changes
    */
   useEffect(() => {
-    if (currentUser) {
-      // Set up real-time listener for expenses
-      const qExpenses = query(
-        collection(db, 'users', currentUser.uid, 'expenses')
-      );
-      
-      const unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
-        const expensesData = [];
-        querySnapshot.forEach((doc) => {
-          expensesData.push({ id: doc.id, ...doc.data() });
-        });
+    if (!currentUser) return;
 
-        // Sort expenses by date in descending order (newest first)
-        const sortedExpenses = expensesData.sort((a, b) => {
-          if (a.date && b.date) {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          }
-          // Fallback to createdAt if date is not available
-          if (a.createdAt && b.createdAt) {
-            const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
-            const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
-            return bTime - aTime;
-          }
-          return 0;
-        });
-
-        setExpenses(sortedExpenses);
-        setLoading(false);
-      }, (error) => {
-        console.error('Error loading expenses:', error);
+    let unsubscribe;
+    try {
+      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData, error) => {
+        if (!error) setExpenses(expensesData);
         setLoading(false);
       });
-
-
-      // Cleanup function to remove listeners when component unmounts
-      return () => {
-        unsubscribeExpenses();
-      };
+    } catch (error) {
+      console.error('Error loading expenses:', error);
+      setLoading(false);
     }
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [currentUser]);
 
   // Stats derived from the filtered period

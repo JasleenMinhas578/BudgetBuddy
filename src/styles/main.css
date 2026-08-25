@@ -15201,13 +15201,30 @@
 
 /* Also zero out the section-header margin-bottom so the flex gap is the only spacer */
 .expenses-container .section-header,
-.categories-container .section-header {
+.categories-container .section-header,
+.reports-container .section-header {
   margin-bottom: 0;
 }
 
 /* Reports: 4-column grid so all summary cards stay on one row */
 .reports-container .summary-cards {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Charts section spacing and heading */
+.charts-section-wrapper {
+  margin-top: 2rem;
+}
+
+.charts-section-wrapper .section-subheader {
+  margin-bottom: 1.25rem;
+}
+
+.charts-section-wrapper .section-subheader h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 /* Remove divider lines inside modals */

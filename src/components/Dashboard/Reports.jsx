@@ -1,8 +1,7 @@
 /* istanbul ignore file */
 import { useState, useEffect, useRef } from 'react';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { format, parseISO, parse } from 'date-fns';
@@ -38,41 +37,15 @@ export default function Reports() {
 
   useEffect(() => {
     if (!currentUser) return;
-  
     let unsubscribe = () => {};
-  
-    const setupListener = async () => {
-      try {
-        const qExpenses = query(
-          collection(db, 'users', currentUser.uid, 'expenses'),
-          orderBy('createdAt', 'desc')
-        );
-        
-        unsubscribe = onSnapshot(qExpenses, (querySnapshot) => {
-          const expensesData = [];
-          querySnapshot.forEach((doc) => {
-            expensesData.push({ id: doc.id, ...doc.data() });
-          });
-          setExpenses(expensesData);
-        }, (error) => {
-          console.error("Error in expenses listener:", error);
-        });
-  
-      } catch (error) {
-        console.error("Error setting up listener:", error);
-      }
-    };
-  
-    setupListener();
-  
-    return () => {
-      // Cleanup function
-      try {
-        if (typeof unsubscribe === 'function') unsubscribe();
-      } catch (error) {
-        console.error("Error during cleanup:", error);
-      }
-    };
+    try {
+      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
+        setExpenses(expensesData);
+      });
+    } catch (error) {
+      console.error("Error setting up listener:", error);
+    }
+    return () => unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
@@ -88,19 +61,26 @@ export default function Reports() {
 
   const getCategoryData = () => {
     const categoryMap = {};
-    
+
     filteredExpenses.forEach(expense => {
-      if (categoryMap[expense.category]) {
-        categoryMap[expense.category] += expense.amount;
-      } else {
-        categoryMap[expense.category] = expense.amount;
-      }
+      if (
+        !expense.category ||
+        expense.category === 'undefined' ||
+        expense.category === 'null' ||
+        typeof expense.category !== 'string' ||
+        expense.category.trim() === ''
+      ) return;
+      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
+      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + amount;
     });
-    
+
+    const labels = Object.keys(categoryMap).filter(l => categoryMap[l] > 0);
+    const data = labels.map(l => categoryMap[l]);
+
     return {
-      labels: Object.keys(categoryMap),
+      labels,
       datasets: [{
-        data: Object.values(categoryMap),
+        data,
         backgroundColor: [
           '#4fd1c5', '#f687b3', '#f6ad55', '#68d391', '#63b3ed', '#b794f4',
           '#fc8181', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb7185'
@@ -288,11 +268,12 @@ export default function Reports() {
           pdf.text(safeFormatDate(expense.date, 'MMM dd') || '—', xPos, yPosition);
           xPos += columnWidths[0];
           
-          pdf.text(expense.category, xPos, yPosition);
+          pdf.text(expense.category ?? '—', xPos, yPosition);
           xPos += columnWidths[1];
           
           // Truncate title if too long
-          const title = expense.title.length > 25 ? expense.title.substring(0, 22) + '...' : expense.title;
+          const rawTitle = expense.title ?? '—';
+          const title = rawTitle.length > 25 ? rawTitle.substring(0, 22) + '...' : rawTitle;
           pdf.text(title, xPos, yPosition);
           xPos += columnWidths[2];
           
@@ -325,11 +306,14 @@ export default function Reports() {
   const getTopCategory = () => {
     const categoryMap = {};
     filteredExpenses.forEach(expense => {
-      if (categoryMap[expense.category]) {
-        categoryMap[expense.category] += expense.amount;
-      } else {
-        categoryMap[expense.category] = expense.amount;
-      }
+      if (
+        !expense.category ||
+        expense.category === 'undefined' ||
+        expense.category === 'null' ||
+        typeof expense.category !== 'string'
+      ) return;
+      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
+      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + amount;
     });
     let topCategory = null;
     let maxAmount = 0;
@@ -368,7 +352,11 @@ export default function Reports() {
       case 'lastMonth': return 'Last Month';
       case 'thisYear': return 'This Year';
       case 'lastYear': return 'Last Year';
-      case 'custom': return `Custom Range (${format(parseISO(customDateRange.startDate), 'MMM dd, yyyy')} - ${format(parseISO(customDateRange.endDate), 'MMM dd, yyyy')})`;
+      case 'custom': {
+        const start = safeFormatDate(customDateRange.startDate, 'MMM dd, yyyy') || customDateRange.startDate || '';
+        const end = safeFormatDate(customDateRange.endDate, 'MMM dd, yyyy') || customDateRange.endDate || '';
+        return `Custom Range (${start} - ${end})`;
+      }
       default: return 'All Time';
     }
   };
@@ -580,21 +568,26 @@ export default function Reports() {
         </div>
 
         {/* Charts Section */}
-        <div className="charts-section">
-          <div className="chart-container">
-            <div className="chart-card">
-              <h3>Spending by Category</h3>
-              <div className="chart-wrapper">
-                <PieChart data={categoryData} />
+        <div className="charts-section-wrapper">
+          <div className="section-subheader">
+            <h3>📊 Charts & Visualizations</h3>
+          </div>
+          <div className="charts-section">
+            <div className="chart-container">
+              <div className="chart-card">
+                <h3>Spending by Category</h3>
+                <div className="chart-wrapper">
+                  <PieChart data={categoryData} />
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="chart-container">
-            <div className="chart-card">
-              <h3>Monthly Trend</h3>
-              <div className="chart-wrapper">
-                <LineChart data={monthlyData} />
+            <div className="chart-container">
+              <div className="chart-card">
+                <h3>Monthly Trend</h3>
+                <div className="chart-wrapper">
+                  <LineChart data={monthlyData} />
+                </div>
               </div>
             </div>
           </div>

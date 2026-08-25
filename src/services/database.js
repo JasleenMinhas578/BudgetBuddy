@@ -61,7 +61,10 @@ import {
   
   export const getExpenses = async (userId) => {
     try {
-      const q = query(collection(db, 'users', userId, 'expenses'));
+      const q = query(
+        collection(db, 'users', userId, 'expenses'),
+        orderBy('createdAt', 'desc')
+      );
       const querySnapshot = await getDocs(q);
       const expenses = [];
       querySnapshot.forEach((doc) => {
