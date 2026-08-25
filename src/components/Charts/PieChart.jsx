@@ -45,10 +45,5 @@ export default function PieChart({ data }) {
     maintainAspectRatio: false // Allow chart to fill container height
   };
 
-  return (
-    <div className="chart-wrapper">
-      {/* Render the pie chart with provided data and options */}
-      <Pie data={data} options={options} />
-    </div>
-  );
+  return <Pie data={data} options={options} />;
 }

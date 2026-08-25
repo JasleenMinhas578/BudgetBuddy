@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import { formatDate } from '../../utils/formatDate';
 import '../../styles/main.css';
 
 
@@ -50,6 +51,9 @@ export default function DashboardOverview() {
         // Get the 5 most recent expenses for the recent activity section
         setRecentExpenses(sortedExpenses.slice(0, 5));
         setLoading(false);
+      }, (error) => {
+        console.error('Error loading expenses:', error);
+        setLoading(false);
       });
 
 
@@ -88,16 +92,6 @@ export default function DashboardOverview() {
 
   // Only show "Welcome!" after data has loaded to avoid flashing for returning users
   const isFirstTimeUser = !loading && expenses.length === 0;
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return `${months[parseInt(month, 10) - 1]} ${day}, ${year}`;
-  };
 
   return (
     <div className="dashboard-overview">

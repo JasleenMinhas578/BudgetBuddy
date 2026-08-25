@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { validatePassword } from '../../utils/validatePassword';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
@@ -34,41 +35,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const isActivationKey = (key) => key === 'Enter' || key === ' ' || key === 'Space';
-
-  /**
-   * Validate password strength
-   * 
-   * Checks if password meets security requirements:
-   * - At least 6 characters long
-   * - Contains at least one uppercase letter
-   * - Contains at least one lowercase letter
-   * - Contains at least one number
-   * 
-   * @param {string} password - Password to validate
-   * @returns {Object} Validation result with isValid boolean and message
-   */
-  const validatePassword = (password) => {
-    const minLength = password.length >= 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-
-    if (!minLength) {
-      return { isValid: false, message: 'Password must be at least 8 characters long' };
-    }
-    if (!hasUpperCase) {
-      return { isValid: false, message: 'Password must contain at least one uppercase letter' };
-    }
-    if (!hasLowerCase) {
-      return { isValid: false, message: 'Password must contain at least one lowercase letter' };
-    }
-    if (!hasNumber) {
-      return { isValid: false, message: 'Password must contain at least one number' };
-    }
-
-    return { isValid: true, message: 'Password meets all requirements' };
-  };
+  const isActivationKey = (key) => key === 'Enter' || key === ' ';
 
   /**
    * Handle form submission

@@ -76,10 +76,5 @@ export default function LineChart({ data }) {
     }
   };
 
-  return (
-    <div className="chart-wrapper">
-      {/* Render the line chart with provided data and options */}
-      <Line data={data} options={options} />
-    </div>
-  );
+  return <Line data={data} options={options} />;
 }

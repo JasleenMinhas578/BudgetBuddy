@@ -42,9 +42,5 @@ export default function BarChart({ data }) {
     }
   };
 
-  return (
-    <div className="chart-wrapper">
-      <Bar options={options} data={data} />
-    </div>
-  );
+  return <Bar options={options} data={data} />;
 }

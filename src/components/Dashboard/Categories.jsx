@@ -27,7 +27,7 @@ export default function Categories() {
     let unsubscribeExpenses = () => {};
     let unsubscribeCategories = () => {};
   
-    const setupListeners = async () => {
+    const setupListeners = () => {
       try {
         // Expenses listener
         const qExpenses = query(
@@ -42,7 +42,9 @@ export default function Categories() {
           
           const sortedExpenses = expensesData.sort((a, b) => {
             if (a.createdAt && b.createdAt) {
-              return b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime();
+              const aTime = a.createdAt.toDate ? a.createdAt.toDate().getTime() : new Date(a.createdAt).getTime();
+              const bTime = b.createdAt.toDate ? b.createdAt.toDate().getTime() : new Date(b.createdAt).getTime();
+              return bTime - aTime;
             }
             if (a.date && b.date) {
               return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -99,7 +101,8 @@ export default function Categories() {
     e.preventDefault();
     if (!db) { setToast({ message: 'Firebase not configured. Please set up your Firebase project.', type: 'error' }); return; }
     if (!currentUser) { setToast({ message: 'Please log in to add categories.', type: 'error' }); return; }
-    const categoryName = newCategory;
+    const categoryName = newCategory.trim();
+    if (!categoryName) return;
     setIsModalOpen(false);
     setNewCategory('');
     setIsLoading(true);
@@ -225,7 +228,7 @@ export default function Categories() {
   };
 
   const categoryData = getCategoryData();
-  const totalSpent = Object.values(categoryData.datasets[0].data).reduce((sum, val) => sum + val, 0);
+  const totalSpent = categoryData.datasets[0].data.reduce((sum, val) => sum + val, 0);
 
   return (
     <div className="categories-container">
@@ -234,6 +237,7 @@ export default function Categories() {
         <Toast
           message={toast.message}
           type={toast.type}
+          isVisible={true}
           onClose={() => setToast(null)}
         />
       )}
@@ -262,7 +266,7 @@ export default function Categories() {
         <div className="summary-stat">
           <span className="stat-label">Active Categories</span>
           <span className="stat-value">
-            {Object.values(categoryData.datasets[0].data).filter(val => val > 0).length}
+            {categoryData.datasets[0].data.filter(val => val > 0).length}
           </span>
         </div>
       </div>

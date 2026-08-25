@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -80,11 +81,12 @@ export default function Reports() {
   const filterExpenses = useCallback(() => {
     let filtered = [...expenses];
     switch (dateFilter) {
-      case 'today':
+      case 'today': {
         const today = format(new Date(), 'yyyy-MM-dd');
         filtered = expenses.filter(expense => expense.date === today);
         break;
-      case 'thisMonth':
+      }
+      case 'thisMonth': {
         const now = new Date();
         const startOfThisMonth = startOfMonth(now);
         const endOfThisMonth = endOfMonth(now);
@@ -93,7 +95,8 @@ export default function Reports() {
           return expenseDate >= startOfThisMonth && expenseDate <= endOfThisMonth;
         });
         break;
-      case 'lastMonth':
+      }
+      case 'lastMonth': {
         const lastMonth = subMonths(new Date(), 1);
         const startOfLastMonth = startOfMonth(lastMonth);
         const endOfLastMonth = endOfMonth(lastMonth);
@@ -102,7 +105,8 @@ export default function Reports() {
           return expenseDate >= startOfLastMonth && expenseDate <= endOfLastMonth;
         });
         break;
-      case 'thisYear':
+      }
+      case 'thisYear': {
         const thisYear = new Date();
         const startOfThisYear = startOfYear(thisYear);
         const endOfThisYear = endOfYear(thisYear);
@@ -111,7 +115,8 @@ export default function Reports() {
           return expenseDate >= startOfThisYear && expenseDate <= endOfThisYear;
         });
         break;
-      case 'lastYear':
+      }
+      case 'lastYear': {
         const lastYear = subYears(new Date(), 1);
         const startOfLastYear = startOfYear(lastYear);
         const endOfLastYear = endOfYear(lastYear);
@@ -120,7 +125,8 @@ export default function Reports() {
           return expenseDate >= startOfLastYear && expenseDate <= endOfLastYear;
         });
         break;
-      case 'custom':
+      }
+      case 'custom': {
         filtered = expenses.filter(expense => {
           const expenseDate = parseISO(expense.date);
           const startDate = parseISO(customDateRange.startDate);
@@ -128,6 +134,7 @@ export default function Reports() {
           return expenseDate >= startDate && expenseDate <= endDate;
         });
         break;
+      }
       default:
         filtered = expenses;
     }
@@ -202,7 +209,7 @@ export default function Reports() {
       headers.join(','),
       ...filteredExpenses.map(expense => [
         format(parseISO(expense.date), 'yyyy-MM-dd'),
-        expense.category,
+        `"${expense.category}"`,
         `"${expense.title}"`,
         expense.amount.toFixed(2)
       ].join(','))
@@ -726,16 +733,3 @@ export default function Reports() {
   );
 }
 
-// Helper function for category icons
-
-const getCategoryIcon = (category) => {
-  const icons = {
-    'Food': '🍕',
-    'Transport': '🚗',
-    'Entertainment': '🎬',
-    'Utilities': '💡',
-    'Rent': '🏠',
-    'Other': '📦'
-  };
-  return icons[category] || '📊';
-};

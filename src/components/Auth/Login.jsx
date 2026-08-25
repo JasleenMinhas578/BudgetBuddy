@@ -41,10 +41,9 @@ export default function Login() {
   useEffect(() => {
     if (location.state?.message) {
       setMessage(location.state.message);
-      // Clear the message from location state
-      window.history.replaceState({}, document.title);
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location]);
+  }, [location, navigate]);
 
   /**
    * Handle form submission

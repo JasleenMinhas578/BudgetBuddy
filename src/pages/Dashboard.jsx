@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [showEdgeIndicator, setShowEdgeIndicator] = useState(false);
   const sidebarRef = useRef(null);
   const overlayRef = useRef(null);
+  const edgeTimerRef = useRef(null);
   
   // Check if we're on mobile
   const isMobile = useCallback(() => window.innerWidth <= 768, []);
@@ -147,23 +148,25 @@ export default function Dashboard() {
       // If touch is within 20px of left edge, allow opening
       if (x <= 20 && !sidebarOpen) {
         setShowEdgeIndicator(true);
-        setTimeout(() => setShowEdgeIndicator(false), 2000);
+        clearTimeout(edgeTimerRef.current);
+        edgeTimerRef.current = setTimeout(() => setShowEdgeIndicator(false), 2000);
         setSidebarOpen(true);
       }
     };
 
     const handleEdgeMouse = (e) => {
       const x = e.clientX;
-      
+
       // If mouse is within 20px of left edge, allow opening
       if (x <= 20 && !sidebarOpen) {
         setShowEdgeIndicator(true);
-        setTimeout(() => setShowEdgeIndicator(false), 2000);
+        clearTimeout(edgeTimerRef.current);
+        edgeTimerRef.current = setTimeout(() => setShowEdgeIndicator(false), 2000);
         setSidebarOpen(true);
       }
     };
 
-    const handleMouseMove = (e) => {
+    const handleEdgeMouseMove = (e) => {
       const x = e.clientX;
       if (x <= 20 && !sidebarOpen) {
         setShowEdgeIndicator(true);
@@ -174,12 +177,13 @@ export default function Dashboard() {
 
     document.addEventListener('touchstart', handleEdgeTouch);
     document.addEventListener('mousedown', handleEdgeMouse);
-    document.addEventListener('mousemove', handleMouseMove);
-    
+    document.addEventListener('mousemove', handleEdgeMouseMove);
+
     return () => {
       document.removeEventListener('touchstart', handleEdgeTouch);
       document.removeEventListener('mousedown', handleEdgeMouse);
-      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleEdgeMouseMove);
+      clearTimeout(edgeTimerRef.current);
     };
   }, [sidebarOpen, isMobile]);
 

@@ -1,6 +1,8 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { formatDate } from '../../utils/formatDate';
+import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import Toast from '../UI/Toast';
@@ -129,18 +131,6 @@ export default function Expenses() {
     }
   };
 
-  const getCategoryIcon = (category) => {
-    const icons = {
-      'Food': '🍕',
-      'Transport': '🚗',
-      'Entertainment': '🎬',
-      'Utilities': '💡',
-      'Rent': '🏠',
-      'Other': '📦'
-    };
-    return icons[category] || '📊';
-  };
-
   const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   // Pagination logic
@@ -171,16 +161,6 @@ export default function Expenses() {
   };
 
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return `${months[parseInt(month, 10) - 1]} ${day}, ${year}`;
-  };
-
   return (
     <div className="expenses-container">
       {/* Toast Notification */}
@@ -188,6 +168,7 @@ export default function Expenses() {
         <Toast
           message={toast.message}
           type={toast.type}
+          isVisible={true}
           onClose={() => setToast(null)}
         />
       )}
