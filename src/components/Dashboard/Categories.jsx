@@ -186,15 +186,19 @@ export default function Categories() {
       }
     });
     
-    // Sum expenses by category - filter out expenses with invalid categories
+    // Sum expenses by category. If a category was deleted its key won't be in
+    // categoryMap, so we add it on the fly — otherwise those expenses silently
+    // vanish from totals while still showing on the Expenses page.
     filteredExpenses.forEach(expense => {
-      if (expense && 
-          expense.category && 
-          expense.category !== 'undefined' && 
-          expense.category !== 'null' && 
+      if (expense &&
+          expense.category &&
+          expense.category !== 'undefined' &&
+          expense.category !== 'null' &&
           typeof expense.category === 'string' &&
-          expense.category.trim() !== '' &&
-          categoryMap.hasOwnProperty(expense.category)) {
+          expense.category.trim() !== '') {
+        if (!categoryMap.hasOwnProperty(expense.category)) {
+          categoryMap[expense.category] = 0;
+        }
         categoryMap[expense.category] += (expense.amount || 0);
       }
     });

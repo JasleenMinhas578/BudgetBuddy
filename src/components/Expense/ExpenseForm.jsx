@@ -156,12 +156,9 @@ export default function ExpenseForm({
       return { isValid: false, message: 'Please select a date' };
     }
     
-    // Check if date is not in the future
-    const selectedDate = new Date(date);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999); // Set to end of today
-    
-    if (selectedDate > today) {
+    // Check if date is not in the future (string compare is timezone-safe for yyyy-MM-dd)
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date > todayStr) {
       return { isValid: false, message: 'Date cannot be in the future' };
     }
     

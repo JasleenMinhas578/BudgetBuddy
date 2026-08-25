@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 
 export function useDateFilter(expenses, defaultFilter = 'all') {
   const [dateFilter, setDateFilter] = useState(defaultFilter);
@@ -18,35 +18,34 @@ export function useDateFilter(expenses, defaultFilter = 'all') {
         break;
       }
       case 'thisMonth': {
-        const start = startOfMonth(new Date());
-        const end = endOfMonth(new Date());
-        filtered = expenses.filter(e => { const d = parseISO(e.date); return d >= start && d <= end; });
+        const start = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+        const end = format(endOfMonth(new Date()), 'yyyy-MM-dd');
+        filtered = expenses.filter(e => e.date >= start && e.date <= end);
         break;
       }
       case 'lastMonth': {
         const last = subMonths(new Date(), 1);
-        const start = startOfMonth(last);
-        const end = endOfMonth(last);
-        filtered = expenses.filter(e => { const d = parseISO(e.date); return d >= start && d <= end; });
+        const start = format(startOfMonth(last), 'yyyy-MM-dd');
+        const end = format(endOfMonth(last), 'yyyy-MM-dd');
+        filtered = expenses.filter(e => e.date >= start && e.date <= end);
         break;
       }
       case 'thisYear': {
-        const start = startOfYear(new Date());
-        const end = endOfYear(new Date());
-        filtered = expenses.filter(e => { const d = parseISO(e.date); return d >= start && d <= end; });
+        const start = format(startOfYear(new Date()), 'yyyy-MM-dd');
+        const end = format(endOfYear(new Date()), 'yyyy-MM-dd');
+        filtered = expenses.filter(e => e.date >= start && e.date <= end);
         break;
       }
       case 'lastYear': {
         const last = subYears(new Date(), 1);
-        const start = startOfYear(last);
-        const end = endOfYear(last);
-        filtered = expenses.filter(e => { const d = parseISO(e.date); return d >= start && d <= end; });
+        const start = format(startOfYear(last), 'yyyy-MM-dd');
+        const end = format(endOfYear(last), 'yyyy-MM-dd');
+        filtered = expenses.filter(e => e.date >= start && e.date <= end);
         break;
       }
       case 'custom': {
-        const start = parseISO(customDateRange.startDate);
-        const end = parseISO(customDateRange.endDate);
-        filtered = expenses.filter(e => { const d = parseISO(e.date); return d >= start && d <= end; });
+        const { startDate, endDate } = customDateRange;
+        filtered = expenses.filter(e => e.date >= startDate && e.date <= endDate);
         break;
       }
       default:

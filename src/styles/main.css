@@ -15193,16 +15193,16 @@
   margin-top: 0;
 }
 
-/* Reduce gap between summary stats and filter card */
-.expenses-container .filter-controls,
-.categories-container .filter-controls {
-  margin-top: 0.5rem;
-}
-
-/* Tighten gap between summary stats and filter card */
+/* Zero out redundant margin-bottom — flex gap on the container handles spacing */
 .expenses-container .expenses-summary,
 .categories-container .categories-summary {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+}
+
+/* Also zero out the section-header margin-bottom so the flex gap is the only spacer */
+.expenses-container .section-header,
+.categories-container .section-header {
+  margin-bottom: 0;
 }
 
 /* Reports: 4-column grid so all summary cards stay on one row */

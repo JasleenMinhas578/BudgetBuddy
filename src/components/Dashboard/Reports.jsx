@@ -5,7 +5,7 @@ import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, parse } from 'date-fns';
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
@@ -13,6 +13,13 @@ import jsPDF from 'jspdf';
 import Pagination from '../UI/Pagination';
 import { generateSummary } from '../../services/aiService';
 import '../../styles/main.css';
+
+// Gracefully format an expense date; returns '' for null/malformed values so
+// a single bad Firestore document can't crash the entire Reports render.
+const safeFormatDate = (dateStr, fmt) => {
+  if (!dateStr) return '';
+  try { return format(parseISO(dateStr), fmt); } catch { return ''; }
+};
 
 export default function Reports() {
   const [expenses, setExpenses] = useState([]);
@@ -104,19 +111,17 @@ export default function Reports() {
 
   const getMonthlyData = () => {
     const monthlyMap = {};
-    
+
     filteredExpenses.forEach(expense => {
-      const month = format(parseISO(expense.date), 'MMM yyyy');
-      if (monthlyMap[month]) {
-        monthlyMap[month] += expense.amount;
-      } else {
-        monthlyMap[month] = expense.amount;
-      }
+      const month = safeFormatDate(expense.date, 'MMM yyyy');
+      if (!month) return;
+      monthlyMap[month] = (monthlyMap[month] || 0) + expense.amount;
     });
-    
-    const sortedMonths = Object.keys(monthlyMap).sort((a, b) => {
-      return new Date(a) - new Date(b);
-    });
+
+    // parse() from date-fns correctly handles 'MMM yyyy'; new Date() does not.
+    const sortedMonths = Object.keys(monthlyMap).sort((a, b) =>
+      parse(a, 'MMM yyyy', new Date()) - parse(b, 'MMM yyyy', new Date())
+    );
     
     return {
       labels: sortedMonths,
@@ -135,9 +140,9 @@ export default function Reports() {
     const csvContent = [
       headers.join(','),
       ...filteredExpenses.map(expense => [
-        format(parseISO(expense.date), 'yyyy-MM-dd'),
-        `"${expense.category}"`,
-        `"${expense.title}"`,
+        safeFormatDate(expense.date, 'yyyy-MM-dd') || expense.date || '',
+        `"${(expense.category || '').replace(/"/g, '""')}"`,
+        `"${(expense.title || '').replace(/"/g, '""')}"`,
         expense.amount.toFixed(2)
       ].join(','))
     ].join('\n');
@@ -280,7 +285,7 @@ export default function Reports() {
           }
           
           xPos = margin;
-          pdf.text(format(parseISO(expense.date), 'MMM dd'), xPos, yPosition);
+          pdf.text(safeFormatDate(expense.date, 'MMM dd') || '—', xPos, yPosition);
           xPos += columnWidths[0];
           
           pdf.text(expense.category, xPos, yPosition);
@@ -619,7 +624,7 @@ export default function Reports() {
                     <tr key={expense.id}>
                       <td>
                         <span className="date-cell">
-                          {format(parseISO(expense.date), 'MMM dd, yyyy')}
+                          {safeFormatDate(expense.date, 'MMM dd, yyyy') || '—'}
                         </span>
                       </td>
                       <td>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../styles/main.css';
 
@@ -28,32 +28,28 @@ import '../../styles/main.css';
  * - onClose: Callback function when toast is dismissed
  * - duration: Auto-dismiss duration in milliseconds (default: 3000)
  */
-export default function Toast({ 
-  message, 
-  type = 'info', 
-  isVisible, 
-  onClose, 
-  duration = 3000 
+export default function Toast({
+  message,
+  type = 'info',
+  isVisible,
+  onClose,
+  duration = 3000
 }) {
-  /**
-   * Handle automatic dismissal of toast
-   * 
-   * This effect:
-   * 1. Starts a timer when toast becomes visible
-   * 2. Automatically calls onClose after specified duration
-   * 3. Cleans up timer when component unmounts or visibility changes
-   * 4. Only runs if duration is greater than 0
-   */
+  // Keep a ref to the latest onClose so the timer effect doesn't need it as a dep.
+  // Without this, every Firestore re-render creates a new inline arrow → new dep →
+  // the timer resets before it fires and the toast never auto-dismisses.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
     if (isVisible && duration > 0) {
       const timer = setTimeout(() => {
-        onClose();
+        onCloseRef.current();
       }, duration);
 
-      // Cleanup timer on unmount or when visibility changes
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration, onClose]);
+  }, [isVisible, duration]);
 
   /**
    * Get icon based on message type
