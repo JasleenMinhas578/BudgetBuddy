@@ -1,12 +1,17 @@
 import { useState, useCallback, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 
-export function useDateFilter(expenses, defaultFilter = 'all') {
-  const [dateFilter, setDateFilter] = useState(defaultFilter);
-  const [customDateRange, setCustomDateRange] = useState({
+export function useDateFilter(expenses, defaultFilter = 'all', external = null) {
+  const [localDateFilter, setLocalDateFilter] = useState(defaultFilter);
+  const [localCustomDateRange, setLocalCustomDateRange] = useState({
     startDate: format(new Date(), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
   });
+
+  const dateFilter = external ? external.dateFilter : localDateFilter;
+  const setDateFilter = external ? external.setDateFilter : setLocalDateFilter;
+  const customDateRange = external ? external.customDateRange : localCustomDateRange;
+  const setCustomDateRange = external ? external.setCustomDateRange : setLocalCustomDateRange;
   const [filteredExpenses, setFilteredExpenses] = useState([]);
 
   const filterExpenses = useCallback(() => {

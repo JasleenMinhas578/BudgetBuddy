@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { LuBarChart2, LuTrendingUp, LuBot, LuShieldCheck, LuSparkles } from 'react-icons/lu';
 import '../styles/main.css';
 import BudgetBuddyLogo from '../components/UI/BudgetBuddyLogo';
 
@@ -47,7 +48,7 @@ export default function Landing() {
           className="hero"
         >
           <div className="hero-content">
-            <div className="hero-badge">✨ AI-Powered Budget Tracking</div>
+            <div className="hero-badge"><LuSparkles size={14} /> AI-Powered Budget Tracking</div>
             <h1 className="hero-title">
               Master Your <span className="accent">Financial Future</span>
             </h1>
@@ -163,7 +164,7 @@ export default function Landing() {
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon">📊</div>
+              <div className="feature-icon"><LuBarChart2 size={32} /></div>
               <h3>Smart Expense Tracking</h3>
               <p>Log and categorize every transaction with intelligent auto-suggestions and smart categorization.</p>
             </motion.div>
@@ -175,7 +176,7 @@ export default function Landing() {
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon">📈</div>
+              <div className="feature-icon"><LuTrendingUp size={32} /></div>
               <h3>Beautiful Analytics</h3>
               <p>Understand your spending patterns with stunning charts, graphs, and detailed financial reports.</p>
             </motion.div>
@@ -187,7 +188,7 @@ export default function Landing() {
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon">🤖</div>
+              <div className="feature-icon"><LuBot size={32} /></div>
               <h3>AI Financial Assistant</h3>
               <p>Chat with your budget. Ask "Where did I overspend?" and get instant, personalized answers powered by AI.</p>
             </motion.div>
@@ -199,7 +200,7 @@ export default function Landing() {
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon">🔒</div>
+              <div className="feature-icon"><LuShieldCheck size={32} /></div>
               <h3>Secure & Private</h3>
               <p>Your financial data is protected with bank-level security and complete privacy controls.</p>
             </motion.div>

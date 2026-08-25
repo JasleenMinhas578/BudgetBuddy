@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { LuDollarSign, LuTrendingUp, LuAward, LuReceipt } from 'react-icons/lu';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
-import { formatDate } from '../../utils/formatDate';
+import { useDateRangeContext } from '../../context/DateRangeContext';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
+import ExpenseTable from '../UI/ExpenseTable';
 import '../../styles/main.css';
 
 
@@ -13,7 +15,8 @@ export default function DashboardOverview() {
   // State management for data
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
+  const dateRangeCtx = useDateRangeContext();
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
 
   // Get current user from authentication context
   const { currentUser } = useAuth();
@@ -95,7 +98,7 @@ export default function DashboardOverview() {
       <div className="summary-cards">
         <div className="summary-card">
           <div className="card-icon">
-            <span>📊</span>
+            <LuDollarSign size={26} />
           </div>
           <div className="card-content">
             <h3>Total Spent</h3>
@@ -106,7 +109,7 @@ export default function DashboardOverview() {
 
         <div className="summary-card">
           <div className="card-icon">
-            <span>📈</span>
+            <LuTrendingUp size={26} />
           </div>
           <div className="card-content">
             <h3>Average</h3>
@@ -117,7 +120,7 @@ export default function DashboardOverview() {
 
         <div className="summary-card">
           <div className="card-icon">
-            <span>🏆</span>
+            <LuAward size={26} />
           </div>
           <div className="card-content">
             <h3>Top Category</h3>
@@ -127,40 +130,24 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Recent Activity Section */}
+      {/* Recent Expenses Table */}
       <div className="recent-activity">
         <div className="activity-header">
           <h3>Recent Expenses</h3>
           <Link to="/dashboard/expenses" className="btn btn-primary view-all-link">View All</Link>
         </div>
-        
-        <div className="activity-list">
-          {recentExpenses.length > 0 ? (
-            // Display recent expenses with details
-            recentExpenses.map((expense) => (
-              <div key={expense.id} className="activity-item">
-                <div className="activity-icon">
-                  <span>💸</span>
-                </div>
-                <div className="activity-content">
-                  <h4>{expense.title}</h4>
-                  <p>{expense.category} • {formatDate(expense.date)}</p>
-                </div>
-                <div className="activity-amount">
-                  <span>${expense.amount.toFixed(2)}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            // Empty state when no expenses exist
-            <div className="empty-state">
-              <div className="empty-icon">📝</div>
-              <h4>No expenses yet</h4>
-              <p>Start tracking your expenses to see them here</p>
-              <Link to="/dashboard/expenses" className="btn btn-primary">Add First Expense</Link>
-            </div>
-          )}
-        </div>
+
+        <ExpenseTable
+          expenses={recentExpenses}
+          itemsPerPage={5}
+          showPagination={false}
+          emptyIcon={<LuReceipt size={48} />}
+          emptyMessage="No expenses yet"
+          emptySubMessage="Start tracking your expenses to see them here"
+          emptyAction={
+            <Link to="/dashboard/expenses" className="btn btn-primary">Add First Expense</Link>
+          }
+        />
       </div>
     </div>
   );

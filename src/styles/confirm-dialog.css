@@ -1,0 +1,84 @@
+.cd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-top);
+  padding: 1rem;
+}
+
+.cd-box {
+  background: var(--surface-card-alt);
+  border: 1px solid var(--glass-14);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal), 0 0 0 1px var(--glass-05);
+  width: 100%;
+  max-width: 360px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cd-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.cd-message {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.cd-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+}
+
+.cd-btn-cancel {
+  background: var(--glass-07);
+  border: 1px solid var(--glass-12);
+  color: var(--text-secondary);
+  padding: 0.5rem 1.125rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cd-btn-cancel:hover {
+  background: var(--glass-14);
+  color: var(--text-primary);
+}
+
+.cd-btn-confirm {
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  color: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.cd-btn-confirm:hover {
+  opacity: 0.88;
+}
+
+.cd-btn-confirm--danger {
+  background: var(--gradient-danger);
+}
+
+.cd-btn-confirm--default {
+  background: var(--gradient-primary);
+}

@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  LuArrowLeft, LuWallet, LuAlertTriangle, LuUserPlus, LuEye, LuEyeOff,
+} from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { validatePassword } from '../../utils/validatePassword';
 import { motion } from 'framer-motion';
@@ -120,13 +123,13 @@ export default function Signup() {
             className="btn-back"
             aria-label="Go back to home"
           >
-            <span>←</span>
+            <LuArrowLeft size={16} />
             Back
           </button>
         </div>
         
         <div className="auth-brand">
-          <div className="auth-logo">💰</div>
+          <div className="auth-logo"><LuWallet size={32} /></div>
           <h2 className="auth-title">Join BudgetBuddy</h2>
           <p className="auth-subtitle">Create your account and start tracking your finances</p>
         </div>
@@ -137,7 +140,7 @@ export default function Signup() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-error"
           >
-            <span className="error-icon">⚠️</span>
+            <LuAlertTriangle size={16} className="error-icon" />
             {error}
           </motion.div>
         )}
@@ -178,7 +181,7 @@ export default function Signup() {
                 role="button"
                 onKeyDown={e => { if (isActivationKey(e.key)) setShowPassword(v => !v); }}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
               </span>
             </div>
           </div>
@@ -203,7 +206,7 @@ export default function Signup() {
                 role="button"
                 onKeyDown={e => { if (isActivationKey(e.key)) setShowConfirmPassword(v => !v); }}
               >
-                {showConfirmPassword ? '🙈' : '👁️'}
+                {showConfirmPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
               </span>
             </div>
           </div>
@@ -222,7 +225,7 @@ export default function Signup() {
               </span>
             ) : (
               <>
-                <span>🚀</span>
+                <LuUserPlus size={16} />
                 Create Account
               </>
             )}

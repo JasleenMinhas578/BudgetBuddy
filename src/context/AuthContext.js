@@ -47,8 +47,11 @@ export function AuthProvider({ children }) {
     return confirmPasswordReset(auth, oobCode, newPassword);
   }
 
-  function updateDisplayName(displayName) {
-    return updateProfile(auth.currentUser, { displayName });
+  async function updateDisplayName(displayName) {
+    await updateProfile(auth.currentUser, { displayName });
+    // Firebase mutates the user object in-place but doesn't trigger onAuthStateChanged,
+    // so we spread it into a new reference to force a React re-render everywhere.
+    setCurrentUser({ ...auth.currentUser });
   }
 
 

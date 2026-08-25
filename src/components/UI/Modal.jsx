@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { LuX } from 'react-icons/lu';
 import '../../styles/modal.css';
 
 const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -61,7 +62,7 @@ export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
           aria-label="Close dialog"
           onClick={onClose}
         >
-          <span aria-hidden="true">×</span>
+          <LuX size={18} aria-hidden="true" />
           <span className="sr-only">Close</span>
         </button>
       </div>

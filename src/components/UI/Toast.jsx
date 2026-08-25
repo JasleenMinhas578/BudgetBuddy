@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LuCheck, LuX, LuAlertTriangle, LuInfo } from 'react-icons/lu';
 import '../../styles/main.css';
 
 /**
@@ -59,15 +60,11 @@ export default function Toast({
    */
   const getIcon = (toastType) => {
     switch (toastType) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'warning':
-        return '⚠';
+      case 'success':  return <LuCheck size={16} />;
+      case 'error':    return <LuX size={16} />;
+      case 'warning':  return <LuAlertTriangle size={16} />;
       case 'info':
-      default:
-        return 'ℹ';
+      default:         return <LuInfo size={16} />;
     }
   };
 
@@ -117,7 +114,7 @@ export default function Toast({
             }}
             aria-label="Close notification"
           >
-            ×
+            <LuX size={14} aria-hidden="true" />
           </button>
         </motion.div>
       )}

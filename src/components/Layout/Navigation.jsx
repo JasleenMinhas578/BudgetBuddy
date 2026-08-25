@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LuWallet } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
@@ -118,7 +119,7 @@ export default function Navigation() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span className="brand-icon">💰</span>
+            <span className="brand-icon"><LuWallet size={20} /></span>
             <span className="brand-name">Finance Tracker</span>
           </motion.div>
         </Link>

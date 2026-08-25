@@ -1,6 +1,9 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  LuArrowLeft, LuKey, LuAlertTriangle, LuShieldCheck, LuEye, LuEyeOff,
+} from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { validatePassword } from '../../utils/validatePassword';
 import { motion } from 'framer-motion';
@@ -143,13 +146,13 @@ export default function ResetPassword() {
             className="btn-back"
             aria-label="Go back to login"
           >
-            <span>←</span>
+            <LuArrowLeft size={16} />
             Back
           </button>
         </div>
         
         <div className="auth-brand">
-          <div className="auth-logo">🔑</div>
+          <div className="auth-logo"><LuKey size={32} /></div>
           <h2 className="auth-title">Set New Password</h2>
           <p className="auth-subtitle">Enter your new password below</p>
         </div>
@@ -160,7 +163,7 @@ export default function ResetPassword() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-error"
           >
-            <span className="error-icon">⚠️</span>
+            <LuAlertTriangle size={16} className="error-icon" />
             {error}
           </motion.div>
         )}
@@ -185,7 +188,7 @@ export default function ResetPassword() {
                 role="button"
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setShowPassword(v => !v); }}
               >
-                {showPassword ? '🙈' : '👁️'}
+                {showPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
               </span>
             </div>
           </div>
@@ -209,7 +212,7 @@ export default function ResetPassword() {
                 role="button"
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setShowConfirmPassword(v => !v); }}
               >
-                {showConfirmPassword ? '🙈' : '👁️'}
+                {showConfirmPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
               </span>
             </div>
           </div>
@@ -228,7 +231,7 @@ export default function ResetPassword() {
               </span>
             ) : (
               <>
-                <span>🔐</span>
+                <LuShieldCheck size={16} />
                 Reset Password
               </>
             )}

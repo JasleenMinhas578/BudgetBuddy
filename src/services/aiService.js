@@ -87,7 +87,7 @@ User message: "${userMessage}"`;
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 512 },
+      generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' },
     }),
   });
 
@@ -103,7 +103,9 @@ User message: "${userMessage}"`;
 
   // Extract JSON even if the model wraps it in backticks
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error('AI returned an unexpected format');
+  if (!jsonMatch) {
+    return { intent: 'CHAT', message: "I didn't quite understand that — could you rephrase? For example: \"Add 80 for groceries on August 1 2026\" or \"how much did I spend last month?\"" };
+  }
 
   return JSON.parse(jsonMatch[0]);
 };

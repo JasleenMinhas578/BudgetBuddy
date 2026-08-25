@@ -15,6 +15,7 @@ import Reports from './components/Dashboard/Reports';
 import Settings from './components/Dashboard/Settings';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
+import { DateRangeProvider } from './context/DateRangeContext';
 import './styles/main.css';
 
 /**
@@ -43,6 +44,7 @@ function App() {
     <Router>
       {/* AuthProvider wraps the entire app to provide authentication context */}
       <AuthProvider>
+      <DateRangeProvider>
         <Routes>
           {/* Public routes - accessible without authentication */}
           <Route path="/" element={<Landing />} />
@@ -68,6 +70,7 @@ function App() {
         </Routes>
         {/* AI chat widget — only mounted when logged in */}
         <AuthenticatedAIChat />
+      </DateRangeProvider>
       </AuthProvider>
     </Router>
   );

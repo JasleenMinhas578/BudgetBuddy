@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { LuChevronDown, LuCheck, LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/database';
+import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import '../../styles/main.css';
@@ -25,14 +27,28 @@ export default function ExpenseForm({
   // Get current user from authentication context
   const { currentUser } = useAuth();
 
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) {
+        setCatDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Default categories
   const defaultCategories = [
-    { id: 'food', name: 'Food', icon: '🍕' },
-    { id: 'transport', name: 'Transport', icon: '🚗' },
-    { id: 'entertainment', name: 'Entertainment', icon: '🎬' },
-    { id: 'utilities', name: 'Utilities', icon: '💡' },
-    { id: 'rent', name: 'Rent', icon: '🏠' },
-    { id: 'other', name: 'Other', icon: '📦' }
+    { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
+    { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
+    { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
+    { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
+    { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
+    { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
   ];
 
   // State for custom categories
@@ -52,7 +68,7 @@ export default function ExpenseForm({
       unsubscribe = onSnapshot(q, (querySnapshot) => {
         const cats = [];
         querySnapshot.forEach((doc) => {
-          cats.push({ id: doc.id, name: doc.data().name, icon: '📊' });
+          cats.push({ id: doc.id, name: doc.data().name, Icon: LuTag });
         });
         setCustomCategories(cats);
       });
@@ -314,22 +330,46 @@ export default function ExpenseForm({
           />
         </div>
         
-        {/* Category selection dropdown */}
+        {/* Category selection — custom dropdown so Lucide icons can render */}
         <div className="form-group">
-          <label htmlFor="category">Category</label>
-          <select
-            id="category"
-            name="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            disabled={loading}
-          >
-           {allCategories.map((cat) => (
-             <option key={cat.id || cat.name} value={cat.name}>
-               {cat.icon} {cat.name}
-              </option>
-            ))}
-          </select>
+          <label>Category</label>
+          <div className="cat-dropdown" ref={catDropdownRef}>
+            <button
+              type="button"
+              className="cat-dropdown-trigger"
+              onClick={() => !loading && setCatDropdownOpen(o => !o)}
+              disabled={loading}
+            >
+              {(() => {
+                const sel = allCategories.find(c => c.name === category);
+                const SelIcon = sel?.Icon || LuTag;
+                return (
+                  <>
+                    <span className="cat-dropdown-icon"><SelIcon size={15} /></span>
+                    <span>{category}</span>
+                  </>
+                );
+              })()}
+              <LuChevronDown size={14} className={`cat-dropdown-chevron${catDropdownOpen ? ' open' : ''}`} />
+            </button>
+
+            {catDropdownOpen && (
+              <div className="cat-dropdown-menu">
+                {allCategories.map((cat) => (
+                  <button
+                    key={cat.id || cat.name}
+                    type="button"
+                    className={`cat-dropdown-item${category === cat.name ? ' active' : ''}`}
+                    onClick={() => { setCategory(cat.name); setCatDropdownOpen(false); }}
+                  >
+                    <span className="cat-dropdown-icon"><cat.Icon size={15} /></span>
+                    <span>{cat.name}</span>
+                    {category === cat.name && <LuCheck size={13} className="cat-dropdown-check" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Date picker */}

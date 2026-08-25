@@ -1,6 +1,9 @@
 /* istanbul ignore file */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  LuArrowLeft, LuLock, LuAlertTriangle, LuCheckCircle, LuMail,
+} from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
@@ -140,13 +143,13 @@ export default function ForgotPassword() {
             className="btn-back"
             aria-label="Go back to login"
           >
-            <span>←</span>
+            <LuArrowLeft size={16} />
             Back
           </button>
         </div>
         
         <div className="auth-brand">
-          <div className="auth-logo">🔐</div>
+          <div className="auth-logo"><LuLock size={32} /></div>
           <h2 className="auth-title">Reset Password</h2>
           <p className="auth-subtitle">Enter your email to receive password reset instructions</p>
         </div>
@@ -157,7 +160,7 @@ export default function ForgotPassword() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-error"
           >
-            <span className="error-icon">⚠️</span>
+            <LuAlertTriangle size={16} className="error-icon" />
             {error}
           </motion.div>
         )}
@@ -168,7 +171,7 @@ export default function ForgotPassword() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-success"
           >
-            <span>✅</span>
+            <LuCheckCircle size={16} />
             {message}
           </motion.div>
         )}
@@ -203,12 +206,12 @@ export default function ForgotPassword() {
               </span>
             ) : message ? (
               <>
-                <span>✅</span>
+                <LuCheckCircle size={16} />
                 Email Sent
               </>
             ) : (
               <>
-                <span>📧</span>
+                <LuMail size={16} />
                 Send Reset Link
               </>
             )}

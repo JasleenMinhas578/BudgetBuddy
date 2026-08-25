@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { LuBot, LuWallet, LuX, LuCheck, LuSend } from 'react-icons/lu';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
@@ -138,14 +139,14 @@ export default function AIChat() {
           {/* Header */}
           <div className="ai-chat-header">
             <div className="ai-chat-header-info">
-              <span className="ai-chat-avatar">🤖</span>
+              <span className="ai-chat-avatar"><LuBot size={28} /></span>
               <div>
                 <h3>BudgetBuddy AI</h3>
                 <span className="ai-chat-status">Powered by Gemini · Free</span>
               </div>
             </div>
             <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
-              ✕
+              <LuX size={18} aria-hidden="true" />
             </button>
           </div>
 
@@ -154,7 +155,7 @@ export default function AIChat() {
             {messages.length === 0 && (
               <div className="ai-chat-welcome">
                 <div className="ai-chat-welcome-header">
-                  <span className="ai-chat-welcome-emoji">💸</span>
+                  <span className="ai-chat-welcome-emoji"><LuWallet size={24} /></span>
                   <div className="ai-chat-welcome-text">
                     <h4>Hey! I'm your budget assistant.</h4>
                     <p>Add expenses in plain English or ask questions about your spending — I'll look up your real data.</p>
@@ -206,7 +207,7 @@ export default function AIChat() {
                         className="btn-confirm"
                         onClick={() => handleConfirmExpense(msg.expenseData, i)}
                       >
-                        ✓ Add Expense
+                        <LuCheck size={14} /> Add Expense
                       </button>
                       <button
                         className="btn-dismiss"
@@ -219,7 +220,7 @@ export default function AIChat() {
                 ) : msg.confirmed ? (
                   <div className="ai-expense-confirm">
                     <p>{msg.content}</p>
-                    <div className="ai-expense-confirmed">✓ Expense added successfully!</div>
+                    <div className="ai-expense-confirmed"><LuCheck size={14} /> Expense added successfully!</div>
                   </div>
                 ) : msg.dismissed ? (
                   <div className="ai-expense-confirm">
@@ -260,7 +261,7 @@ export default function AIChat() {
               disabled={loading || !input.trim()}
               aria-label="Send message"
             >
-              ➤
+              <LuSend size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -273,7 +274,7 @@ export default function AIChat() {
         aria-label={isOpen ? 'Close AI chat' : 'Open AI chat'}
         title={isOpen ? 'Close chat' : 'Open BudgetBuddy AI'}
       >
-        🤖
+        <LuBot size={28} />
       </button>
     </div>
   );

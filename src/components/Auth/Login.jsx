@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import {
+  LuArrowLeft, LuWallet, LuAlertTriangle, LuCheckCircle, LuLogIn,
+} from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
@@ -115,13 +118,13 @@ export default function Login() {
             className="btn-back"
             aria-label="Go back to home"
           >
-            <span>←</span>
+            <LuArrowLeft size={16} />
             Back
           </button>
         </div>
         
         <div className="auth-brand">
-          <div className="auth-logo">💰</div>
+          <div className="auth-logo"><LuWallet size={32} /></div>
           <h2 className="auth-title">Welcome Back</h2>
           <p className="auth-subtitle">Sign in to your BudgetBuddy account</p>
         </div>
@@ -132,7 +135,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-error"
           >
-            <span className="error-icon">⚠️</span>
+            <LuAlertTriangle size={16} className="error-icon" />
             {error}
           </motion.div>
         )}
@@ -143,7 +146,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             className="auth-success"
           >
-            <span>✅</span>
+            <LuCheckCircle size={16} />
             {message}
           </motion.div>
         )}
@@ -198,7 +201,7 @@ export default function Login() {
               </span>
             ) : (
               <>
-                <span>🚀</span>
+                <LuLogIn size={16} />
                 Sign In
               </>
             )}

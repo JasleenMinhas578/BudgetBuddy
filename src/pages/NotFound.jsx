@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { LuWallet, LuHome, LuBarChart2, LuBanknote } from 'react-icons/lu';
 import '../styles/main.css';
 
 export default function NotFound() {
@@ -23,7 +24,7 @@ export default function NotFound() {
           transition={{ duration: 0.6 }}
           className="nav-brand"
         >
-          <div className="brand-icon">💰</div>
+          <div className="brand-icon"><LuWallet size={24} /></div>
           <h1 className="logo">BudgetBuddy</h1>
         </motion.div>
         
@@ -81,11 +82,11 @@ export default function NotFound() {
             className="error-actions"
           >
             <Link to="/" className="btn btn-primary btn-hero">
-              <span>🏠</span>
+              <LuHome size={16} />
               Go Home
             </Link>
             <Link to="/dashboard" className="btn btn-secondary btn-hero">
-              <span>📊</span>
+              <LuBarChart2 size={16} />
               Dashboard
             </Link>
           </motion.div>
@@ -97,7 +98,7 @@ export default function NotFound() {
             className="error-illustration"
           >
             <div className="illustration-container">
-              <div className="money-icon">💸</div>
+              <div className="money-icon"><LuBanknote size={48} /></div>
               <div className="question-mark">?</div>
             </div>
           </motion.div>

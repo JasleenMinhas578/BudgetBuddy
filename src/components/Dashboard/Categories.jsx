@@ -1,12 +1,18 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
+import { LuTag, LuPlus, LuBarChart2, LuChevronDown, LuChevronUp, LuReceipt } from 'react-icons/lu';
+import ExpenseTable from '../UI/ExpenseTable';
 import { addCategory, deleteCategory, subscribeToExpenses, subscribeToCategories } from '../../services/database';
+import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
+import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
+import { useDateRangeContext } from '../../context/DateRangeContext';
 import PieChart from '../Charts/PieChart';
 import BarChart from '../Charts/BarChart';
 import Modal from '../UI/Modal';
 import Toast from '../UI/Toast';
+import ConfirmDialog from '../UI/ConfirmDialog';
 import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
@@ -14,12 +20,24 @@ import '../../styles/modal-forms.css';
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
+  const dateRangeCtx = useDateRangeContext();
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
+  const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
   const { currentUser } = useAuth();
+
+  const toggleCategory = (name) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
  
 
   useEffect(() => {
@@ -82,20 +100,22 @@ export default function Categories() {
     }
   };
 
-  const handleDeleteCategory = async (categoryId, categoryName) => {
+  const handleDeleteCategory = (categoryId, categoryName) => {
     if (!currentUser) {
       setToast({ message: 'Please log in to delete categories.', type: 'error' });
       return;
     }
+    setPendingDeleteCategory({ id: categoryId, name: categoryName });
+  };
 
-    if (!window.confirm(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`)) {
-      return;
-    }
-
+  const confirmDeleteCategory = async () => {
+    if (!pendingDeleteCategory) return;
+    const { id, name } = pendingDeleteCategory;
+    setPendingDeleteCategory(null);
     setIsLoading(true);
     try {
-      await deleteCategory(currentUser.uid, categoryId);
-      setToast({ message: `Category "${categoryName}" deleted successfully!`, type: 'success' });
+      await deleteCategory(currentUser.uid, id);
+      setToast({ message: `Category "${name}" deleted successfully!`, type: 'success' });
     } catch (error) {
       console.error('Error deleting category:', error);
       setToast({ message: 'Failed to delete category. Please try again.', type: 'error' });
@@ -106,20 +126,20 @@ export default function Categories() {
 
   // Default categories that are always available
   const defaultCategories = [
-    { id: 'food', name: 'Food', icon: '🍕' },
-    { id: 'transport', name: 'Transport', icon: '🚗' },
-    { id: 'entertainment', name: 'Entertainment', icon: '🎬' },
-    { id: 'utilities', name: 'Utilities', icon: '💡' },
-    { id: 'rent', name: 'Rent', icon: '🏠' },
-    { id: 'other', name: 'Other', icon: '📦' }
+    { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
+    { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
+    { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
+    { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
+    { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
+    { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
   ];
-
 
   // Combine default and custom categories
   const allCategories = [
     ...defaultCategories,
-    ...categories.filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
-      .map(cat => ({ ...cat, icon: '📊' }))
+    ...categories
+      .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
+      .map(cat => ({ ...cat, Icon: LuTag })),
   ];
 
   // Prepare data for charts
@@ -164,10 +184,7 @@ export default function Categories() {
           label.trim() !== '') {
         filteredLabels.push(label);
         filteredData.push(value);
-        filteredColors.push([
-          '#4fd1c5', '#f687b3', '#f6ad55', '#68d391', '#63b3ed', '#b794f4',
-          '#fc8181', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb7185'
-        ][index % 12]);
+        filteredColors.push(getCategoryColor(label));
       }
     });
     
@@ -202,7 +219,7 @@ export default function Categories() {
           <p className="section-subtitle">Analyze your spending by category</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-          <span>➕</span>
+          <LuPlus size={16} />
           Add Category
         </button>
       </div>
@@ -273,20 +290,23 @@ export default function Categories() {
               const percentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
               const isDefaultCategory = defaultCategories.some(dc => dc.name === category.name);
               
+              const isExpanded = expandedCategories.has(category.name);
+              const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
+
               return (
-                <div key={category.id} className="category-card">
+                <div key={category.id} className={`category-card${isExpanded ? ' category-card--expanded' : ''}`}>
                   <div className="category-card-header">
                     <div className="category-icon-large">
-                      <span>{category.icon}</span>
+                      <category.Icon size={22} />
                     </div>
                     <div className="category-info">
                       <h4>{category.name}</h4>
                       <p className="category-amount">${categoryAmount.toFixed(2)}</p>
                     </div>
-                    {!isDefaultCategory && (
-                      <div className="category-actions">
+                    <div className="category-actions">
+                      {!isDefaultCategory && (
                         <button
-                          onClick={() => handleDeleteCategory(category.id, category.name)}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id, category.name); }}
                           className="btn-delete"
                           disabled={isLoading}
                           title="Delete category"
@@ -298,25 +318,45 @@ export default function Categories() {
                             <line x1="14" y1="11" x2="14" y2="17"></line>
                           </svg>
                         </button>
-                      </div>
-                    )}
+                      )}
+                      <button
+                        className="btn-expand"
+                        onClick={() => toggleCategory(category.name)}
+                        title={isExpanded ? 'Collapse' : 'Show expenses'}
+                        aria-expanded={isExpanded}
+                      >
+                        {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
+                      </button>
+                    </div>
                   </div>
                   <div className="category-progress">
                     <div className="progress-bar">
-                      <div 
-                        className="progress-fill" 
+                      <div
+                        className="progress-fill"
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
                     <span className="progress-text">{percentage.toFixed(1)}%</span>
                   </div>
+
+                  {isExpanded && (
+                    <div className="category-expenses-panel">
+                      <ExpenseTable
+                        expenses={categoryExpenses}
+                        itemsPerPage={5}
+                        emptyIcon={<LuReceipt size={32} />}
+                        emptyMessage="No expenses in this category"
+                        emptySubMessage="Try a different date range"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">📊</div>
+            <div className="empty-icon"><LuBarChart2 size={48} /></div>
             <h4>No categories available</h4>
             <p>Add custom categories to start organizing your expenses</p>
             <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
@@ -360,6 +400,15 @@ export default function Categories() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!pendingDeleteCategory}
+        title="Delete Category"
+        message={pendingDeleteCategory ? <>Are you sure you want to delete <strong>"{pendingDeleteCategory.name}"</strong>? This cannot be undone.</> : ''}
+        onConfirm={confirmDeleteCategory}
+        onCancel={() => setPendingDeleteCategory(null)}
+        variant="danger"
+      />
     </div>
   );
 }

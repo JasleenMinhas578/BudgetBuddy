@@ -1,22 +1,33 @@
 import { forwardRef } from 'react';
 import { NavLink } from 'react-router-dom';
+import {
+  LuLayoutDashboard,
+  LuCreditCard,
+  LuTag,
+  LuBarChart2,
+  LuSettings,
+  LuLogOut,
+  LuX,
+  LuChevronLeft,
+  LuChevronRight,
+} from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import '../../styles/main.css';
 
-const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile }, ref) => {
-  const { currentUser, logout } = useAuth();
+const navItems = [
+  { path: '/dashboard',            label: 'Dashboard',  Icon: LuLayoutDashboard },
+  { path: '/dashboard/expenses',   label: 'Expenses',   Icon: LuCreditCard      },
+  { path: '/dashboard/categories', label: 'Categories', Icon: LuTag             },
+  { path: '/dashboard/reports',    label: 'Reports',    Icon: LuBarChart2       },
+  { path: '/dashboard/settings',   label: 'Settings',   Icon: LuSettings        },
+];
 
-  const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/dashboard/expenses', label: 'Expenses', icon: '💸' },
-    { path: '/dashboard/categories', label: 'Categories', icon: '📂' },
-    { path: '/dashboard/reports', label: 'Reports', icon: '📈' },
-    { path: '/dashboard/settings', label: 'Settings', icon: '⚙️' }
-  ];
+const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile, onLogoutClick }, ref) => {
+  const { currentUser } = useAuth();
 
   return (
-    <div 
+    <div
       ref={ref}
       className={`sidebar ${sidebarOpen ? 'open' : ''} ${isDragging ? 'dragging' : ''} ${isMobile ? 'mobile' : 'desktop'}`}
       onTouchStart={onTouchStart}
@@ -25,57 +36,54 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
       <div className="sidebar-header">
         <div className="sidebar-logo-container">
           <BudgetBuddyLogo size={36} />
-        <h1 className="sidebar-logo">BudgetBuddy</h1>
+          <h1 className="sidebar-logo">BudgetBuddy</h1>
         </div>
+
         {isMobile ? (
-          <button 
+          <button
             className="sidebar-close"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           >
-            ✕
+            <LuX size={16} />
           </button>
         ) : (
-          <button 
+          <button
             className="sidebar-toggle"
             onClick={(e) => {
               e.stopPropagation();
               setSidebarOpen(!sidebarOpen);
             }}
             aria-label="Toggle sidebar"
-            title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+            title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
           >
-            {sidebarOpen ? '◀' : '▶'}
+            {sidebarOpen ? <LuChevronLeft size={16} /> : <LuChevronRight size={16} />}
           </button>
         )}
       </div>
-      
+
       <nav className="sidebar-nav">
-        {navItems.map((item) => (
-        <NavLink 
-            key={item.path}
-            to={item.path} 
-            end={item.path === '/dashboard'}
-          className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}
+        {navItems.map(({ path, label, Icon }) => (
+          <NavLink
+            key={path}
+            to={path}
+            end={path === '/dashboard'}
+            className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
             onClick={(e) => {
-              // Prevent drag events from interfering with navigation
               e.stopPropagation();
-              // Close sidebar on mobile after navigation
-              if (isMobile) {
-                setTimeout(() => setSidebarOpen(false), 150);
-              }
+              if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
             }}
-        >
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-        </NavLink>
+          >
+            <span className="nav-icon"><Icon size={18} /></span>
+            <span className="nav-label">{label}</span>
+          </NavLink>
         ))}
       </nav>
-      
+
       <div className="sidebar-footer">
         {currentUser && (
           <div className="user-section">
-          <div className="user-info">
+            <div className="user-info">
               <div className="user-avatar-container">
                 <div className="user-avatar">
                   <span>{(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}</span>
@@ -87,8 +95,8 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
               )}
               <p className="user-email">{currentUser.email}</p>
             </div>
-            <button onClick={logout} className="btn btn-secondary btn-logout">
-              <span>🚪</span>
+            <button type="button" onClick={onLogoutClick} className="btn btn-secondary btn-logout">
+              <LuLogOut size={15} />
               Logout
             </button>
           </div>

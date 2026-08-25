@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LuUser, LuLock } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/main.css';
 
@@ -56,7 +57,7 @@ export default function Settings() {
       {/* Display Name */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <span className="settings-card-icon">👤</span>
+          <span className="settings-card-icon"><LuUser size={22} /></span>
           <div>
             <h2 className="settings-card-title">Display Name</h2>
             <p className="settings-card-desc">This name appears across your dashboard.</p>
@@ -89,7 +90,7 @@ export default function Settings() {
       {/* Change Password */}
       <div className="settings-card">
         <div className="settings-card-header">
-          <span className="settings-card-icon">🔒</span>
+          <span className="settings-card-icon"><LuLock size={22} /></span>
           <div>
             <h2 className="settings-card-title">Change Password</h2>
             <p className="settings-card-desc">

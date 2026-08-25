@@ -263,6 +263,7 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
 | **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM (Large Language Model — AI that understands natural language) for the AI chat feature. Handles expense intent detection, auto-categorization, and spending queries. Called directly from the browser via REST with no backend required. | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
+| **react-icons (Lucide)** | [react-icons](https://react-icons.github.io/react-icons/) | Provides a consistent SVG icon library (`react-icons/lu` — Lucide set) used throughout the app. Replaces emoji with properly sized, theme-aware vector icons. Tree-shakeable so only imported icons are included in the bundle. | Heroicons (separate package), Phosphor Icons (larger), Font Awesome (icon font, not SVG) |
 
 
 ## 🏗️ Architecture
@@ -295,16 +296,22 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 src/
 ├── components/
 │   ├── AI/            # AIChat — floating AI chat widget (Gemini)
-│   ├── Auth/          # Login, Signup
-│   ├── Dashboard/     # Overview, Expenses, Categories, Reports
-│   ├── Expense/       # ExpenseForm, ExpenseList
+│   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword
+│   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
+│   ├── Expense/       # ExpenseForm
 │   ├── Charts/        # PieChart, BarChart, LineChart
-│   ├── Layout/        # Navbar, Sidebar
-│   └── UI/            # Modal, Toast
-├── context/           # AuthContext
+│   ├── Layout/        # Navbar, Navigation, Sidebar
+│   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog, BudgetBuddyLogo, ExpenseTable
+├── context/           # AuthContext, DateRangeContext
+├── hooks/             # useDateFilter
 ├── services/
 │   ├── database.js    # Firebase CRUD operations
 │   └── aiService.js   # Gemini API integration
+├── styles/            # main.css (design tokens), modal.css, modal-forms.css
+├── utils/
+│   ├── getCategoryIcon.js   # Returns Lucide icon JSX for a given category name
+│   ├── getCategoryColor.js  # Deterministic colour per category (used by charts)
+│   └── formatDate.js        # Date formatting helpers
 └── firebaseConfig.js  # Firebase initialization
 ```
 

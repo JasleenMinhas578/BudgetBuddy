@@ -1,29 +1,30 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
+import { LuPlus, LuFileText } from 'react-icons/lu';
 import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/database';
-import { formatDate } from '../../utils/formatDate';
-import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
+import { useDateRangeContext } from '../../context/DateRangeContext';
 import Toast from '../UI/Toast';
 import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 import ExpenseForm from '../Expense/ExpenseForm';
 import Modal from '../UI/Modal';
-import Pagination from '../UI/Pagination';
+import ExpenseTable from '../UI/ExpenseTable';
+import ConfirmDialog from '../UI/ConfirmDialog';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
+  const dateRangeCtx = useDateRangeContext();
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [toast, setToast] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
 
   const { currentUser } = useAuth();
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isEditExpenseFormOpen, setIsEditExpenseFormOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -47,23 +48,19 @@ export default function Expenses() {
 
 
 
-  const handleDeleteExpense = async (id) => {
-    if (!currentUser) return;
-    const expense = expenses.find(exp => exp.id === id);
-    if (window.confirm(`Are you sure you want to delete the expense "${expense?.title}" for $${(typeof expense?.amount === 'number' ? expense.amount : 0).toFixed(2)}?`)) {
-      try {
-        await deleteExpense(currentUser.uid, id);
-        setToast({
-          message: 'Expense deleted successfully!',
-          type: 'success'
-        });
-      } catch (error) {
-        console.error('Error deleting expense: ', error);
-        setToast({
-          message: 'Failed to delete expense. Please try again.',
-          type: 'error'
-        });
-      }
+  const handleDeleteExpense = (id) => {
+    setPendingDeleteId(id);
+  };
+
+  const confirmDeleteExpense = async () => {
+    if (!currentUser || !pendingDeleteId) return;
+    setPendingDeleteId(null);
+    try {
+      await deleteExpense(currentUser.uid, pendingDeleteId);
+      setToast({ message: 'Expense deleted successfully!', type: 'success' });
+    } catch (error) {
+      console.error('Error deleting expense: ', error);
+      setToast({ message: 'Failed to delete expense. Please try again.', type: 'error' });
     }
   };
 
@@ -102,19 +99,6 @@ export default function Expenses() {
 
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
-
-  // Reset to first page when filtered expenses change
-  useEffect(() => {
-    if (currentPage > Math.max(1, totalPages)) {
-      setCurrentPage(1);
-    }
-  }, [filteredExpenses.length, currentPage, totalPages]);
-
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
     // Optionally, refresh expenses here if needed
@@ -148,7 +132,7 @@ export default function Expenses() {
           <p className="section-subtitle">Track and manage your expenses</p>
         </div>
         <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
-          <span>➕</span>
+          <LuPlus size={16} />
           Add Expense
         </button>
       </div>
@@ -180,90 +164,24 @@ export default function Expenses() {
             onChange={setDateFilter}
             customDateRange={customDateRange}
             onCustomDateRangeChange={setCustomDateRange}
-            onPageReset={() => setCurrentPage(1)}
           />
         </div>
       </div>
 
-      <div className="expenses-table-container">
-        {filteredExpenses.length > 0 ? (
-          <>
-        <table className="expenses-table">
-          <thead>
-            <tr>
-                <th>Category</th>
-              <th>Title</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedExpenses.map((expense) => (
-              <tr key={expense.id}>
-                  <td>
-                    <div className="category-cell">
-                      <span className="category-icon">{getCategoryIcon(expense.category)}</span>
-                      <span className="category-name">{expense.category}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="title-cell">
-                      <span className="expense-title">{expense.title}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="amount-cell">${expense.amount.toFixed(2)}</span>
-                  </td>
-                  <td>
-                    <span className="date-cell">{formatDate(expense.date)}</span>
-                  </td>
-                <td>
-                    <div className="action-buttons">
-                      <button 
-                        onClick={() => handleEditExpense(expense)}
-                        className="btn btn-secondary btn-sm edit-btn"
-                        title="Edit expense"
-                      >
-                        <span className="edit-icon">✏️</span>
-                      </button>
-                  <button 
-                    onClick={() => handleDeleteExpense(expense.id)}
-                        className="btn btn-danger btn-sm delete-btn"
-                        title="Delete expense"
-                  >
-                        <span className="delete-icon">🗑️</span>
-                  </button>
-                    </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredExpenses.length}
-          />
-        )}
-        </>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-icon">📝</div>
-            <h4>{expenses.length === 0 ? 'No expenses yet' : 'No expenses in this period'}</h4>
-            <p>{expenses.length === 0 ? 'Start tracking your expenses to see them here' : 'Try a different date range or add a new expense'}</p>
-            {expenses.length === 0 && (
-              <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
-                Add First Expense
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      <ExpenseTable
+        expenses={filteredExpenses}
+        onEdit={handleEditExpense}
+        onDelete={handleDeleteExpense}
+        itemsPerPage={15}
+        emptyIcon={<LuFileText size={48} />}
+        emptyMessage={expenses.length === 0 ? 'No expenses yet' : 'No expenses in this period'}
+        emptySubMessage={expenses.length === 0 ? 'Start tracking your expenses to see them here' : 'Try a different date range or add a new expense'}
+        emptyAction={expenses.length === 0 ? (
+          <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
+            Add First Expense
+          </button>
+        ) : null}
+      />
       
       {/* Expense Form Modal */}
       <Modal isOpen={isExpenseFormOpen} onClose={closeAddExpenseModal}>
@@ -287,6 +205,21 @@ export default function Expenses() {
           isEditMode={true}
         />
       </Modal>
+
+      {(() => {
+        const expense = expenses.find(e => e.id === pendingDeleteId);
+        const amount = expense ? (typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2) : '0.00';
+        return (
+          <ConfirmDialog
+            isOpen={!!pendingDeleteId}
+            title="Delete Expense"
+            message={expense ? <>Are you sure you want to delete <strong>"{expense.title}"</strong> for ${amount}?</> : 'Are you sure you want to delete this expense?'}
+            onConfirm={confirmDeleteExpense}
+            onCancel={() => setPendingDeleteId(null)}
+            variant="danger"
+          />
+        );
+      })()}
     </div>
   );
 }

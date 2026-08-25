@@ -3,10 +3,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Layout/Sidebar';
 import Navbar from '../components/Layout/Navbar';
+import ConfirmDialog from '../components/UI/ConfirmDialog';
+import { useAuth } from '../context/AuthContext';
 import '../styles/main.css';
 
 
 export default function Dashboard() {
+  const { logout } = useAuth();
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
@@ -211,23 +215,33 @@ export default function Dashboard() {
         />
       )}
       
-      <Sidebar 
+      <Sidebar
         ref={sidebarRef}
-        sidebarOpen={sidebarOpen} 
+        sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onTouchStart={handleTouchStart}
         onMouseDown={handleMouseDown}
         isDragging={isDragging}
         isMobile={isMobile()}
+        onLogoutClick={() => setLogoutDialogOpen(true)}
       />
-      
+
       <div className="dashboard-main">
-        <Navbar setSidebarOpen={setSidebarOpen} />
+        <Navbar setSidebarOpen={setSidebarOpen} onLogoutClick={() => setLogoutDialogOpen(true)} />
         
         <div className="dashboard-content">
           <Outlet />
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={logoutDialogOpen}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        onConfirm={logout}
+        onCancel={() => setLogoutDialogOpen(false)}
+        variant="default"
+      />
     </div>
   );
 }

@@ -1,15 +1,23 @@
 /* istanbul ignore file */
 import { useState, useEffect, useRef } from 'react';
-import { getCategoryIcon } from '../../utils/getCategoryIcon';
+import {
+  LuUpload, LuFileText, LuFileSpreadsheet, LuLoader,
+  LuX, LuSparkles, LuZap,
+  LuLightbulb,
+  LuDollarSign, LuReceipt, LuTrendingUp, LuAward,
+  LuBarChart2,
+} from 'react-icons/lu';
+import { getCategoryColor } from '../../utils/getCategoryColor';
+import ExpenseTable from '../UI/ExpenseTable';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
+import { useDateRangeContext } from '../../context/DateRangeContext';
 import { format, parseISO, parse } from 'date-fns';
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
 import jsPDF from 'jspdf';
-import Pagination from '../UI/Pagination';
 import { generateSummary } from '../../services/aiService';
 import '../../styles/main.css';
 
@@ -22,15 +30,14 @@ const safeFormatDate = (dateStr, fmt) => {
 
 export default function Reports() {
   const [expenses, setExpenses] = useState([]);
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'all');
+  const dateRangeCtx = useDateRangeContext();
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [aiSummary, setAiSummary] = useState(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState(null);
   const exportDropdownRef = useRef(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
   const { currentUser } = useAuth();
 
 
@@ -81,10 +88,7 @@ export default function Reports() {
       labels,
       datasets: [{
         data,
-        backgroundColor: [
-          '#4fd1c5', '#f687b3', '#f6ad55', '#68d391', '#63b3ed', '#b794f4',
-          '#fc8181', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#fb7185'
-        ]
+        backgroundColor: labels.map(l => getCategoryColor(l))
       }]
     };
   };
@@ -333,18 +337,6 @@ export default function Reports() {
   const monthlyData = getMonthlyData();
   const { topCategory, maxAmount } = getTopCategory();
 
-  // Pagination logic for expenses table
-  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
-
-  // Reset to first page when filtered expenses change
-  useEffect(() => {
-    if (currentPage > Math.max(1, totalPages)) {
-      setCurrentPage(1);
-    }
-  }, [filteredExpenses.length, currentPage, totalPages]);
 
   const getFilterLabel = () => {
     switch (dateFilter) {
@@ -415,24 +407,24 @@ export default function Reports() {
             disabled={aiSummaryLoading || filteredExpenses.length === 0}
             className="btn btn-ai-summary"
           >
-            <span>{aiSummaryLoading ? '⏳' : '✨'}</span>
+            {aiSummaryLoading ? <LuLoader size={15} /> : <LuSparkles size={15} />}
             {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
           </button>
           <button
             onClick={() => setShowExportOptions(!showExportOptions)}
             className="btn btn-secondary"
           >
-            <span>📤</span>
+            <LuUpload size={15} />
             Export
           </button>
           {showExportOptions && (
             <div className="export-dropdown">
               <button onClick={generatePDF} className="export-option" disabled={isGeneratingPDF}>
-                <span>{isGeneratingPDF ? '⏳' : '📄'}</span>
+                {isGeneratingPDF ? <LuLoader size={14} /> : <LuFileText size={14} />}
                 {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
               </button>
               <button onClick={exportToCSV} className="export-option">
-                <span>📊</span>
+                <LuFileSpreadsheet size={14} />
                 Export as CSV
               </button>
             </div>
@@ -473,14 +465,14 @@ export default function Reports() {
           <div className="ai-summary-card">
             <div className="ai-summary-header">
               <div className="ai-summary-title">
-                <span>✨</span>
+                <LuSparkles size={16} />
                 <h3>AI Spending Summary</h3>
               </div>
               <button
                 className="ai-summary-close"
                 onClick={() => { setAiSummary(null); setAiSummaryError(null); }}
                 aria-label="Close summary"
-              >✕</button>
+              ><LuX size={14} /></button>
             </div>
             <div className="ai-summary-body">
               {aiSummaryError ? (
@@ -491,7 +483,7 @@ export default function Reports() {
             </div>
             {!aiSummaryError && (
               <div className="ai-summary-footer">
-                <span className="ai-summary-powered">⚡ Powered by Gemini</span>
+                <span className="ai-summary-powered"><LuZap size={12} /> Powered by Gemini</span>
                 <button
                   className="ai-summary-regenerate"
                   onClick={handleGenerateSummary}
@@ -507,11 +499,10 @@ export default function Reports() {
         {/* Spending Insights */}
         {spendingInsights.length > 0 && (
           <div className="insights-section">
-            <h3>💡 Spending Insights</h3>
+            <h3 className="section-heading-icon"><LuLightbulb size={18} /> Spending Insights</h3>
             <div className="insights-list">
               {spendingInsights.map((insight, index) => (
                 <div key={index} className="insight-item">
-                  <span>💡</span>
                   <p>{insight}</p>
                 </div>
               ))}
@@ -522,9 +513,7 @@ export default function Reports() {
         {/* Summary Cards */}
         <div className="summary-cards">
           <div className="summary-card">
-            <div className="card-icon">
-              <span>💰</span>
-            </div>
+            <div className="card-icon"><LuDollarSign size={26} /></div>
             <div className="card-content">
               <h3>Total Spent</h3>
               <p className="card-amount">${totalAmount.toFixed(2)}</p>
@@ -533,9 +522,7 @@ export default function Reports() {
           </div>
 
           <div className="summary-card">
-            <div className="card-icon">
-              <span>📊</span>
-            </div>
+            <div className="card-icon"><LuReceipt size={26} /></div>
             <div className="card-content">
               <h3>Transactions</h3>
               <p className="card-amount">{filteredExpenses.length}</p>
@@ -544,9 +531,7 @@ export default function Reports() {
           </div>
 
           <div className="summary-card">
-            <div className="card-icon">
-              <span>📈</span>
-            </div>
+            <div className="card-icon"><LuTrendingUp size={26} /></div>
             <div className="card-content">
               <h3>Average</h3>
               <p className="card-amount">${averageAmount.toFixed(2)}</p>
@@ -555,9 +540,7 @@ export default function Reports() {
           </div>
 
           <div className="summary-card">
-            <div className="card-icon">
-              <span>🏆</span>
-            </div>
+            <div className="card-icon"><LuAward size={26} /></div>
             <div className="card-content">
               <h3>Top Category</h3>
               <p className="card-amount">
@@ -571,7 +554,7 @@ export default function Reports() {
         {/* Charts Section */}
         <div className="charts-section-wrapper">
           <div className="section-subheader">
-            <h3>📊 Charts & Visualizations</h3>
+            <h3 className="section-heading-icon"><LuBarChart2 size={18} /> Charts & Visualizations</h3>
           </div>
           <div className="charts-section">
             <div className="chart-container">
@@ -601,63 +584,13 @@ export default function Reports() {
             <p>Complete breakdown of all transactions in the selected period</p>
           </div>
           
-          {filteredExpenses.length > 0 ? (
-            <>
-            <div className="expenses-table-container">
-              <table className="expenses-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Title</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginatedExpenses.map((expense) => (
-                    <tr key={expense.id}>
-                      <td>
-                        <span className="date-cell">
-                          {safeFormatDate(expense.date, 'MMM dd, yyyy') || '—'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="category-cell">
-                          <span className="category-icon">
-                            {getCategoryIcon(expense.category)}
-                          </span>
-                          <span className="category-name">{expense.category}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="expense-title">{expense.title}</span>
-                      </td>
-                      <td>
-                        <span className="amount-cell">${expense.amount.toFixed(2)}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={itemsPerPage}
-                totalItems={filteredExpenses.length}
-              />
-            )}
-            </>
-          ) : (
-            <div className="empty-state">
-              <div className="empty-icon">📊</div>
-              <h4>No expenses found</h4>
-              <p>No expenses match the selected date range</p>
-            </div>
-          )}
+          <ExpenseTable
+            expenses={filteredExpenses}
+            itemsPerPage={15}
+            emptyIcon={<LuBarChart2 size={48} />}
+            emptyMessage="No expenses found"
+            emptySubMessage="No expenses match the selected date range"
+          />
         </div>
       </div>
     </div>
