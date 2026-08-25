@@ -14450,6 +14450,104 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* AI Summary Button (in Reports header) */
+.btn-ai-summary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+}
+.btn-ai-summary:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+.btn-ai-summary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* AI Summary Card */
+.ai-summary-card {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.ai-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+.ai-summary-icon {
+  font-size: 1.1rem;
+}
+.ai-summary-header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #c4b5fd;
+}
+.ai-summary-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.55);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.ai-summary-close:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.ai-summary-text {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.82);
+}
+.ai-summary-error {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #fca5a5;
+}
+.ai-summary-regenerate {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.ai-summary-regenerate:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+.ai-summary-regenerate:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Chart Cards */
 .chart-card {
   background: rgba(30, 41, 59, 0.95);
@@ -14987,4 +15085,95 @@
 .summary-stat:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Date filter bar (Expenses & Categories pages) ===== */
+.date-filter-bar {
+  margin: 1rem 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.date-filter-bar .filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.date-filter-bar .filter-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.date-filter-bar .filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.date-filter-bar .filter-btn.active {
+  background: rgba(79, 209, 197, 0.15);
+  border-color: #4fd1c5;
+  color: #4fd1c5;
+  font-weight: 600;
+}
+.custom-date-inputs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+.custom-date-inputs .date-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.custom-date-inputs .date-input label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+.custom-date-inputs .date-input input[type="date"] {
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.custom-date-inputs .date-input input[type="date"]:focus {
+  outline: none;
+  border-color: #4fd1c5;
+}
+
+/* ===== Category form modal — kill the inner-card duplication from earlier blocks ===== */
+.category-form {
+  max-width: 100%;
+  margin: 0;
+}
+.modal-content form.category-form {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0 1.5rem 1.5rem;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+}
+.modal-content .category-form .form-actions {
+  border-top: none;
+  padding-top: 0.5rem;
+  margin-top: 0;
+}
+
+/* Reduce gap between summary stats and filter card */
+.expenses-container .filter-controls,
+.categories-container .filter-controls {
+  margin-top: 0.5rem;
 }

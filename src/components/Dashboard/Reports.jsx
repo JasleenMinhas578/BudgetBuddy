@@ -1,26 +1,27 @@
 /* istanbul ignore file */
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears, parseISO } from 'date-fns';
+import { useDateFilter } from '../../hooks/useDateFilter';
+import { format, parseISO } from 'date-fns';
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
+import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
 import jsPDF from 'jspdf';
 import Pagination from '../UI/Pagination';
+import { generateSummary } from '../../services/aiService';
 import '../../styles/main.css';
 
 export default function Reports() {
   const [expenses, setExpenses] = useState([]);
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
-  const [dateFilter, setDateFilter] = useState('all');
-  const [customDateRange, setCustomDateRange] = useState({
-    startDate: format(new Date(), 'yyyy-MM-dd'),
-    endDate: format(new Date(), 'yyyy-MM-dd')
-  });
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'all');
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [aiSummary, setAiSummary] = useState(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
+  const [aiSummaryError, setAiSummaryError] = useState(null);
   const exportDropdownRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -77,80 +78,6 @@ export default function Reports() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportOptions]);
-
-  const filterExpenses = useCallback(() => {
-    let filtered = [...expenses];
-    switch (dateFilter) {
-      case 'today': {
-        const today = format(new Date(), 'yyyy-MM-dd');
-        filtered = expenses.filter(expense => expense.date === today);
-        break;
-      }
-      case 'thisMonth': {
-        const now = new Date();
-        const startOfThisMonth = startOfMonth(now);
-        const endOfThisMonth = endOfMonth(now);
-        filtered = expenses.filter(expense => {
-          const expenseDate = parseISO(expense.date);
-          return expenseDate >= startOfThisMonth && expenseDate <= endOfThisMonth;
-        });
-        break;
-      }
-      case 'lastMonth': {
-        const lastMonth = subMonths(new Date(), 1);
-        const startOfLastMonth = startOfMonth(lastMonth);
-        const endOfLastMonth = endOfMonth(lastMonth);
-        filtered = expenses.filter(expense => {
-          const expenseDate = parseISO(expense.date);
-          return expenseDate >= startOfLastMonth && expenseDate <= endOfLastMonth;
-        });
-        break;
-      }
-      case 'thisYear': {
-        const thisYear = new Date();
-        const startOfThisYear = startOfYear(thisYear);
-        const endOfThisYear = endOfYear(thisYear);
-        filtered = expenses.filter(expense => {
-          const expenseDate = parseISO(expense.date);
-          return expenseDate >= startOfThisYear && expenseDate <= endOfThisYear;
-        });
-        break;
-      }
-      case 'lastYear': {
-        const lastYear = subYears(new Date(), 1);
-        const startOfLastYear = startOfYear(lastYear);
-        const endOfLastYear = endOfYear(lastYear);
-        filtered = expenses.filter(expense => {
-          const expenseDate = parseISO(expense.date);
-          return expenseDate >= startOfLastYear && expenseDate <= endOfLastYear;
-        });
-        break;
-      }
-      case 'custom': {
-        filtered = expenses.filter(expense => {
-          const expenseDate = parseISO(expense.date);
-          const startDate = parseISO(customDateRange.startDate);
-          const endDate = parseISO(customDateRange.endDate);
-          return expenseDate >= startDate && expenseDate <= endDate;
-        });
-        break;
-      }
-      default:
-        filtered = expenses;
-    }
-    // Sort filtered expenses by date (most recent first)
-    filtered.sort((a, b) => {
-      if (a.date && b.date) {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      }
-      return 0;
-    });
-    setFilteredExpenses(filtered);
-  }, [expenses, dateFilter, customDateRange]);
-
-  useEffect(() => {
-    filterExpenses();
-  }, [expenses, dateFilter, customDateRange, filterExpenses]);
 
   const getCategoryData = () => {
     const categoryMap = {};
@@ -441,6 +368,26 @@ export default function Reports() {
     }
   };
 
+  // Clear summary whenever the date filter changes so it doesn't show stale data
+  useEffect(() => {
+    setAiSummary(null);
+    setAiSummaryError(null);
+  }, [dateFilter, customDateRange]);
+
+  const handleGenerateSummary = async () => {
+    setAiSummaryLoading(true);
+    setAiSummaryError(null);
+    setAiSummary(null);
+    try {
+      const summary = await generateSummary(filteredExpenses, getFilterLabel());
+      setAiSummary(summary);
+    } catch (err) {
+      setAiSummaryError(err.message);
+    } finally {
+      setAiSummaryLoading(false);
+    }
+  };
+
   const getSpendingInsights = () => {
     if (filteredExpenses.length === 0) return [];
     const insights = [];
@@ -468,6 +415,14 @@ export default function Reports() {
         </div>
         <div className="export-actions" ref={exportDropdownRef}>
           <button
+            onClick={handleGenerateSummary}
+            disabled={aiSummaryLoading || filteredExpenses.length === 0}
+            className="btn btn-ai-summary"
+          >
+            <span>{aiSummaryLoading ? '⏳' : '✨'}</span>
+            {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
+          </button>
+          <button
             onClick={() => setShowExportOptions(!showExportOptions)}
             className="btn btn-secondary"
           >
@@ -493,73 +448,13 @@ export default function Reports() {
       <div className="filter-controls">
         <div className="filter-section">
           <h3>Date Range</h3>
-          <div className="filter-buttons">
-            <button 
-              className={`filter-btn ${dateFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setDateFilter('all')}
-            >
-              All Time
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'today' ? 'active' : ''}`}
-              onClick={() => setDateFilter('today')}
-            >
-              Today
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'thisMonth' ? 'active' : ''}`}
-              onClick={() => setDateFilter('thisMonth')}
-            >
-              This Month
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'lastMonth' ? 'active' : ''}`}
-              onClick={() => setDateFilter('lastMonth')}
-            >
-              Last Month
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'thisYear' ? 'active' : ''}`}
-              onClick={() => setDateFilter('thisYear')}
-            >
-              This Year
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'lastYear' ? 'active' : ''}`}
-              onClick={() => setDateFilter('lastYear')}
-            >
-              Last Year
-            </button>
-            <button 
-              className={`filter-btn ${dateFilter === 'custom' ? 'active' : ''}`}
-              onClick={() => setDateFilter('custom')}
-            >
-              Custom Range
-            </button>
-          </div>
-          
-          {dateFilter === 'custom' && (
-            <div className="custom-date-range">
-              <div className="date-inputs">
-                <div className="date-input">
-                  <label>Start Date</label>
-                  <input
-                    type="date"
-                    value={customDateRange.startDate}
-                    onChange={(e) => setCustomDateRange({...customDateRange, startDate: e.target.value})}
-                  />
-                </div>
-                <div className="date-input">
-                  <label>End Date</label>
-                  <input
-                    type="date"
-                    value={customDateRange.endDate}
-                    onChange={(e) => setCustomDateRange({...customDateRange, endDate: e.target.value})}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <DateFilterBar
+            dateFilter={dateFilter}
+            onChange={setDateFilter}
+            customDateRange={customDateRange}
+            onCustomDateRangeChange={setCustomDateRange}
+            buttons={FILTER_BUTTONS_REPORTS}
+          />
         </div>
       </div>
 
@@ -568,7 +463,6 @@ export default function Reports() {
         {/* Current Filter Display */}
         <div className="filter-display">
           <div className="filter-badge">
-            <span>📅</span>
             {getFilterLabel()}
           </div>
           <div className="filter-stats">
@@ -577,6 +471,35 @@ export default function Reports() {
             <span>${totalAmount.toFixed(2)} total</span>
           </div>
         </div>
+
+        {/* AI Summary Card */}
+        {(aiSummary || aiSummaryError) && (
+          <div className="ai-summary-card">
+            <div className="ai-summary-header">
+              <span className="ai-summary-icon">✨</span>
+              <h3>AI Spending Summary</h3>
+              <button
+                className="ai-summary-close"
+                onClick={() => { setAiSummary(null); setAiSummaryError(null); }}
+                aria-label="Close summary"
+              >✕</button>
+            </div>
+            {aiSummaryError ? (
+              <p className="ai-summary-error">{aiSummaryError}</p>
+            ) : (
+              <>
+                <p className="ai-summary-text">{aiSummary}</p>
+                <button
+                  className="ai-summary-regenerate"
+                  onClick={handleGenerateSummary}
+                  disabled={aiSummaryLoading}
+                >
+                  ↻ Regenerate
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Spending Insights */}
         {spendingInsights.length > 0 && (

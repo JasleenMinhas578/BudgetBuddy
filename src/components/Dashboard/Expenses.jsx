@@ -5,7 +5,9 @@ import { formatDate } from '../../utils/formatDate';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useDateFilter } from '../../hooks/useDateFilter';
 import Toast from '../UI/Toast';
+import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 import ExpenseForm from '../Expense/ExpenseForm';
@@ -14,6 +16,7 @@ import Pagination from '../UI/Pagination';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
   const [toast, setToast] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -131,20 +134,20 @@ export default function Expenses() {
     }
   };
 
-  const totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   // Pagination logic
-  const totalPages = Math.ceil(expenses.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedExpenses = expenses.slice(startIndex, endIndex);
+  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
 
-  // Reset to first page when expenses change
+  // Reset to first page when filtered expenses change
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(1);
     }
-  }, [expenses.length, currentPage, totalPages]);
+  }, [filteredExpenses.length, currentPage, totalPages]);
 
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
@@ -192,18 +195,32 @@ export default function Expenses() {
         </div>
         <div className="summary-stat">
           <span className="stat-label">Total Transactions</span>
-          <span className="stat-value">{expenses.length}</span>
+          <span className="stat-value">{filteredExpenses.length}</span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">Average Amount</span>
           <span className="stat-value">
-            ${expenses.length > 0 ? (totalAmount / expenses.length).toFixed(2) : '0.00'}
+            ${filteredExpenses.length > 0 ? (totalAmount / filteredExpenses.length).toFixed(2) : '0.00'}
           </span>
         </div>
       </div>
-      
+
+      {/* Date Filter Bar */}
+      <div className="filter-controls">
+        <div className="filter-section">
+          <h3>Date Range</h3>
+          <DateFilterBar
+            dateFilter={dateFilter}
+            onChange={setDateFilter}
+            customDateRange={customDateRange}
+            onCustomDateRangeChange={setCustomDateRange}
+            onPageReset={() => setCurrentPage(1)}
+          />
+        </div>
+      </div>
+
       <div className="expenses-table-container">
-        {expenses.length > 0 ? (
+        {filteredExpenses.length > 0 ? (
           <>
         <table className="expenses-table">
           <thead>
@@ -264,18 +281,20 @@ export default function Expenses() {
             totalPages={totalPages}
             onPageChange={setCurrentPage}
             itemsPerPage={itemsPerPage}
-            totalItems={expenses.length}
+            totalItems={filteredExpenses.length}
           />
         )}
         </>
         ) : (
           <div className="empty-state">
             <div className="empty-icon">📝</div>
-            <h4>No expenses yet</h4>
-            <p>Start tracking your expenses to see them here</p>
-            <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
-              Add First Expense
-            </button>
+            <h4>{expenses.length === 0 ? 'No expenses yet' : 'No expenses in this period'}</h4>
+            <p>{expenses.length === 0 ? 'Start tracking your expenses to see them here' : 'Try a different date range or add a new expense'}</p>
+            {expenses.length === 0 && (
+              <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
+                Add First Expense
+              </button>
+            )}
           </div>
         )}
       </div>

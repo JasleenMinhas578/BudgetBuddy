@@ -1,19 +1,21 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
 import { collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
-
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useDateFilter } from '../../hooks/useDateFilter';
 import PieChart from '../Charts/PieChart';
 import BarChart from '../Charts/BarChart';
 import Modal from '../UI/Modal';
 import Toast from '../UI/Toast';
+import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -185,7 +187,7 @@ export default function Categories() {
     });
     
     // Sum expenses by category - filter out expenses with invalid categories
-    expenses.forEach(expense => {
+    filteredExpenses.forEach(expense => {
       if (expense && 
           expense.category && 
           expense.category !== 'undefined' && 
@@ -271,7 +273,20 @@ export default function Categories() {
           </span>
         </div>
       </div>
-      
+
+      {/* Date Filter Bar */}
+      <div className="filter-controls">
+        <div className="filter-section">
+          <h3>Date Range</h3>
+          <DateFilterBar
+            dateFilter={dateFilter}
+            onChange={setDateFilter}
+            customDateRange={customDateRange}
+            onCustomDateRangeChange={setCustomDateRange}
+          />
+        </div>
+      </div>
+
       {/* Charts Section */}
       <div className="charts-section">
         <div className="chart-container">

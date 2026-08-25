@@ -1,17 +1,19 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useDateFilter } from '../../hooks/useDateFilter';
 import { formatDate } from '../../utils/formatDate';
+import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 
 
 export default function DashboardOverview() {
   // State management for data
   const [expenses, setExpenses] = useState([]);
-  const [recentExpenses, setRecentExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'today');
 
   // Get current user from authentication context
   const { currentUser } = useAuth();
@@ -48,8 +50,6 @@ export default function DashboardOverview() {
         });
 
         setExpenses(sortedExpenses);
-        // Get the 5 most recent expenses for the recent activity section
-        setRecentExpenses(sortedExpenses.slice(0, 5));
         setLoading(false);
       }, (error) => {
         console.error('Error loading expenses:', error);
@@ -64,31 +64,21 @@ export default function DashboardOverview() {
     }
   }, [currentUser]);
 
-  // Calculate summary statistics from expenses data
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
-  // Calculate this month's expenses
-  const thisMonthExpenses = expenses
-    .filter(expense => {
-      const expenseDate = new Date(expense.date);
-      const now = new Date();
-      return expenseDate.getMonth() === now.getMonth() && 
-             expenseDate.getFullYear() === now.getFullYear();
-    })
-    .reduce((sum, expense) => sum + expense.amount, 0);
-  
-  // Calculate average expense amount
-  const averageExpense = expenses.length > 0 ? totalExpenses / expenses.length : 0;
-  
-  // Calculate top spending category
-  const topCategory = expenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-    return acc;
-  }, {});
+  // Stats derived from the filtered period
+  const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const averageExpense = filteredExpenses.length > 0 ? totalSpent / filteredExpenses.length : 0;
 
-  const topCategoryName = Object.keys(topCategory).length > 0 
-    ? Object.entries(topCategory).sort(([,a], [,b]) => b - a)[0][0]
-    : 'None';
+  const topCategoryName = (() => {
+    const map = filteredExpenses.reduce((acc, e) => {
+      acc[e.category] = (acc[e.category] || 0) + e.amount;
+      return acc;
+    }, {});
+    return Object.keys(map).length > 0
+      ? Object.entries(map).sort(([, a], [, b]) => b - a)[0][0]
+      : 'None';
+  })();
+
+  const recentExpenses = filteredExpenses.slice(0, 5);
 
   // Only show "Welcome!" after data has loaded to avoid flashing for returning users
   const isFirstTimeUser = !loading && expenses.length === 0;
@@ -113,6 +103,19 @@ export default function DashboardOverview() {
         </div>
       </div>
 
+      {/* Date Filter */}
+      <div className="filter-controls">
+        <div className="filter-section">
+          <h3>Date Range</h3>
+          <DateFilterBar
+            dateFilter={dateFilter}
+            onChange={setDateFilter}
+            customDateRange={customDateRange}
+            onCustomDateRangeChange={setCustomDateRange}
+          />
+        </div>
+      </div>
+
       {/* Summary Cards - Key financial metrics */}
       <div className="summary-cards">
         <div className="summary-card">
@@ -120,20 +123,9 @@ export default function DashboardOverview() {
             <span>📊</span>
           </div>
           <div className="card-content">
-            <h3>Total Expenses</h3>
-            <p className="card-amount">${totalExpenses.toFixed(2)}</p>
-            <p className="card-subtitle">All time</p>
-          </div>
-        </div>
-
-        <div className="summary-card">
-          <div className="card-icon">
-            <span>📅</span>
-          </div>
-          <div className="card-content">
-            <h3>This Month</h3>
-            <p className="card-amount">${thisMonthExpenses.toFixed(2)}</p>
-            <p className="card-subtitle">Current month spending</p>
+            <h3>Total Spent</h3>
+            <p className="card-amount">${totalSpent.toFixed(2)}</p>
+            <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
