@@ -3,7 +3,7 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 9999;
+  z-index: var(--z-top);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -15,7 +15,7 @@
 .ai-chat-toggle {
   width: 68px;
   height: 68px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--ai-gradient);
   color: #fff;
   border: 3px solid var(--glass-35);
@@ -44,7 +44,7 @@
   color: var(--ai-violet);
   background: var(--glass-90);
   padding: 2px 7px;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   box-shadow: 0 1px 4px var(--overlay-12);
   white-space: nowrap;
 }
@@ -74,7 +74,7 @@
   width: 380px;
   height: 540px;
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: var(--radius-2xl);
   box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.18),
     0 4px 16px rgba(0, 0, 0, 0.08);
@@ -135,7 +135,7 @@
   content: '';
   width: 6px; height: 6px;
   background: var(--ai-online);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   display: inline-block;
   box-shadow: 0 0 6px var(--ai-online);
 }
@@ -145,7 +145,7 @@
   color: #fff;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   cursor: pointer;
   font-size: 12px;
   display: flex;
@@ -174,7 +174,7 @@
 .ai-chat-messages::-webkit-scrollbar-track { background: transparent; }
 .ai-chat-messages::-webkit-scrollbar-thumb {
   background: #d1d5db;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Welcome screen ──────────────────────────────────────────────────── */
@@ -223,8 +223,8 @@
 .ai-suggestion-chip {
   background: #fff;
   color: var(--ai-indigo-dark);
-  border: 1.5px solid #c4b5fd;
-  border-radius: 20px;
+  border: 1.5px solid var(--ai-violet-border);
+  border-radius: var(--radius-2xl);
   padding: 6px 13px;
   font-size: 12px;
   font-weight: 500;
@@ -378,7 +378,7 @@
   width: 7px;
   height: 7px;
   background: var(--ai-violet-light);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: ai-bounce 1.2s infinite;
 }
 .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
@@ -423,7 +423,7 @@
 .ai-chat-send {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--ai-gradient-2);
   color: #fff;
   border: none;

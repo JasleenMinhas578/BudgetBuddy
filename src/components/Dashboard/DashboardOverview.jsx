@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { formatDate } from '../../utils/formatDate';
 import DateFilterBar from '../UI/DateFilterBar';
+import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import '../../styles/main.css';
 
 
@@ -73,9 +74,7 @@ export default function DashboardOverview() {
           </p>
         </div>
         <div className="welcome-illustration">
-          <div className="illustration-circle">
-            <span>💰</span>
-          </div>
+          <BudgetBuddyLogo size={80} />
         </div>
       </div>
 

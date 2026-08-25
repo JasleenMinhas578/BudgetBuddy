@@ -8,10 +8,10 @@
   padding: 0.75rem 1rem;
   background: var(--glass-05);
   border: 1px solid var(--glass-10);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: #ffffff;
   font-size: var(--font-size-sm);
-  transition: all 0.3s ease;
+  transition: var(--transition-base);
   box-sizing: border-box;
   appearance: none;
   -webkit-appearance: none;

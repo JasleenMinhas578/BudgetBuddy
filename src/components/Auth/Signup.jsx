@@ -160,20 +160,19 @@ export default function Signup() {
           
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <div className="input-wrapper" style={{position: 'relative'}}>
+            <div className="input-wrapper">
               {/* <span className="input-icon">🔒</span> */}
-              <input 
+              <input
                 type={showPassword ? "text" : "password"}
-                id="password" 
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Create a strong password"
-                required 
+                required
               />
               <span
                 className="input-eye"
                 onClick={() => setShowPassword((v) => !v)}
-                style={{position: 'absolute', right: '1em', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '1.2em', color: '#94a3b8'}}
                 tabIndex={0}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 role="button"
@@ -183,23 +182,22 @@ export default function Signup() {
               </span>
             </div>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <div className="input-wrapper" style={{position: 'relative'}}>
+            <div className="input-wrapper">
               {/* <span className="input-icon">🔒</span> */}
-              <input 
+              <input
                 type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword" 
+                id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your password"
-                required 
+                required
               />
               <span
                 className="input-eye"
                 onClick={() => setShowConfirmPassword((v) => !v)}
-                style={{position: 'absolute', right: '1em', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '1.2em', color: '#94a3b8'}}
                 tabIndex={0}
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 role="button"

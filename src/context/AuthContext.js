@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebaseConfig';
-import { 
+import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,   
+  signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  confirmPasswordReset
+  confirmPasswordReset,
+  updateProfile
 } from 'firebase/auth';
 
 /**
@@ -46,6 +47,10 @@ export function AuthProvider({ children }) {
     return confirmPasswordReset(auth, oobCode, newPassword);
   }
 
+  function updateDisplayName(displayName) {
+    return updateProfile(auth.currentUser, { displayName });
+  }
+
 
   /**
    * Listen for authentication state changes
@@ -70,8 +75,9 @@ export function AuthProvider({ children }) {
     signup,       // Function to register new users
     login,        // Function to log in users
     logout,       // Function to log out users
-    resetPassword, // Function to send password reset email
-    updatePassword // Function to confirm password reset with code
+    resetPassword,      // Function to send password reset email
+    updatePassword,     // Function to confirm password reset with code
+    updateDisplayName   // Function to update the user's display name
   };
 
   return (

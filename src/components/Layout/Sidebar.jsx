@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import '../../styles/main.css';
 
 const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile }, ref) => {
@@ -10,7 +11,8 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
     { path: '/dashboard/expenses', label: 'Expenses', icon: '💸' },
     { path: '/dashboard/categories', label: 'Categories', icon: '📂' },
-    { path: '/dashboard/reports', label: 'Reports', icon: '📈' }
+    { path: '/dashboard/reports', label: 'Reports', icon: '📈' },
+    { path: '/dashboard/settings', label: 'Settings', icon: '⚙️' }
   ];
 
   return (
@@ -22,7 +24,7 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
     >
       <div className="sidebar-header">
         <div className="sidebar-logo-container">
-          <div className="logo-icon">💰</div>
+          <BudgetBuddyLogo size={36} />
         <h1 className="sidebar-logo">BudgetBuddy</h1>
         </div>
         {isMobile ? (
@@ -76,10 +78,13 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
           <div className="user-info">
               <div className="user-avatar-container">
                 <div className="user-avatar">
-                  <span>{currentUser.email.charAt(0).toUpperCase()}</span>
+                  <span>{(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}</span>
                 </div>
                 <span className="user-status">Online</span>
               </div>
+              {currentUser.displayName && (
+                <p className="user-display-name">{currentUser.displayName}</p>
+              )}
               <p className="user-email">{currentUser.email}</p>
             </div>
             <button onClick={logout} className="btn btn-secondary btn-logout">

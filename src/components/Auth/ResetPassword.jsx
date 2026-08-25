@@ -168,19 +168,18 @@ export default function ResetPassword() {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="password">New Password</label>
-            <div className="input-wrapper" style={{position: 'relative'}}>
-              <input 
+            <div className="input-wrapper">
+              <input
                 type={showPassword ? "text" : "password"}
-                id="password" 
+                id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your new password"
-                required 
+                required
               />
               <span
                 className="input-eye"
                 onClick={() => setShowPassword((v) => !v)}
-                style={{position: 'absolute', right: '1em', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '1.2em', color: '#94a3b8'}}
                 tabIndex={0}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 role="button"
@@ -190,22 +189,21 @@ export default function ResetPassword() {
               </span>
             </div>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm New Password</label>
-            <div className="input-wrapper" style={{position: 'relative'}}>
-              <input 
+            <div className="input-wrapper">
+              <input
                 type={showConfirmPassword ? "text" : "password"}
-                id="confirmPassword" 
+                id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter your new password"
-                required 
+                required
               />
               <span
                 className="input-eye"
                 onClick={() => setShowConfirmPassword((v) => !v)}
-                style={{position: 'absolute', right: '1em', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '1.2em', color: '#94a3b8'}}
                 tabIndex={0}
                 aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 role="button"

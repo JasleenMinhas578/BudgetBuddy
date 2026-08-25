@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import '../styles/main.css';
+import BudgetBuddyLogo from '../components/UI/BudgetBuddyLogo';
 
 export default function Landing() {
   return (
@@ -22,7 +23,7 @@ export default function Landing() {
           transition={{ duration: 0.6 }}
           className="nav-brand"
         >
-          <div className="brand-icon">💰</div>
+          <BudgetBuddyLogo size={40} />
           <h1 className="logo">BudgetBuddy</h1>
         </motion.div>
 
@@ -136,7 +137,7 @@ export default function Landing() {
 
         {/* Stats bar */}
         <div className="stats-bar">
-          <div className="stat-pill"><strong>Free forever</strong> · No hidden fees</div>
+          <div className="stat-pill">No hidden fees</div>
           <div className="stat-pill">Works on all devices</div>
           <div className="stat-pill">Bank-level encryption</div>
         </div>
@@ -210,26 +211,13 @@ export default function Landing() {
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-brand">
-            <div className="brand-icon">💰</div>
+            <BudgetBuddyLogo size={44} />
             <h3>BudgetBuddy</h3>
             <p>Simple, smart budgeting for everyone.</p>
           </div>
-          <div className="footer-links">
-            <div className="footer-section">
-              <h4>Product</h4>
-              <Link to="/signup">Get Started</Link>
-              <Link to="/login">Login</Link>
-            </div>
-            <div className="footer-section">
-              <h4>Account</h4>
-              <Link to="/signup">Sign Up</Link>
-              <Link to="/login">Sign In</Link>
-            </div>
-            <div className="footer-section">
-              <h4>Legal</h4>
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
-            </div>
+          <div className="footer-nav">
+            <Link to="/signup">Get Started</Link>
+            <Link to="/login">Sign In</Link>
           </div>
         </div>
         <div className="footer-bottom">
