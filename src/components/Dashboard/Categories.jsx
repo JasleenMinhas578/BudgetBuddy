@@ -221,6 +221,7 @@ export default function Categories() {
     return {
       labels: filteredLabels,
       datasets: [{
+        label: 'Spending',
         data: filteredData,
         backgroundColor: filteredColors
       }]

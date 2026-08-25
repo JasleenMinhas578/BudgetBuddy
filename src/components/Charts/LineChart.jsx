@@ -62,13 +62,13 @@ export default function LineChart({ data }) {
         }
       },
       y: {
+        beginAtZero: true,
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)' // Subtle grid lines
+          color: 'rgba(255, 255, 255, 0.1)'
         },
         ticks: {
-          color: '#e2e8f0', // Light gray text color
+          color: '#e2e8f0',
           callback: function(value) {
-            // Format y-axis labels as currency
             return '$' + value.toLocaleString();
           }
         }

@@ -1,49 +1,84 @@
+/* ===== Modal Shell — single source of truth ===== */
+
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.7);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 1rem;
 }
+
 .modal-content {
-  background: transparent; /* Remove white background */
-  padding: 0;
-  border-radius: 16px;
-  min-width: 320px;
   position: relative;
-  box-shadow: none;
+  background: #1a2235;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  align-items: stretch;
 }
+
 .modal-header {
-  padding: 1.5rem 2rem 0 2rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem 1.25rem 1.5rem;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+  text-align: left;
 }
 
 .modal-title {
-  color: #ffffff;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
   margin: 0;
-  padding: 0;
   background: none;
   border: none;
-  outline: none;
   box-shadow: none;
 }
 
 .modal-close {
   position: absolute;
-  top: 8px; right: 8px;
-  background: none;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
   border: none;
-  font-size: 1.5rem;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.1rem;
   cursor: pointer;
-  color: #ffffff;
+  transition: background 0.2s ease, color 0.2s ease;
   z-index: 10;
-} 
+  padding: 0;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
 
 .sr-only {
   position: absolute;

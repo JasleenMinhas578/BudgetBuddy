@@ -14906,3 +14906,85 @@
     font-size: 2.5rem;
   }
 } 
+/* ===== Visual Polish — overrides duplicated blocks above ===== */
+
+/* Summary cards: distinct left-border accent per position */
+.summary-card {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.summary-card:nth-child(1) { border-left-color: #4fd1c5; }
+.summary-card:nth-child(2) { border-left-color: #f687b3; }
+.summary-card:nth-child(3) { border-left-color: #b794f4; }
+.summary-card:nth-child(4) { border-left-color: #68d391; }
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+  border-color: rgba(79, 209, 197, 0.4);
+}
+/* Keep left-border accent color on hover */
+.summary-card:nth-child(1):hover { border-left-color: #4fd1c5; }
+.summary-card:nth-child(2):hover { border-left-color: #f687b3; }
+.summary-card:nth-child(3):hover { border-left-color: #b794f4; }
+.summary-card:nth-child(4):hover { border-left-color: #68d391; }
+
+/* Softer stat label typography */
+.stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #94a3b8;
+}
+.card-content h3 {
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* Action buttons — square with visible icon */
+.edit-btn,
+.delete-btn {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.edit-icon,
+.delete-icon {
+  font-size: 0.875rem;
+  line-height: 1;
+  display: flex;
+}
+
+/* Progress bar — gradient fill (ensure it renders) */
+.progress-fill {
+  background: linear-gradient(90deg, #4fd1c5, #b794f4);
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+.progress-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Summary-stat cards on Expenses/Categories pages */
+.summary-stat {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.summary-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}

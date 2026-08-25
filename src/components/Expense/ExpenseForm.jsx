@@ -274,15 +274,12 @@ export default function ExpenseForm({
   };
 
   return (
-    <div className="expense-form-container">
-      {/* Display success/error messages */}
+    <>
       {message && (
         <div className={`alert ${messageType === 'success' ? 'alert-success' : 'alert-error'}`}>
           {message}
         </div>
       )}
-      
-      {/* Expense form */}
       <form onSubmit={handleSubmit} className="expense-form" noValidate>
         {/* Amount input field */}
         <div className="form-group">
@@ -374,6 +371,6 @@ export default function ExpenseForm({
         </button>
         </div>
       </form>
-    </div>
+    </>
   );
 } 
