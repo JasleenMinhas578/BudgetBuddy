@@ -6,11 +6,11 @@
 .category-form .form-group select {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-05);
+  border: 1px solid var(--glass-10);
   border-radius: 8px;
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   transition: all 0.3s ease;
   box-sizing: border-box;
   appearance: none;
@@ -31,8 +31,8 @@
 .category-form .form-group select:focus {
   outline: none;
   border-color: #4fd1c5;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(79, 209, 197, 0.1);
+  background-color: var(--glass-10);
+  box-shadow: 0 0 0 3px var(--teal-10);
 }
 
 .expense-form .form-group input::placeholder,
@@ -44,9 +44,9 @@
 .category-form .form-group label {
   display: block;
   color: #ffffff;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   margin-bottom: 0.5rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .expense-form .form-group,

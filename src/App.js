@@ -8,7 +8,7 @@ import ResetPassword from './components/Auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Expenses from './components/Dashboard/Expenses';
 import PrivateRoute from './pages/PrivateRoute';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Reports from './components/Dashboard/Reports';
@@ -30,6 +30,11 @@ import './styles/main.css';
  * - /signup (User registration)
  * - /dashboard/* (Protected routes requiring authentication)
  */
+
+function AuthenticatedAIChat() {
+  const { currentUser } = useAuth();
+  return currentUser ? <AIChat /> : null;
+}
 
 function App() {
   return (
@@ -58,8 +63,8 @@ function App() {
           <Route path="*" element={<NotFound />} />
 
         </Routes>
-        {/* AI chat widget — visible on all pages when logged in */}
-        <AIChat />
+        {/* AI chat widget — only mounted when logged in */}
+        <AuthenticatedAIChat />
       </AuthProvider>
     </Router>
   );

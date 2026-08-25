@@ -32,7 +32,7 @@ export default function Expenses() {
 
     try {
       unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        setExpenses(expensesData);
+        if (expensesData !== null) setExpenses(expensesData);
       });
     } catch (error) {
       console.error("Error setting up listeners:", error);
@@ -50,7 +50,7 @@ export default function Expenses() {
   const handleDeleteExpense = async (id) => {
     if (!currentUser) return;
     const expense = expenses.find(exp => exp.id === id);
-    if (window.confirm(`Are you sure you want to delete the expense "${expense?.title}" for $${expense?.amount.toFixed(2)}?`)) {
+    if (window.confirm(`Are you sure you want to delete the expense "${expense?.title}" for $${(typeof expense?.amount === 'number' ? expense.amount : 0).toFixed(2)}?`)) {
       try {
         await deleteExpense(currentUser.uid, id);
         setToast({
@@ -100,7 +100,7 @@ export default function Expenses() {
     }
   };
 
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
@@ -110,7 +110,7 @@ export default function Expenses() {
 
   // Reset to first page when filtered expenses change
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
+    if (currentPage > Math.max(1, totalPages)) {
       setCurrentPage(1);
     }
   }, [filteredExpenses.length, currentPage, totalPages]);

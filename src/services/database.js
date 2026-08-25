@@ -266,7 +266,7 @@ import {
         callback(expenses);
       }, (error) => {
         console.error('Error listening to expenses:', error);
-        callback([], error);
+        callback(null, error);
       });
   
       return unsubscribe;
@@ -310,7 +310,7 @@ import {
         callback(categories);
       }, (error) => {
         console.error('Error listening to categories:', error);
-        callback([], error);
+        callback(null, error);
       });
   
       return unsubscribe;

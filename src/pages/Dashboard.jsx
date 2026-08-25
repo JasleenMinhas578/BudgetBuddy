@@ -14,6 +14,7 @@ export default function Dashboard() {
   const sidebarRef = useRef(null);
   const overlayRef = useRef(null);
   const edgeTimerRef = useRef(null);
+  const dragTimerRef = useRef(null);
   
   // Check if we're on mobile
   const isMobile = useCallback(() => window.innerWidth <= 768, []);
@@ -55,7 +56,7 @@ export default function Dashboard() {
         const touch = e.touches[0];
         setDragStartX(touch.clientX);
         // Add a small delay to prevent accidental drags
-        setTimeout(() => setIsDragging(true), 50);
+        dragTimerRef.current = setTimeout(() => setIsDragging(true), 50);
       }
     }
   };
@@ -67,7 +68,7 @@ export default function Dashboard() {
       if (!target) {
         setDragStartX(e.clientX);
         // Add a small delay to prevent accidental drags
-        setTimeout(() => setIsDragging(true), 50);
+        dragTimerRef.current = setTimeout(() => setIsDragging(true), 50);
       }
     }
   };
@@ -184,6 +185,7 @@ export default function Dashboard() {
       document.removeEventListener('mousedown', handleEdgeMouse);
       document.removeEventListener('mousemove', handleEdgeMouseMove);
       clearTimeout(edgeTimerRef.current);
+      clearTimeout(dragTimerRef.current);
     };
   }, [sidebarOpen, isMobile]);
 

@@ -30,11 +30,11 @@ export default function Categories() {
 
     try {
       unsubscribeExpenses = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        setExpenses(expensesData);
+        if (expensesData !== null) setExpenses(expensesData);
       });
 
       unsubscribeCategories = subscribeToCategories(currentUser.uid, (categoriesData) => {
-        setCategories(categoriesData);
+        if (categoriesData !== null) setCategories(categoriesData);
       });
     } catch (error) {
       console.error("Error setting up listeners:", error);

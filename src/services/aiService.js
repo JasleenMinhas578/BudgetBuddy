@@ -3,10 +3,34 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Other'];
 
+const DAILY_LIMIT = 20;
+const USAGE_KEY = 'bb_ai_usage';
+
+const checkAndIncrementUsage = () => {
+  const today = new Date().toISOString().split('T')[0];
+  let usage = { date: today, count: 0 };
+
+  try {
+    const stored = localStorage.getItem(USAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.date === today) usage = parsed;
+    }
+  } catch {}
+
+  if (usage.count >= DAILY_LIMIT) {
+    throw new Error(`Daily AI limit of ${DAILY_LIMIT} requests reached. Resets at midnight.`);
+  }
+
+  usage.count += 1;
+  try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
+};
+
 export const processMessage = async (userMessage, expenses = [], customCategories = []) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
     throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
   }
+  checkAndIncrementUsage();
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -69,6 +93,7 @@ User message: "${userMessage}"`;
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    if (res.status === 429) throw new Error('Too many requests right now — please wait a moment and try again.');
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
 
@@ -87,6 +112,7 @@ export const generateSummary = async (expenses, filterLabel) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
     throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
   }
+  checkAndIncrementUsage();
 
   const today = new Date().toISOString().split('T')[0];
   const trimmed = expenses
@@ -120,6 +146,7 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
+    if (res.status === 429) throw new Error('Too many requests right now — please wait a moment and try again.');
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
 

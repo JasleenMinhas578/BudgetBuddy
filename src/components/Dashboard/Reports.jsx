@@ -40,7 +40,7 @@ export default function Reports() {
     let unsubscribe = () => {};
     try {
       unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        setExpenses(expensesData);
+        if (expensesData !== null) setExpenses(expensesData);
       });
     } catch (error) {
       console.error("Error setting up listener:", error);
@@ -95,7 +95,8 @@ export default function Reports() {
     filteredExpenses.forEach(expense => {
       const month = safeFormatDate(expense.date, 'MMM yyyy');
       if (!month) return;
-      monthlyMap[month] = (monthlyMap[month] || 0) + expense.amount;
+      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
+      monthlyMap[month] = (monthlyMap[month] || 0) + amount;
     });
 
     // parse() from date-fns correctly handles 'MMM yyyy'; new Date() does not.
@@ -123,7 +124,7 @@ export default function Reports() {
         safeFormatDate(expense.date, 'yyyy-MM-dd') || expense.date || '',
         `"${(expense.category || '').replace(/"/g, '""')}"`,
         `"${(expense.title || '').replace(/"/g, '""')}"`,
-        expense.amount.toFixed(2)
+        (typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)
       ].join(','))
     ].join('\n');
 
@@ -277,7 +278,7 @@ export default function Reports() {
           pdf.text(title, xPos, yPosition);
           xPos += columnWidths[2];
           
-          pdf.text(`$${expense.amount.toFixed(2)}`, xPos, yPosition);
+          pdf.text(`$${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}`, xPos, yPosition);
           
           yPosition += 5;
         });
@@ -326,7 +327,7 @@ export default function Reports() {
     return { topCategory, maxAmount };
   };
 
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
   const averageAmount = filteredExpenses.length > 0 ? totalAmount / filteredExpenses.length : 0;
   const categoryData = getCategoryData();
   const monthlyData = getMonthlyData();
@@ -340,7 +341,7 @@ export default function Reports() {
 
   // Reset to first page when filtered expenses change
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
+    if (currentPage > Math.max(1, totalPages)) {
       setCurrentPage(1);
     }
   }, [filteredExpenses.length, currentPage, totalPages]);
