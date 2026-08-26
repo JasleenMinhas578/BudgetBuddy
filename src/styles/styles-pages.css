@@ -3569,6 +3569,31 @@
 
   .goal-card--active {
     border-color: rgba(79, 209, 197, 0.25);
+    cursor: grab;
+  }
+  .goal-card--active:active {
+    cursor: grabbing;
+  }
+  .goal-card--dragging {
+    opacity: 0.4;
+    border-style: dashed;
+  }
+  .goal-card--drag-over {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
+  }
+
+  .goal-drag-handle {
+    margin-left: auto;
+    color: var(--text-secondary);
+    opacity: 0.4;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+  }
+  .goal-card:hover .goal-drag-handle {
+    opacity: 0.8;
   }
 
   .goal-card-header {
@@ -3797,17 +3822,18 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    padding: 1.25rem 1.5rem 1.5rem;
   }
   .goal-picker-hint {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
-    margin: 0 0 0.75rem;
-    line-height: 1.4;
+    margin: 0 0 1rem;
+    line-height: 1.5;
   }
   .goal-picker-list {
     display: flex;
     flex-direction: column;
-    max-height: 320px;
+    max-height: 340px;
     overflow-y: auto;
     margin: 0 -1.5rem;
     border-top: 1px solid var(--glass-10);
@@ -3817,8 +3843,8 @@
   .goal-picker-row {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.55rem 1.5rem;
+    gap: 0.75rem;
+    padding: 0.65rem 1.5rem;
     border-bottom: 1px solid var(--glass-07);
     transition: background 0.15s;
   }
@@ -3865,7 +3891,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
+    margin-top: 1.25rem;
     gap: 0.75rem;
   }
 

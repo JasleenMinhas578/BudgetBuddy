@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { LuTag, LuTarget, LuTrendingUp, LuAlertTriangle, LuCheckCircle, LuPlus } from 'react-icons/lu';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { LuTag, LuTarget, LuTrendingUp, LuAlertTriangle, LuCheckCircle, LuPlus, LuGripVertical } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
@@ -48,6 +48,7 @@ function GoalInput({ categoryName, initialValue, onSave }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && save()}
+        onBlur={save}
       />
       <button
         className="goal-save-btn"
@@ -117,6 +118,54 @@ export default function Goals() {
     () => allCategories.filter((c) => !((budgets.categories?.[c.name] ?? 0) > 0)),
     [allCategories, budgets.categories]
   );
+
+  // Drag-to-reorder state for the active goals grid
+  const [categoryOrder, setCategoryOrder] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`goalOrder_${currentUser?.uid}`)) || [];
+    } catch { return []; }
+  });
+  const [draggingIndex, setDraggingIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+
+  const sortedTrackedCategories = useMemo(() => {
+    if (!categoryOrder.length) {
+      return [...trackedCategories].sort(
+        (a, b) => (budgets.categories?.[b.name] ?? 0) - (budgets.categories?.[a.name] ?? 0)
+      );
+    }
+    const orderMap = Object.fromEntries(categoryOrder.map((name, i) => [name, i]));
+    return [...trackedCategories].sort((a, b) => {
+      const ai = orderMap[a.name] ?? Infinity;
+      const bi = orderMap[b.name] ?? Infinity;
+      return ai - bi;
+    });
+  }, [trackedCategories, categoryOrder, budgets.categories]);
+
+  const handleDragStart = (index) => {
+    dragItem.current = index;
+    setDraggingIndex(index);
+  };
+  const handleDragEnter = (index) => {
+    dragOverItem.current = index;
+    setDragOverIndex(index);
+  };
+  const handleDragEnd = () => {
+    if (dragItem.current !== null && dragOverItem.current !== null && dragItem.current !== dragOverItem.current) {
+      const newOrder = [...sortedTrackedCategories];
+      const [moved] = newOrder.splice(dragItem.current, 1);
+      newOrder.splice(dragOverItem.current, 0, moved);
+      const names = newOrder.map((c) => c.name);
+      setCategoryOrder(names);
+      localStorage.setItem(`goalOrder_${currentUser?.uid}`, JSON.stringify(names));
+    }
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setDraggingIndex(null);
+    setDragOverIndex(null);
+  };
 
   // Derive total monthly budget from sum of category goals
   const totalBudgeted = useMemo(
@@ -296,12 +345,22 @@ export default function Goals() {
         {/* Main grid — tracked categories only */}
         {trackedCategories.length > 0 ? (
           <div className="goals-grid">
-            {trackedCategories.map((category) => {
+            {sortedTrackedCategories.map((category, index) => {
               const prog = categoryProgress.find((p) => p.name === category.name);
-const pct = prog?.pct !== null ? Math.min(prog.pct, 100) : 0;
+              const pct = prog?.pct !== null ? Math.min(prog.pct, 100) : 0;
+              const isDragging = draggingIndex === index;
+              const isDragOver = dragOverIndex === index && draggingIndex !== index;
 
               return (
-                <div key={category.name} className="goal-card goal-card--active">
+                <div
+                  key={category.name}
+                  className={`goal-card goal-card--active${isDragging ? ' goal-card--dragging' : ''}${isDragOver ? ' goal-card--drag-over' : ''}`}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragEnter={() => handleDragEnter(index)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => e.preventDefault()}
+                >
                   <div className="goal-card-header">
                     <div
                       className="goal-icon"
@@ -318,6 +377,9 @@ const pct = prog?.pct !== null ? Math.min(prog.pct, 100) : 0;
                         ? <p className="goal-spent">${prog.spent.toFixed(2)} spent this month</p>
                         : <p className="goal-spent">No spending yet</p>
                       }
+                    </div>
+                    <div className="goal-drag-handle" title="Drag to reorder">
+                      <LuGripVertical size={16} />
                     </div>
                   </div>
 
