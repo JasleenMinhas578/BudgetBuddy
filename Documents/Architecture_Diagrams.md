@@ -293,6 +293,10 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useDateFilter.js` | Date-based expense filtering; accepts optional `external` param to bind to `DateRangeContext` |
 | `useCategoryData.js` | Aggregates filtered expenses into Chart.js-ready category data; seeds deleted categories as 0 |
 | `useReportData.js` | Aggregates filtered expenses into report statistics: totals, averages, monthly trend, top category, spending insights |
+| `useSidebar.js` | Sidebar open/close state, mobile drag-to-open gesture, edge-swipe indicator, and overlay click handling |
+| `useReportExport.js` | CSV export, PDF generation (jsPDF), AI summary fetch (`generateSummary`), and export dropdown state for the Reports page |
+| `useCategoryActions.js` | Add/delete category logic for the Categories page; wraps `categoryService.js` calls with toast feedback and pending-delete confirmation |
+| `useAuthForm.js` | Shared form state (`error`, `message`, `loading`) reused across Login, Signup, ForgotPassword, and ResetPassword |
 
 ### 2.3.2 Component Organization
 
@@ -307,10 +311,12 @@ budget-buddy/
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar, Navigation
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
-│   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable
+│   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
+│   │                      #   CuteEmptyFace
 │   ├── context/           # AuthContext.js, DateRangeContext.js
-│   ├── hooks/             # useDateFilter.js, useAIChat.js,
-│   │                      #   useCategoryData.js, useReportData.js
+│   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
+│   │                      #   useReportData.js, useSidebar.js, useReportExport.js,
+│   │                      #   useCategoryActions.js, useAuthForm.js
 │   ├── services/          # expenseService.js, categoryService.js,
 │   │                      #   settingsService.js, aiService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,

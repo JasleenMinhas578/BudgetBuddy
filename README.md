@@ -304,9 +304,11 @@ src/
 │   ├── Expense/       # ExpenseForm
 │   ├── Charts/        # PieChart, BarChart, LineChart
 │   ├── Layout/        # Navbar, Navigation, Sidebar
-│   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog, BudgetBuddyLogo, ExpenseTable
+│   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog,
+│                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace
 ├── context/           # AuthContext, DateRangeContext
-├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData
+├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData,
+│                      #   useSidebar, useReportExport, useCategoryActions, useAuthForm
 ├── services/
 │   ├── expenseService.js    # Expense CRUD + real-time listener
 │   ├── categoryService.js   # Category CRUD + real-time listener

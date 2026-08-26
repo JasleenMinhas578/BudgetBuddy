@@ -11,11 +11,11 @@ Features identified for future development. Ordered roughly by impact vs. effort
 | AI chat — add, edit, delete expenses in plain English | `src/components/AI/AIChat.jsx` |
 | AI chat — add, rename, delete custom categories in plain English | `src/components/AI/AIChat.jsx` |
 | AI chat — natural-language spending queries (totals, averages, top category, etc.) | `src/services/aiService.js` → `processMessage()` |
-| AI chat — set a session date range via chat (e.g. "show me last month") | `src/components/AI/AIChat.jsx` — `sessionDateRange` state |
-| AI chat — date range picker UI card (preset buttons: Today, This Week, etc.) | `src/components/AI/AIChat.jsx` |
-| AI chat — pending action reminder (notifies user of unconfirmed cards) | `src/components/AI/AIChat.jsx` |
+| AI chat — set a session date range via chat (e.g. "show me last month") | `src/hooks/useAIChat.js` — `sessionDateRange` state |
+| AI chat — date range picker UI card (preset buttons: Today, This Week, etc.) | `src/hooks/useAIChat.js` — `handlePickDateRange` + `ChatMessage.jsx` |
+| AI chat — pending action reminder (notifies user of unconfirmed cards) | `src/hooks/useAIChat.js` — `getPendingReminder()` |
 | AI chat — daily rate limit (50 requests/day, tracked in localStorage) | `src/services/aiService.js` — `checkAndIncrementUsage()` |
-| AI chat — chat history persisted in sessionStorage (survives page refresh) | `src/components/AI/AIChat.jsx` |
+| AI chat — chat history persisted in sessionStorage (survives page refresh) | `src/hooks/useAIChat.js` — `sessionStorage` read/write |
 | AI spending summary paragraph on Reports page | `src/services/aiService.js` → `generateSummary()` |
 | CSV export on Reports page | `src/components/Dashboard/Reports.jsx` — `exportToCSV()` |
 | PDF export on Reports page | `src/components/Dashboard/Reports.jsx` — `generatePDF()` |
