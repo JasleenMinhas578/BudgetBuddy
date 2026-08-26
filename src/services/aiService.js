@@ -128,9 +128,7 @@ Total monthly budget: ${totalLimit > 0 ? `$${totalLimit}` : 'not set'}`;
       })()
     : 'BUDGET GOALS: none set yet';
 
-  const prompt = `You are BudgetBuddy AI, a helpful personal finance assistant. Today is ${today}.
-
-⚠️ OUTPUT FORMAT RULE (ABSOLUTE): Your entire response MUST be a single valid JSON object. Never write plain text, never use markdown, never use code fences (\`\`\`). Start your response with { and end with }. If you cannot answer, still return JSON with intent "CHAT" and put your reply in "message".
+  const prompt = `You are BudgetBuddy AI, a helpful personal finance assistant. Today is ${today}. Respond with ONLY a raw JSON object — no text before or after it, no markdown, no code fences, no reasoning. Begin your response immediately with { and end with }.
 
 ${dateRangeSection}
 
@@ -234,12 +232,12 @@ User message: "${userMessage}"`;
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
 
-  // Extract JSON even if the model wraps it in backticks
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Find the JSON object — look for {"intent": specifically to skip any leading reasoning text
+  const intentIdx = text.indexOf('{"intent"');
+  const searchText = intentIdx !== -1 ? text.slice(intentIdx) : text;
+  const jsonMatch = searchText.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    // Model returned plain text instead of JSON — treat the raw text as the message
-    const plainText = text.replace(/```[a-z]*\n?/gi, '').trim();
-    return { intent: 'CHAT', message: plainText || "Sorry, I couldn't process that. Try rephrasing your question." };
+    return { intent: 'CHAT', message: "Sorry, I couldn't process that. Try rephrasing your question." };
   }
 
   try {
