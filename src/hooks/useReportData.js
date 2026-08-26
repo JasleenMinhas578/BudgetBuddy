@@ -75,14 +75,52 @@ export function useReportData(filteredExpenses) {
   const spendingInsights = useMemo(() => {
     if (filteredExpenses.length === 0) return [];
     const insights = [];
+
+    // Top category by percentage
     const topPct = totalAmount > 0 ? (maxAmount / totalAmount) * 100 : 0;
-    if (topCategory && topPct > 30)
-      insights.push(`You spend ${topPct.toFixed(1)}% of your money on ${topCategory}`);
-    if (averageAmount > 20)
-      insights.push(`Your average transaction is $${averageAmount.toFixed(2)}, consider reviewing larger expenses`);
-    if (filteredExpenses.length > 10)
-      insights.push(`You have ${filteredExpenses.length} transactions in this period`);
-    return insights;
+    if (topCategory && topPct > 25)
+      insights.push(`${topCategory} takes up ${topPct.toFixed(0)}% of your spending this period.`);
+
+    // Largest single expense
+    const largest = filteredExpenses.reduce(
+      (max, e) => toAmount(e.amount) > toAmount(max.amount) ? e : max,
+      filteredExpenses[0]
+    );
+    if (largest?.title)
+      insights.push(`Your largest expense was "${largest.title}" at $${toAmount(largest.amount).toFixed(2)}.`);
+
+    // Most frequent category by count (skip if same as top-spend category)
+    const countMap = {};
+    filteredExpenses.forEach(e => {
+      if (validCategory(e.category)) countMap[e.category] = (countMap[e.category] || 0) + 1;
+    });
+    const topByCount = Object.entries(countMap).sort(([, a], [, b]) => b - a)[0];
+    if (topByCount && topByCount[1] >= 3 && topByCount[0] !== topCategory)
+      insights.push(`You made ${topByCount[1]} purchases in ${topByCount[0]} — your most active category.`);
+
+    // Day of week with most spending
+    const dayMap = {};
+    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    filteredExpenses.forEach(e => {
+      if (!e.date) return;
+      try {
+        const day = DAYS[parseISO(e.date).getDay()];
+        dayMap[day] = (dayMap[day] || 0) + toAmount(e.amount);
+      } catch {}
+    });
+    const topDay = Object.entries(dayMap).sort(([, a], [, b]) => b - a)[0];
+    if (topDay)
+      insights.push(`You spend the most on ${topDay[0]}s ($${topDay[1].toFixed(2)} total).`);
+
+    // Average transaction
+    if (averageAmount >= 5)
+      insights.push(`Your average transaction is $${averageAmount.toFixed(2)}.`);
+
+    // Transaction count
+    if (filteredExpenses.length >= 5)
+      insights.push(`You logged ${filteredExpenses.length} transactions this period.`);
+
+    return insights.slice(0, 5);
   }, [filteredExpenses, totalAmount, maxAmount, topCategory, averageAmount]);
 
   return { totalAmount, averageAmount, categoryData, monthlyData, topCategory, maxAmount, spendingInsights };

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { LuDollarSign, LuTrendingUp, LuAward, LuPlus } from 'react-icons/lu';
+import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { subscribeToExpenses } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -18,6 +19,18 @@ export default function DashboardOverview() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [showChatHint, setShowChatHint] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('chatHintSeen')) setShowChatHint(true);
+    } catch {}
+  }, []);
+
+  const dismissChatHint = () => {
+    try { localStorage.setItem('chatHintSeen', '1'); } catch {}
+    setShowChatHint(false);
+  };
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
 
@@ -63,6 +76,38 @@ export default function DashboardOverview() {
 
   const recentExpenses = filteredExpenses.slice(0, 5);
 
+  const prevPeriodTotal = useMemo(() => {
+    if (!expenses.length) return null;
+    const now = new Date();
+    let prevStart, prevEnd;
+    if (dateFilter === 'thisMonth') {
+      const prev = subMonths(now, 1);
+      prevStart = format(startOfMonth(prev), 'yyyy-MM-dd');
+      prevEnd   = format(endOfMonth(prev),   'yyyy-MM-dd');
+    } else if (dateFilter === 'thisWeek') {
+      const prev = subWeeks(now, 1);
+      prevStart = format(startOfWeek(prev, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+      prevEnd   = format(endOfWeek(prev,   { weekStartsOn: 1 }), 'yyyy-MM-dd');
+    } else if (dateFilter === 'thisYear') {
+      const prev = subYears(now, 1);
+      prevStart = format(startOfYear(prev), 'yyyy-MM-dd');
+      prevEnd   = format(endOfYear(prev),   'yyyy-MM-dd');
+    } else if (dateFilter === 'today') {
+      const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+      prevStart = yesterday;
+      prevEnd   = yesterday;
+    } else {
+      return null;
+    }
+    return expenses
+      .filter(e => e.date >= prevStart && e.date <= prevEnd)
+      .reduce((sum, e) => sum + e.amount, 0);
+  }, [expenses, dateFilter]);
+
+  const trendDelta = prevPeriodTotal !== null && prevPeriodTotal > 0
+    ? ((totalSpent - prevPeriodTotal) / prevPeriodTotal) * 100
+    : null;
+
   // Only show "Welcome!" after data has loaded to avoid flashing for returning users
   const isFirstTimeUser = !loading && expenses.length === 0;
 
@@ -83,6 +128,18 @@ export default function DashboardOverview() {
           <BudgetBuddyLogo size={80} />
         </div>
       </div>
+
+      {/* AI Chat hint — shown until the user dismisses it */}
+      {showChatHint && (
+        <div className="ai-hint-card">
+          <span className="ai-hint-icon">✨</span>
+          <div className="ai-hint-text">
+            <strong>BudgetBuddy has an AI assistant</strong>
+            <span>Try asking: <em>"Where did I overspend this month?"</em></span>
+          </div>
+          <button className="ai-hint-dismiss" onClick={dismissChatHint} aria-label="Dismiss">✕</button>
+        </div>
+      )}
 
       {/* Date Filter */}
       <div className="filter-controls">
@@ -108,7 +165,12 @@ export default function DashboardOverview() {
           <div className="card-content">
             <h3>Total Spent</h3>
             <p className="card-amount">${totalSpent.toFixed(2)}</p>
-            <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
+            {trendDelta !== null
+              ? <p className={`card-delta ${trendDelta >= 0 ? 'card-delta--up' : 'card-delta--down'}`}>
+                  {trendDelta >= 0 ? '↑' : '↓'} {Math.abs(trendDelta).toFixed(0)}% vs last period
+                </p>
+              : <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
+            }
           </div>
         </div>
 
