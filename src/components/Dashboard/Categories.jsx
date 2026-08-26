@@ -4,8 +4,10 @@ import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
 import { subscribeToCategories } from '../../services/categoryService';
-import { subscribeToExpenses } from '../../services/expenseService';
-import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
+import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { useExpenses } from '../../hooks/useExpenses';
+import PageHeader from '../UI/PageHeader';
+import ChartCard from '../UI/ChartCard';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useCategoryData } from '../../hooks/useCategoryData';
 import { useCategoryActions } from '../../hooks/useCategoryActions';
@@ -21,18 +23,10 @@ import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
-const DEFAULT_CATEGORIES = [
-  { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
-  { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
-  { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
-  { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
-  { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
-  { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
-];
 
 export default function Categories() {
+  const { expenses } = useExpenses();
   const [categories, setCategories] = useState([]);
-  const [expenses, setExpenses] = useState([]);
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
@@ -56,19 +50,15 @@ export default function Categories() {
 
   useEffect(() => {
     if (!currentUser) return;
-    let unsubscribeExpenses = () => {};
     let unsubscribeCategories = () => {};
     try {
-      unsubscribeExpenses = subscribeToExpenses(currentUser.uid, (data) => {
-        if (data !== null) setExpenses(data);
-      });
       unsubscribeCategories = subscribeToCategories(currentUser.uid, (data) => {
         if (data !== null) setCategories(data);
       });
     } catch (error) {
-      console.error('Error setting up listeners:', error);
+      console.error('Error setting up category listener:', error);
     }
-    return () => { unsubscribeExpenses(); unsubscribeCategories(); };
+    return () => unsubscribeCategories();
   }, [currentUser]);
 
   const allCategories = useMemo(() => [
@@ -154,16 +144,16 @@ export default function Categories() {
         />
       )}
 
-      <div className="section-header">
-        <div className="header-content">
-          <h2>Categories</h2>
-          <p className="section-subtitle">Analyze your spending by category</p>
-        </div>
-        <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
-          <LuPlus size={16} />
-          Add Category
-        </button>
-      </div>
+      <PageHeader
+        title="Categories"
+        subtitle="Analyze your spending by category"
+        action={
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+            <LuPlus size={16} />
+            Add Category
+          </button>
+        }
+      />
 
       <div className="categories-summary">
         <div className="summary-stat">
@@ -301,32 +291,19 @@ export default function Categories() {
           </div>
         </div>
         <div className="charts-section">
-          <div className="chart-container">
-            <div className="chart-card">
-              <h3>Share of Spending</h3>
-              <div className="chart-wrapper">
-                <PieChart data={categoryData} />
-              </div>
-            </div>
-          </div>
-          <div className="chart-container">
-            <div className="chart-card">
-              <h3>Monthly Trend by Category</h3>
-              <div className="chart-wrapper">
-                {hasMultipleMonths
-                  ? <BarChart data={monthlyTrendData} />
-                  : <p className="chart-empty-hint">Select a wider date range to see monthly trends</p>
-                }
-              </div>
-            </div>
-          </div>
+          <ChartCard title="Share of Spending">
+            <PieChart data={categoryData} />
+          </ChartCard>
+          <ChartCard title="Monthly Trend by Category">
+            {hasMultipleMonths
+              ? <BarChart data={monthlyTrendData} />
+              : <p className="chart-empty-hint">Select a wider date range to see monthly trends</p>
+            }
+          </ChartCard>
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <div className="modal-header">
-          <h2 className="modal-title">Add New Category</h2>
-        </div>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Add New Category">
         <form
           onSubmit={(e) => {
             e.preventDefault();

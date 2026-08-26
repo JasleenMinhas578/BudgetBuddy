@@ -23,7 +23,7 @@ describe('Landing page', () => {
       screen.getByText((content, node) => node.textContent === 'Master Your Financial Future')
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Start for Free/i })).toHaveAttribute('href', '/signup');
-    expect(screen.getByRole('link', { name: /Sign In/i })).toHaveAttribute('href', '/login');
+    expect(screen.getAllByRole('link', { name: /Sign In/i })[0]).toHaveAttribute('href', '/login');
     expect(screen.getByText(/Why Choose BudgetBuddy/)).toBeInTheDocument();
   });
 });

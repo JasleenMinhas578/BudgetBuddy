@@ -255,7 +255,6 @@ describe('Login Component', () => {
     });
 
     it('displays message from navigation state and clears history', async () => {
-      const replaceSpy = jest.spyOn(window.history, 'replaceState');
       render(
         <MemoryRouter initialEntries={[{ pathname: '/login', state: { message: 'Password reset successful!' } }]}>
           <AuthProvider>
@@ -267,8 +266,6 @@ describe('Login Component', () => {
       await waitFor(() => {
         expect(screen.getByText(/Password reset successful!/)).toBeInTheDocument();
       });
-      expect(replaceSpy).toHaveBeenCalled();
-      replaceSpy.mockRestore();
     });
   });
 

@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import {
-  LuArrowLeft, LuWallet, LuAlertTriangle, LuCheckCircle, LuLogIn,
-} from 'react-icons/lu';
+import { LuWallet, LuLogIn } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
-import { motion } from 'framer-motion';
-import '../../styles/main.css';
+import AuthLayout from './AuthLayout';
+import AuthSubmitButton from './AuthSubmitButton';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -16,47 +14,30 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for success message from password reset
   useEffect(() => {
     if (location.state?.message) {
       setMessage(location.state.message);
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, navigate]);
+  }, [location, navigate, setMessage]);
 
-  /**
-   * Handle form submission
-   * 
-   * This function:
-   * 1. Prevents default form submission
-   * 2. Clears any previous errors
-   * 3. Sets loading state
-   * 4. Attempts to log in the user
-   * 5. Navigates to dashboard on success
-   * 6. Displays error message on failure
-   * 
-   * @param {Event} e - Form submission event
-   */
   async function handleSubmit(e) {
     e.preventDefault();
-    
     try {
-      // Clear any previous error messages
       setError('');
-      
-      // Set loading state to show spinner/disable form
       setLoading(true);
-      
-      // Attempt to log in with Firebase
       await login(email, password);
-      
-      // Redirect to dashboard on successful login
       navigate('/dashboard');
     } catch (error) {
-      // Display error message to user
       switch (error.code) {
         case 'auth/invalid-credential':
           setError('Invalid email or password');
+          break;
+        case 'auth/user-not-found':
+          setError('No account found with this email');
+          break;
+        case 'auth/wrong-password':
+          setError('Incorrect password');
           break;
         case 'auth/invalid-email':
           setError('Invalid email format');
@@ -68,126 +49,59 @@ export default function Login() {
           setError('Failed to log in. Please try again.');
       }
     } finally {
-      // Always reset loading state
       setLoading(false);
     }
   }
 
   return (
-    <div className="auth-container">
-      {/* Background decoration */}
-      <div className="auth-bg">
-        <div className="auth-shape auth-shape-1"></div>
-        <div className="auth-shape auth-shape-2"></div>
-        <div className="auth-shape auth-shape-3"></div>
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="auth-card"
-      >
-        <div className="auth-header">
-          <button 
-            onClick={() => navigate('/')} 
-            className="btn-back"
-            aria-label="Go back to home"
-          >
-            <LuArrowLeft size={16} />
-            Back
-          </button>
-        </div>
-        
-        <div className="auth-brand">
-          <div className="auth-logo"><LuWallet size={32} /></div>
-          <h2 className="auth-title">Welcome Back</h2>
-          <p className="auth-subtitle">Sign in to your BudgetBuddy account</p>
-        </div>
-
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="auth-error"
-          >
-            <LuAlertTriangle size={16} className="error-icon" />
-            {error}
-          </motion.div>
-        )}
-
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="auth-success"
-          >
-            <LuCheckCircle size={16} />
-            {message}
-          </motion.div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <div className="input-wrapper">
-              {/* <span className="input-icon">📧</span> */}
-            <input 
-              type="email" 
-              id="email" 
+    <AuthLayout
+      backTo="/"
+      logoIcon={<LuWallet size={32} />}
+      title="Welcome Back"
+      subtitle="Sign in to your BudgetBuddy account"
+      error={error}
+      message={message}
+      footer={<p>Don't have an account? <Link to="/signup" className="auth-link">Sign Up</Link></p>}
+    >
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="email">Email Address</label>
+          <div className="input-wrapper">
+            <input
+              type="email"
+              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-              required 
+              placeholder="Enter your email"
+              required
             />
-            </div>
           </div>
-          
-          <div className="form-group">
-            <div className="form-group-header">
-              <label htmlFor="password">Password</label>
-              <Link to="/forgot-password" className="auth-link">
-                Forgot Password?
-              </Link>
-            </div>
-            <div className="input-wrapper">
-              {/* <span className="input-icon">🔒</span> */}
-            <input 
-              type="password" 
-              id="password" 
+        </div>
+
+        <div className="form-group">
+          <div className="form-group-header">
+            <label htmlFor="password">Password</label>
+            <Link to="/forgot-password" className="auth-link">
+              Forgot Password?
+            </Link>
+          </div>
+          <div className="input-wrapper">
+            <input
+              type="password"
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-              required 
+              placeholder="Enter your password"
+              required
             />
-            </div>
           </div>
-          
-          <motion.button 
-            disabled={loading} 
-            type="submit" 
-            className="btn btn-primary auth-btn"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <span className="loading-spinner">
-                <div className="spinner"></div>
-                Signing in...
-              </span>
-            ) : (
-              <>
-                <LuLogIn size={16} />
-                Sign In
-              </>
-            )}
-          </motion.button>
-        </form>
-        
-        <div className="auth-footer">
-          <p>Don't have an account? <Link to="/signup" className="auth-link">Sign Up</Link></p>
         </div>
-      </motion.div>
-    </div>
+
+        <AuthSubmitButton loading={loading} loadingText="Signing in...">
+          <LuLogIn size={16} />
+          Sign In
+        </AuthSubmitButton>
+      </form>
+    </AuthLayout>
   );
 }

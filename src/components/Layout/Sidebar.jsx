@@ -13,6 +13,7 @@ import {
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
+import UserAvatar from '../UI/UserAvatar';
 import '../../styles/main.css';
 
 const navItems = [
@@ -85,9 +86,7 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
           <div className="user-section">
             <div className="user-info">
               <div className="user-avatar-container">
-                <div className="user-avatar">
-                  <span>{(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}</span>
-                </div>
+                <UserAvatar user={currentUser} />
                 <span className="user-status">Online</span>
               </div>
               {currentUser.displayName && (

@@ -1,12 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import { generateSummary } from '../services/aiService';
-
-const safeFormatDate = (dateStr, fmt) => {
-  if (!dateStr) return '';
-  try { return format(parseISO(dateStr), fmt); } catch { return ''; }
-};
+import { safeFormatDate } from '../utils/formatDate';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);

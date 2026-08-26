@@ -19,7 +19,9 @@ jest.mock('../services/expenseService', () => ({
 jest.mock('firebase/firestore', () => ({
   collection: jest.fn(() => 'collection-ref'),
   query: jest.fn(() => 'query-ref'),
-  onSnapshot: jest.fn()
+  onSnapshot: jest.fn(),
+  orderBy: jest.fn(() => 'order-ref'),
+  serverTimestamp: jest.fn(() => new Date()),
 }));
 
 jest.mock('../firebaseConfig', () => ({
@@ -265,7 +267,7 @@ describe('ExpenseForm component', () => {
       id: 'fallback',
       amount: '',
       title: '',
-      category: '',
+      category: 'Food',
       date: ''
     };
 

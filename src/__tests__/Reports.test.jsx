@@ -6,7 +6,7 @@
 // - Confirms that the detailed expenses table renders filtered data, shows empty states, and that category/month aggregations feeding charts are computed correctly.
 // - Ensures Firebase listeners are set up with the correct paths, handle error callbacks gracefully, and still allow the UI to render.
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 
 // Now import the components after mocks are set up
@@ -157,32 +157,32 @@ describe('Reports Component', () => {
       title: 'Grocery Shopping',
       amount: 100,
       category: 'Food',
-      date: '2024-01-15',
-      createdAt: new Date('2024-01-15')
+      date: '2026-08-05',
+      createdAt: new Date('2026-08-05')
     },
     {
       id: '2',
       title: 'Gas',
       amount: 50,
       category: 'Transport',
-      date: '2024-01-20',
-      createdAt: new Date('2024-01-20')
+      date: '2026-08-10',
+      createdAt: new Date('2026-08-10')
     },
     {
       id: '3',
       title: 'Movie',
       amount: 25,
       category: 'Entertainment',
-      date: '2024-02-10',
-      createdAt: new Date('2024-02-10')
+      date: '2026-08-15',
+      createdAt: new Date('2026-08-15')
     },
     {
       id: '4',
       title: 'Restaurant',
       amount: 75,
       category: 'Food',
-      date: '2024-02-15',
-      createdAt: new Date('2024-02-15')
+      date: '2026-08-20',
+      createdAt: new Date('2026-08-20')
     }
   ];
 
@@ -201,15 +201,13 @@ describe('Reports Component', () => {
 
     // Mock Firebase Auth
     onAuthStateChanged.mockImplementation((auth, callback) => {
-      setTimeout(() => {
-        callback(mockUser);
-      }, 0);
+      act(() => callback(mockUser));
       return () => {};
     });
 
     // Mock onSnapshot with expenses
     onSnapshot.mockImplementation((query, callback, errorCallback) => {
-      setTimeout(() => {
+      act(() => {
         callback({
           forEach: (fn) => {
             mockExpenses.forEach(expense => {
@@ -220,7 +218,7 @@ describe('Reports Component', () => {
             });
           }
         });
-      }, 0);
+      });
       return () => {};
     });
   });
@@ -277,7 +275,7 @@ describe('Reports Component', () => {
       const allTimeButtons = screen.getAllByText('All Time');
       expect(allTimeButtons.length).toBeGreaterThan(0);
       expect(screen.getByText('Today')).toBeInTheDocument();
-      expect(screen.getByText('This Month')).toBeInTheDocument();
+      expect(screen.getAllByText('This Month').length).toBeGreaterThan(0);
     });
   });
 
@@ -421,14 +419,14 @@ describe('Reports Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('This Month')).toBeInTheDocument();
+        expect(screen.getAllByText('This Month').length).toBeGreaterThan(0);
       }, { timeout: 3000 });
 
-      const thisMonthButton = screen.getByText('This Month');
-      fireEvent.click(thisMonthButton);
-      
-      // Verify the button is in the document
-      expect(thisMonthButton).toBeInTheDocument();
+      const thisMonthButtons = screen.getAllByText('This Month');
+      fireEvent.click(thisMonthButtons[0]);
+
+      // Verify the button is still in the document after click
+      expect(screen.getAllByText('This Month').length).toBeGreaterThan(0);
 
       unmount();
     });
@@ -679,11 +677,9 @@ describe('Reports Component', () => {
     it('displays empty state when no expenses match filter', async () => {
       // Mock empty expenses
       onSnapshot.mockImplementation((query, callback) => {
-        setTimeout(() => {
-          callback({
-            forEach: (fn) => []
-          });
-        }, 0);
+        act(() => {
+          callback({ forEach: (fn) => [] });
+        });
         return () => {};
       });
 
@@ -750,12 +746,12 @@ describe('Reports Component', () => {
         expect(screen.getByText('This Month')).toBeInTheDocument();
       }, { timeout: 3000 });
 
-      // Click "This Month" filter
-      const thisMonthButton = screen.getByText('This Month');
-      fireEvent.click(thisMonthButton);
-      
-      // Verify button is in the document
-      expect(thisMonthButton).toBeInTheDocument();
+      // Click "This Month" filter (may appear as button and/or heading)
+      const thisMonthButtons = screen.getAllByText('This Month');
+      fireEvent.click(thisMonthButtons[0]);
+
+      // Verify button is still in the document
+      expect(screen.getAllByText('This Month').length).toBeGreaterThan(0);
 
       unmount();
     });
@@ -770,13 +766,13 @@ describe('Reports Component', () => {
           title: 'Large Expense',
           amount: 200,
           category: 'Food',
-          date: '2024-01-15',
-          createdAt: new Date('2024-01-15')
+          date: '2026-08-15',
+          createdAt: new Date('2026-08-15')
         }
       ];
 
       onSnapshot.mockImplementation((query, callback) => {
-        setTimeout(() => {
+        act(() => {
           callback({
             forEach: (fn) => {
               insightExpenses.forEach(expense => {
@@ -787,7 +783,7 @@ describe('Reports Component', () => {
               });
             }
           });
-        }, 0);
+        });
         return () => {};
       });
 
@@ -827,16 +823,13 @@ describe('Reports Component', () => {
 
     it('handles Firebase errors gracefully', async () => {
       onSnapshot.mockImplementation((query, callback, errorCallback) => {
-        setTimeout(() => {
+        act(() => {
           if (errorCallback) {
             errorCallback(new Error('Firebase error'));
           } else {
-            // Still call the success callback so component can render
-            callback({
-              forEach: (fn) => []
-            });
+            callback({ forEach: (fn) => [] });
           }
-        }, 0);
+        });
         return () => {};
       });
 

@@ -20,7 +20,8 @@ jest.mock('firebase/auth', () => ({
   onAuthStateChanged: jest.fn(),
   getAuth: jest.fn(() => ({})),
   sendPasswordResetEmail: jest.fn(),
-  confirmPasswordReset: jest.fn()
+  confirmPasswordReset: jest.fn(),
+  updateProfile: jest.fn().mockResolvedValue({}),
 }));
 
 // Mock Firebase config
@@ -176,7 +177,7 @@ describe('Authentication Flow Tests', () => {
     it('should handle successful signup flow', async () => {
       const mockUser = { uid: '123', email: 'test@example.com' };
       createUserWithEmailAndPassword.mockResolvedValue({ user: mockUser });
-      
+
       // Mock auth state change after signup
       onAuthStateChanged.mockImplementation((auth, callback) => {
         act(() => {
@@ -196,6 +197,7 @@ describe('Authentication Flow Tests', () => {
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
       const submitButton = screen.getByRole('button', { name: /create account/i });
 
+      fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: 'Test User' } });
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
@@ -330,6 +332,7 @@ describe('Authentication Flow Tests', () => {
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
       const submitButton = screen.getByRole('button', { name: /create account/i });
 
+      fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: 'Test User' } });
       fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
@@ -356,6 +359,7 @@ describe('Authentication Flow Tests', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i });
 
       // Use a password that passes client-side validation but fails Firebase validation
+      fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: 'Test User' } });
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
@@ -379,6 +383,7 @@ describe('Authentication Flow Tests', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i });
 
       // Test password too short
+      fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: 'Test User' } });
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'short' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'short' } });
@@ -542,7 +547,7 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to log in. Please try again.')).toBeInTheDocument();
+        expect(screen.getByText('Too many attempts. Please try again later.')).toBeInTheDocument();
       });
     });
   });

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
 import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
 import { processMessage } from '../services/aiService';
+import { getDateRangeForPreset } from './useDateFilter';
 
 const ACTION_TYPES = [
   'expense_confirm', 'category_confirm',
@@ -48,29 +49,6 @@ const getPendingReminder = (currentMessages) => {
   return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
 };
 
-const buildPresetRange = (label) => {
-  const today = new Date();
-  const fmt = (d) => d.toISOString().split('T')[0];
-  switch (label) {
-    case 'Today':      return { label: 'today',      from: fmt(today), to: fmt(today) };
-    case 'This Week': {
-      const start = new Date(today); start.setDate(today.getDate() - 6);
-      return { label: 'this week', from: fmt(start), to: fmt(today) };
-    }
-    case 'This Month': {
-      const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { label: 'this month', from: fmt(start), to: fmt(today) };
-    }
-    case 'Last Month': {
-      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const end   = new Date(today.getFullYear(), today.getMonth(), 0);
-      return { label: 'last month', from: fmt(start), to: fmt(end) };
-    }
-    case 'This Year':  return { label: 'this year', from: `${today.getFullYear()}-01-01`, to: fmt(today) };
-    case 'All Time':   return { label: 'all time',  from: '2000-01-01', to: fmt(today) };
-    default:           return null;
-  }
-};
 
 export function useAIChat() {
   const { currentUser } = useAuth();
@@ -186,7 +164,7 @@ export function useAIChat() {
   }, [currentUser]);
 
   const handlePickDateRange = useCallback(async (idx, presetLabel, originalQuestion) => {
-    const range = buildPresetRange(presetLabel);
+    const range = getDateRangeForPreset(presetLabel);
     if (!range) return;
 
     setSessionDateRange(range);

@@ -69,10 +69,7 @@ export default function Dashboard() {
         <LuPlus size={22} />
       </button>
 
-      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)}>
-        <div className="modal-header">
-          <h2 className="modal-title">Add New Expense</h2>
-        </div>
+      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)} title="Add New Expense">
         <ExpenseForm
           onExpenseAdded={() => setIsAddExpenseOpen(false)}
           onCancel={() => setIsAddExpenseOpen(false)}

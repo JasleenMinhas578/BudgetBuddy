@@ -25,6 +25,8 @@ jest.mock('firebase/firestore', () => ({
   query: jest.fn(),
   onSnapshot: jest.fn(),
   addDoc: jest.fn(),
+  orderBy: jest.fn(() => 'mock-order-by'),
+  serverTimestamp: jest.fn(() => new Date()),
 }));
 
 // Mock Firebase config

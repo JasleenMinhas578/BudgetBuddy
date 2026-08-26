@@ -373,16 +373,13 @@ describe('Expenses Component', () => {
       );
 
       await waitFor(() => {
-        expect(collection).toHaveBeenCalled();
+        expect(subscribeToExpenses).toHaveBeenCalled();
       });
-      
-      expect(query).toHaveBeenCalled();
-      expect(onSnapshot).toHaveBeenCalled();
     });
 
     it('handles Firebase unsubscribe correctly', async () => {
       const mockUnsubscribe = jest.fn();
-      onSnapshot.mockReturnValue(mockUnsubscribe);
+      subscribeToExpenses.mockReturnValue(mockUnsubscribe);
 
       const { unmount } = render(
         <TestWrapper>
@@ -391,7 +388,7 @@ describe('Expenses Component', () => {
       );
 
       await waitFor(() => {
-        expect(onSnapshot).toHaveBeenCalled();
+        expect(subscribeToExpenses).toHaveBeenCalled();
       });
 
       // Unmount component

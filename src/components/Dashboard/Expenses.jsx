@@ -1,10 +1,13 @@
 /* istanbul ignore file */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LuPlus, LuSearch, LuX } from 'react-icons/lu';
-import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/expenseService';
+import { deleteExpense, updateExpense } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
+import { useExpenses } from '../../hooks/useExpenses';
+import { useToast } from '../../hooks/useToast';
+import PageHeader from '../UI/PageHeader';
 import Toast from '../UI/Toast';
 import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
@@ -15,10 +18,10 @@ import ExpenseTable from '../UI/ExpenseTable';
 import ConfirmDialog from '../UI/ConfirmDialog';
 
 export default function Expenses() {
-  const [expenses, setExpenses] = useState([]);
+  const { expenses } = useExpenses();
+  const { toast, showToast, hideToast } = useToast();
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
-  const [toast, setToast] = useState(null);
 
   const { currentUser } = useAuth();
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
@@ -26,26 +29,6 @@ export default function Expenses() {
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    if (!currentUser) return;
-
-    let unsubscribe = () => {};
-
-    try {
-      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        if (expensesData !== null) setExpenses(expensesData);
-      });
-    } catch (error) {
-      console.error("Error setting up listeners:", error);
-      setToast({
-        message: 'Error loading data. Please refresh the page.',
-        type: 'error'
-      });
-    }
-
-    return () => unsubscribe();
-  }, [currentUser]);
 
 
 
@@ -58,10 +41,10 @@ export default function Expenses() {
     setPendingDeleteId(null);
     try {
       await deleteExpense(currentUser.uid, pendingDeleteId);
-      setToast({ message: 'Expense deleted successfully!', type: 'success' });
+      showToast('Expense deleted successfully!', 'success');
     } catch (error) {
       console.error('Error deleting expense: ', error);
-      setToast({ message: 'Failed to delete expense. Please try again.', type: 'error' });
+      showToast('Failed to delete expense. Please try again.', 'error');
     }
   };
 
@@ -84,17 +67,11 @@ export default function Expenses() {
         category: updatedExpense.category,
         date: updatedExpense.date,
       });
-      setToast({
-        message: `Expense "${updatedExpense.title}" updated successfully!`,
-        type: 'success'
-      });
+      showToast(`Expense "${updatedExpense.title}" updated successfully!`, 'success');
       setIsEditExpenseFormOpen(false);
       setExpenseToEdit(null);
     } catch (error) {
-      setToast({
-        message: 'Failed to update expense. Please try again.',
-        type: 'error'
-      });
+      showToast('Failed to update expense. Please try again.', 'error');
     }
   };
 
@@ -132,20 +109,20 @@ export default function Expenses() {
           message={toast.message}
           type={toast.type}
           isVisible={true}
-          onClose={() => setToast(null)}
+          onClose={hideToast}
         />
       )}
       
-      <div className="section-header">
-        <div className="header-content">
-        <h2>Expenses</h2>
-          <p className="section-subtitle">Track and manage your expenses</p>
-        </div>
-        <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
-          <LuPlus size={16} />
-          Add Expense
-        </button>
-      </div>
+      <PageHeader
+        title="Expenses"
+        subtitle="Track and manage your expenses"
+        action={
+          <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
+            <LuPlus size={16} />
+            Add Expense
+          </button>
+        }
+      />
 
       {/* Summary Stats */}
       <div className="expenses-summary">
@@ -214,20 +191,13 @@ export default function Expenses() {
       />
       
       {/* Expense Form Modal */}
-      <Modal isOpen={isExpenseFormOpen} onClose={closeAddExpenseModal}>
-        <div className="modal-header">
-          <h2 className="modal-title">Add New Expense</h2>
-        </div>
-        <ExpenseForm 
-          onExpenseAdded={handleExpenseAdded} 
+      <Modal isOpen={isExpenseFormOpen} onClose={closeAddExpenseModal} title="Add New Expense">
+        <ExpenseForm
+          onExpenseAdded={handleExpenseAdded}
           onCancel={closeAddExpenseModal}
         />
       </Modal>
-      {/* Edit Expense Form Modal */}
-      <Modal isOpen={isEditExpenseFormOpen} onClose={closeEditExpenseModal}>
-        <div className="modal-header">
-          <h2 className="modal-title">Edit Expense</h2>
-        </div>
+      <Modal isOpen={isEditExpenseFormOpen} onClose={closeEditExpenseModal} title="Edit Expense">
         <ExpenseForm
           onExpenseEdited={handleUpdateExpense}
           onCancel={closeEditExpenseModal}

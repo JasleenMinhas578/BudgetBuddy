@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { LuDollarSign, LuTrendingUp, LuAward, LuPlus } from 'react-icons/lu';
 import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
-import { subscribeToExpenses } from '../../services/expenseService';
-import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
+import { useExpenses } from '../../hooks/useExpenses';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import ExpenseTable from '../UI/ExpenseTable';
@@ -15,9 +14,7 @@ import '../../styles/main.css';
 
 
 export default function DashboardOverview() {
-  // State management for data
-  const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { expenses, loading } = useExpenses();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [showChatHint, setShowChatHint] = useState(false);
 
@@ -33,32 +30,6 @@ export default function DashboardOverview() {
   };
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
-
-  // Get current user from authentication context
-  const { currentUser } = useAuth();
-
-  /**
-   * Set up real-time data listeners for expenses and categories
-   * This effect runs when the component mounts and when currentUser changes
-   */
-  useEffect(() => {
-    if (!currentUser) return;
-
-    let unsubscribe;
-    try {
-      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData, error) => {
-        if (!error) setExpenses(expensesData);
-        setLoading(false);
-      });
-    } catch (error) {
-      console.error('Error loading expenses:', error);
-      setLoading(false);
-    }
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [currentUser]);
 
   // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -224,10 +195,7 @@ export default function DashboardOverview() {
         />
       </div>
 
-      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)}>
-        <div className="modal-header">
-          <h2 className="modal-title">Add New Expense</h2>
-        </div>
+      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)} title="Add New Expense">
         <ExpenseForm
           onExpenseAdded={() => setIsAddExpenseOpen(false)}
           onCancel={() => setIsAddExpenseOpen(false)}

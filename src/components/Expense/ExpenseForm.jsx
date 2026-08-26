@@ -2,9 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { LuChevronDown, LuCheck, LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
-import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
+import { subscribeToCategories } from '../../services/categoryService';
+import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import '../../styles/main.css';
 
 export default function ExpenseForm({
@@ -41,56 +40,29 @@ export default function ExpenseForm({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Default categories
-  const defaultCategories = [
-    { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
-    { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
-    { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
-    { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
-    { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
-    { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
-  ];
-
   // State for custom categories
   const [customCategories, setCustomCategories] = useState([]);
 
-  // Fetch custom categories from Firestore
+  // Fetch custom categories from Firestore via the service layer
   useEffect(() => {
     if (!currentUser) return;
-  
-    // Initialize unsubscribe as a no-op function first
     let unsubscribe = () => {};
-  
     try {
-      const q = query(collection(db, 'users', currentUser.uid, 'categories'));
-      
-      // Assign the real unsubscribe function
-      unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const cats = [];
-        querySnapshot.forEach((doc) => {
-          cats.push({ id: doc.id, name: doc.data().name, Icon: LuTag });
-        });
-        setCustomCategories(cats);
+      unsubscribe = subscribeToCategories(currentUser.uid, (cats) => {
+        setCustomCategories(cats.map(cat => ({ ...cat, Icon: LuTag })));
       });
-  
     } catch (error) {
       console.error("Error setting up categories listener:", error);
     }
-  
-    // Return cleanup function
     return () => {
-      try {
-        unsubscribe();
-      } catch (error) {
-        console.error("Error during cleanup:", error);
-      }
+      try { unsubscribe(); } catch (error) { console.error("Error during cleanup:", error); }
     };
   }, [currentUser]);
 
   // Merge default and custom categories, avoiding duplicates by name
   const allCategories = [
-    ...defaultCategories,
-    ...customCategories.filter(cat => !defaultCategories.some(def => def.name === cat.name))
+    ...DEFAULT_CATEGORIES,
+    ...customCategories.filter(cat => !DEFAULT_CATEGORIES.some(def => def.name === cat.name))
   ];
 
   /**

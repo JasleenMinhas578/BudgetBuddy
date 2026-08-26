@@ -1,16 +1,10 @@
 import { useMemo } from 'react';
-import { format, parseISO, parse } from 'date-fns';
+import { parse, parseISO } from 'date-fns';
 import { getCategoryColor } from '../utils/getCategoryColor';
-
-const safeFormatDate = (dateStr, fmt) => {
-  if (!dateStr) return '';
-  try { return format(parseISO(dateStr), fmt); } catch { return ''; }
-};
+import { safeFormatDate, toAmount } from '../utils/formatDate';
 
 const validCategory = (c) =>
   c && c !== 'undefined' && c !== 'null' && typeof c === 'string' && c.trim() !== '';
-
-const toAmount = (v) => (typeof v === 'number' ? v : 0);
 
 export function useReportData(filteredExpenses) {
   const totalAmount = useMemo(

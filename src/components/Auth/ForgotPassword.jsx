@@ -1,80 +1,45 @@
 /* istanbul ignore file */
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  LuArrowLeft, LuLock, LuAlertTriangle, LuCheckCircle, LuMail,
-} from 'react-icons/lu';
+import { Link } from 'react-router-dom';
+import { LuLock, LuMail, LuCheckCircle } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
-import { motion } from 'framer-motion';
-import '../../styles/main.css';
+import AuthLayout from './AuthLayout';
+import AuthSubmitButton from './AuthSubmitButton';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
   const { resetPassword } = useAuth();
-  const navigate = useNavigate();
 
-  /**
-   * Handle form submission
-   * 
-   * This function:
-   * 1. Prevents default form submission
-   * 2. Clears any previous errors/messages
-   * 3. Sets loading state
-   * 4. Sends password reset email
-   * 5. Displays success message or error
-   * 
-   * @param {Event} e - Form submission event
-   */
   async function handleSubmit(e) {
     e.preventDefault();
-    
     try {
-      // Clear any previous error messages
       setError('');
       setMessage('');
-      
-      // Set loading state to show spinner/disable form
       setLoading(true);
-      
-      // Configure action code settings to use our custom reset password page
-      // Firebase will append the oobCode parameter to this URL
+
       const resetUrl = `${window.location.origin}/reset-password`;
-      
-      // For local development, you might need to use localhost explicitly
-      // For production, use your actual domain
       const actionCodeSettings = {
         url: resetUrl,
-        handleCodeInApp: false, // For web apps, set to false so the link opens in browser
+        handleCodeInApp: false,
       };
-      
-      // Send password reset email via Firebase
-      // Note: If you get "unauthorized-continue-uri" error, you need to add your domain
-      // to Firebase Console → Authentication → Settings → Authorized domains
+
       try {
         await resetPassword(email, actionCodeSettings);
       } catch (urlError) {
-        // If custom URL fails, try without it (uses Firebase default)
         if (urlError.code === 'auth/unauthorized-continue-uri' || urlError.code === 'auth/invalid-continue-uri') {
           console.warn('Custom URL not authorized, trying with Firebase default...');
           console.warn('Please add your domain to Firebase Console → Authentication → Settings → Authorized domains');
-          // Fallback: use Firebase default email (will redirect to your app)
           await resetPassword(email);
         } else {
-          throw urlError; // Re-throw if it's a different error
+          throw urlError;
         }
       }
-      
-      // Display success message (only reached if email was sent successfully)
+
       setMessage('Check your email for password reset instructions. If you don\'t see it, check your spam folder.');
     } catch (error) {
-      // Log the full error for debugging
       console.error('Password reset error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
-      
-      // Display error message to user
       switch (error.code) {
         case 'auth/invalid-credential':
           setError('No account found with this email');
@@ -95,112 +60,50 @@ export default function ForgotPassword() {
           setError(`Failed to send reset email: ${error.message || 'Please try again.'}`);
       }
     } finally {
-      // Always reset loading state
       setLoading(false);
     }
   }
 
   return (
-    <div className="auth-container">
-      {/* Background decoration */}
-      <div className="auth-bg">
-        <div className="auth-shape auth-shape-1"></div>
-        <div className="auth-shape auth-shape-2"></div>
-        <div className="auth-shape auth-shape-3"></div>
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="auth-card"
-      >
-        <div className="auth-header">
-          <button 
-            onClick={() => navigate('/login')} 
-            className="btn-back"
-            aria-label="Go back to login"
-          >
-            <LuArrowLeft size={16} />
-            Back
-          </button>
-        </div>
-        
-        <div className="auth-brand">
-          <div className="auth-logo"><LuLock size={32} /></div>
-          <h2 className="auth-title">Reset Password</h2>
-          <p className="auth-subtitle">Enter your email to receive password reset instructions</p>
-        </div>
-
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="auth-error"
-          >
-            <LuAlertTriangle size={16} className="error-icon" />
-            {error}
-          </motion.div>
-        )}
-
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="auth-success"
-          >
-            <LuCheckCircle size={16} />
-            {message}
-          </motion.div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <div className="input-wrapper">
-              <input 
-                type="email" 
-                id="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required 
-                disabled={!!message}
-              />
-            </div>
+    <AuthLayout
+      backTo="/login"
+      logoIcon={<LuLock size={32} />}
+      title="Reset Password"
+      subtitle="Enter your email to receive password reset instructions"
+      error={error}
+      message={message}
+      footer={<p>Remember your password? <Link to="/login" className="auth-link">Sign In</Link></p>}
+    >
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="email">Email Address</label>
+          <div className="input-wrapper">
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              disabled={!!message}
+            />
           </div>
-          
-          <motion.button 
-            disabled={loading || !!message} 
-            type="submit" 
-            className="btn btn-primary auth-btn"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading ? (
-              <span className="loading-spinner">
-                <div className="spinner"></div>
-                Sending...
-              </span>
-            ) : message ? (
-              <>
-                <LuCheckCircle size={16} />
-                Email Sent
-              </>
-            ) : (
-              <>
-                <LuMail size={16} />
-                Send Reset Link
-              </>
-            )}
-          </motion.button>
-        </form>
-        
-        <div className="auth-footer">
-          <p>Remember your password? <Link to="/login" className="auth-link">Sign In</Link></p>
         </div>
-      </motion.div>
-    </div>
+
+        <AuthSubmitButton loading={loading} loadingText="Sending..." disabled={!!message}>
+          {message ? (
+            <>
+              <LuCheckCircle size={16} />
+              Email Sent
+            </>
+          ) : (
+            <>
+              <LuMail size={16} />
+              Send Reset Link
+            </>
+          )}
+        </AuthSubmitButton>
+      </form>
+    </AuthLayout>
   );
 }
-

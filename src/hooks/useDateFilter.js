@@ -94,3 +94,27 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
 
   return { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths };
 }
+
+export function getDateRangeForPreset(label) {
+  const today = new Date();
+  switch (label) {
+    case 'Today':
+      return { label: 'today', from: format(today, 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+    case 'This Week': {
+      const start = startOfWeek(today, { weekStartsOn: 1 });
+      return { label: 'this week', from: format(start, 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+    }
+    case 'This Month':
+      return { label: 'this month', from: format(startOfMonth(today), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+    case 'Last Month': {
+      const last = subMonths(today, 1);
+      return { label: 'last month', from: format(startOfMonth(last), 'yyyy-MM-dd'), to: format(endOfMonth(last), 'yyyy-MM-dd') };
+    }
+    case 'This Year':
+      return { label: 'this year', from: format(startOfYear(today), 'yyyy-MM-dd'), to: format(today, 'yyyy-MM-dd') };
+    case 'All Time':
+      return { label: 'all time', from: '2000-01-01', to: format(today, 'yyyy-MM-dd') };
+    default:
+      return null;
+  }
+}

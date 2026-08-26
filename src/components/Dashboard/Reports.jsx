@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-import { useState, useEffect } from 'react';
 import {
   LuUpload, LuFileText, LuFileSpreadsheet, LuLoader,
   LuX, LuSparkles, LuZap, LuLightbulb, LuBarChart2,
@@ -8,8 +7,9 @@ import ExpenseTable from '../UI/ExpenseTable';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import { useReportData } from '../../hooks/useReportData';
 import { useReportExport } from '../../hooks/useReportExport';
-import { subscribeToExpenses } from '../../services/expenseService';
-import { useAuth } from '../../context/AuthContext';
+import { useExpenses } from '../../hooks/useExpenses';
+import PageHeader from '../UI/PageHeader';
+import ChartCard from '../UI/ChartCard';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import PieChart from '../Charts/PieChart';
@@ -18,8 +18,7 @@ import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
 import '../../styles/main.css';
 
 export default function Reports() {
-  const [expenses, setExpenses] = useState([]);
-  const { currentUser } = useAuth();
+  const { expenses } = useExpenses();
   const dateRangeCtx = useDateRangeContext();
   const {
     filteredExpenses, dateFilter, setDateFilter,
@@ -41,58 +40,45 @@ export default function Reports() {
     generatePDF,
   } = useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory });
 
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        if (expensesData !== null) setExpenses(expensesData);
-      });
-    } catch (error) {
-      console.error('Error setting up listener:', error);
-    }
-    return () => unsubscribe();
-  }, [currentUser]);
-
   return (
     <div className="reports-container">
-      <div className="section-header">
-        <div className="header-content">
-          <h2>Reports & Analytics</h2>
-          <p className="section-subtitle">Comprehensive analysis of your spending patterns</p>
-        </div>
-        <div className="export-actions" ref={exportDropdownRef}>
-          <button
-            onClick={handleGenerateSummary}
-            disabled={aiSummaryLoading || filteredExpenses.length === 0}
-            className="btn btn-ai-summary"
-          >
-            {aiSummaryLoading ? <LuLoader size={15} /> : <LuSparkles size={15} />}
-            {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
-          </button>
-          <div className="export-btn-wrapper">
+      <PageHeader
+        title="Reports & Analytics"
+        subtitle="Comprehensive analysis of your spending patterns"
+        action={
+          <div className="export-actions" ref={exportDropdownRef}>
             <button
-              onClick={() => setShowExportOptions(!showExportOptions)}
-              className="btn btn-secondary"
+              onClick={handleGenerateSummary}
+              disabled={aiSummaryLoading || filteredExpenses.length === 0}
+              className="btn btn-ai-summary"
             >
-              <LuUpload size={15} />
-              Export
+              {aiSummaryLoading ? <LuLoader size={15} /> : <LuSparkles size={15} />}
+              {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
             </button>
-            {showExportOptions && (
-              <div className="export-dropdown">
-                <button onClick={generatePDF} className="export-option" disabled={isGeneratingPDF}>
-                  {isGeneratingPDF ? <LuLoader size={14} /> : <LuFileText size={14} />}
-                  {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
-                </button>
-                <button onClick={exportToCSV} className="export-option">
-                  <LuFileSpreadsheet size={14} />
-                  Export as CSV
-                </button>
-              </div>
-            )}
+            <div className="export-btn-wrapper">
+              <button
+                onClick={() => setShowExportOptions(!showExportOptions)}
+                className="btn btn-secondary"
+              >
+                <LuUpload size={15} />
+                Export
+              </button>
+              {showExportOptions && (
+                <div className="export-dropdown">
+                  <button onClick={generatePDF} className="export-option" disabled={isGeneratingPDF}>
+                    {isGeneratingPDF ? <LuLoader size={14} /> : <LuFileText size={14} />}
+                    {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
+                  </button>
+                  <button onClick={exportToCSV} className="export-option">
+                    <LuFileSpreadsheet size={14} />
+                    Export as CSV
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="filter-controls">
         <div className="filter-section">
@@ -174,18 +160,12 @@ export default function Reports() {
             <h3 className="section-heading-icon"><LuBarChart2 size={18} /> Charts & Visualizations</h3>
           </div>
           <div className="charts-section">
-            <div className="chart-container">
-              <h3>Spending by Category</h3>
-              <div className="chart-wrapper">
-                <PieChart data={categoryData} />
-              </div>
-            </div>
-            <div className="chart-container">
-              <h3>Monthly Trend</h3>
-              <div className="chart-wrapper">
-                <LineChart data={monthlyData} />
-              </div>
-            </div>
+            <ChartCard title="Spending by Category">
+              <PieChart data={categoryData} />
+            </ChartCard>
+            <ChartCard title="Monthly Trend">
+              <LineChart data={monthlyData} />
+            </ChartCard>
           </div>
         </div>
 

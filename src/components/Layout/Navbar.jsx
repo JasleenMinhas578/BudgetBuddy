@@ -9,6 +9,7 @@ import {
   LuLogOut,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import UserAvatar from '../UI/UserAvatar';
 import '../../styles/main.css';
 
 export default function Navbar({ setSidebarOpen, onLogoutClick }) {
@@ -53,9 +54,7 @@ export default function Navbar({ setSidebarOpen, onLogoutClick }) {
               onClick={onLogoutClick}
               title="Click to logout"
             >
-              <div className="user-avatar">
-                <span>{(currentUser.displayName || currentUser.email).charAt(0).toUpperCase()}</span>
-              </div>
+              <UserAvatar user={currentUser} />
               <div className="user-info">
                 <span className="user-name">
                   {currentUser.displayName || currentUser.email.split('@')[0]}

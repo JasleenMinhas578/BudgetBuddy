@@ -1871,35 +1871,6 @@
   .delete-icon {
     font-size: var(--font-size-xs);
   }
-  
-  /* Empty States */
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--text-secondary);
-  }
-  
-  .empty-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    opacity: 0.4;
-    color: var(--text-secondary);
-  }
-  
-  .empty-state h3 {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-  
-  .empty-state p {
-    font-size: var(--font-size-base);
-    margin-bottom: 2rem;
-  }
-  
   /* Modal Styles */
   .modal {
     position: fixed;
