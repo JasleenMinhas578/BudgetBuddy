@@ -537,10 +537,13 @@ export default function Toast() { }
 
 **Examples**:
 ```
-✅ users
-✅ expenses
-✅ categories
+✅ users         ← top-level collection; each document = one user
+✅ expenses      ← subcollection under users/{userId}/expenses/
+✅ categories    ← subcollection under users/{userId}/categories/
+✅ settings      ← subcollection under users/{userId}/settings/ (single "preferences" doc)
 ```
+
+**Note**: In this project, `expenses`, `categories`, and `settings` are **subcollections** nested under `users/{userId}/`, not top-level Firestore collections. The full paths are `users/{uid}/expenses`, `users/{uid}/categories`, and `users/{uid}/settings/preferences`.
 
 **Rationale**:
 - Firestore best practices

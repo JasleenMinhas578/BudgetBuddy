@@ -13,14 +13,16 @@ User types a message
         │
         ▼
 AIChat.jsx (React component)
-  - Loads user's expenses from Firestore
-  - Loads user's custom categories from Firestore
-  - Injects the current dashboard date filter (from DateRangeContext)
+  - Loads user's expenses from Firestore (once on chat open)
+  - Subscribes to user's custom categories via Firestore onSnapshot
+  - Holds its own sessionDateRange (internal — separate from the dashboard filter)
         │
         ▼
 aiService.js → Gemini API (REST call)
-  - Builds prompt with expense history + categories + current date range
-  - Sends to: gemini-3.6-flash model
+  - Checks daily rate limit (50 requests/day via localStorage)
+  - Pre-aggregates spending stats over filtered expenses
+  - Builds prompt: stats + last 50 individual records + categories + session date range
+  - Sends to: gemini-3.6-flash model (with retry logic for 429 errors)
         │
         ▼
 Gemini returns structured JSON
@@ -30,29 +32,33 @@ Gemini returns structured JSON
             "QUERY" | "SET_DATE_RANGE" | "ASK_DATE_RANGE" | "CHAT",
     message: "friendly response",
     expenseData?:       { title, amount, category, date },
-    editExpenseData?:   { id, updates: { title?, amount?, category?, date? } },
+    editExpenseData?:   { id, title, amount, category, date, updates: { title?, amount?, category?, date? } },
     deleteExpenseData?: { id, title, amount, category, date },
     categoryData?:      { name },
-    editCategoryData?:  { id, name },
+    editCategoryData?:  { id, name, newName },
     deleteCategoryData?:{ id, name },
-    dateRange?:         { from, to, label }
+    dateRange?:         { label, from, to }
   }
         │
         ▼
 AIChat.jsx handles the intent:
-  ADD_EXPENSE       → show confirmation card → user clicks "Add Expense" → Firestore write
-  EDIT_EXPENSE      → show confirmation card → user clicks "Confirm Edit" → Firestore update
-  DELETE_EXPENSE    → show confirmation card → user clicks "Confirm Delete" → Firestore delete
-  ADD_CATEGORY      → show confirmation card → user clicks "Add Category" → Firestore write
-  EDIT_CATEGORY     → show confirmation card → user clicks "Confirm Rename" → Firestore update
-  DELETE_CATEGORY   → show confirmation card → user clicks "Confirm Delete" → Firestore delete
-  SET_DATE_RANGE    → updates DateRangeContext (dashboard filter changes immediately)
-  ASK_DATE_RANGE    → AI asks which time period the user wants before answering a query
+  ADD_EXPENSE       → show confirmation card → user clicks "Add Expense"      → Firestore write
+  EDIT_EXPENSE      → show confirmation card → user clicks "Save Changes"     → Firestore update
+  DELETE_EXPENSE    → show confirmation card → user clicks "Delete Expense"   → Firestore delete
+  ADD_CATEGORY      → show confirmation card → user clicks "Add Category"     → Firestore write
+  EDIT_CATEGORY     → show confirmation card → user clicks "Rename"           → Firestore update
+  DELETE_CATEGORY   → show confirmation card → user clicks "Delete Category"  → Firestore delete
+  SET_DATE_RANGE    → updates the chat's own sessionDateRange (shown in header)
+                     (this does NOT change the dashboard date filter)
+  ASK_DATE_RANGE    → renders a date_range_picker card with 6 preset buttons;
+                     user picks a preset → range is set and original question is re-answered
   QUERY             → display the computed answer as a chat bubble
   CHAT              → display the conversational response as a chat bubble
 ```
 
 Every destructive or mutating action requires an explicit user confirmation click — the AI never writes to Firestore without it.
+
+> **Important**: The chat's session date range (`sessionDateRange`) is **internal to the chat widget**. It is used to focus AI queries within a chosen period. It does **not** affect the dashboard's `DateRangeContext` or any other view. If the user wants to change the dashboard date filter, they use the date filter bar on each page or the Settings page default.
 
 ---
 
@@ -91,13 +97,21 @@ POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:ge
   ],
   "generationConfig": {
     "temperature": 0.2,
-    "maxOutputTokens": 512
+    "maxOutputTokens": 512,
+    "responseMimeType": "application/json"
   }
 }
 ```
 
 - `temperature: 0.2` — keeps responses factual and consistent (lower = less creative/random)
 - `maxOutputTokens: 512` — limits response length to keep latency low
+- `responseMimeType: "application/json"` — instructs the model to return structured JSON directly
+
+### Rate limiting and retry
+
+`aiService.js` enforces a **daily limit of 50 AI requests per user**, tracked in `localStorage` under the key `bb_ai_usage` (`{ date, count }`). The counter resets at midnight. If the limit is reached, an error is thrown before the API call is made.
+
+For **429 (rate limit) errors** from Gemini, the service retries up to 3 times with delays of `[5 s, 15 s, 30 s]` before giving up and surfacing the error to the user.
 
 ### Response structure
 
@@ -124,49 +138,61 @@ The full prompt is built in `aiService.js` at call time. Here is its structure:
 ```
 You are BudgetBuddy AI, a helpful personal finance assistant. Today is {YYYY-MM-DD}.
 
-CURRENT DASHBOARD DATE RANGE: {e.g. "thisMonth" | "lastMonth" | none}
+{ACTIVE SESSION DATE RANGE: <label> (<from> to <to>). Treat this as the default period.}
+ — OR —
+{NO SESSION DATE RANGE SET. If the user asks a spending QUERY with no time period mentioned,
+ respond with intent "ASK_DATE_RANGE" to ask which period they want.}
 
-USER'S EXPENSE HISTORY ({N} records):
-[{ id, title, amount, category, date }, ...]   ← last 200 expenses from Firestore
+SPENDING SUMMARY (all {N} records{, <label>}):
+Total spent: ${grandTotal}
+Average per transaction: ${avgPerTransaction}
+Daily average: ${dailyAvg}
+By category: { "Food": 123.45, ... }
+By month (chronological): [{ "month": "2026-07", "total": 456.78 }, ...]
+By category and month: { "Food": { "2026-07": 123.45 }, ... }
+Count by category: { "Food": 12, ... }
+Count by month: { "2026-07": 18, ... }
+Largest single expense: { id, title, amount, category, date }
 
-AVAILABLE CATEGORIES (default): Food, Transport, Entertainment, Utilities, Rent, Other
-CUSTOM CATEGORIES (user-created): [{ id, name }, ...]
+RECENT EXPENSES — last {≤50} individual records (use these for EDIT or DELETE):
+[{ id, title, amount, category, date }, ...]
 
-TASK: Read the user message and respond with ONLY raw JSON — no markdown, no code fences.
+AVAILABLE CATEGORIES: Food, Transport, Entertainment, Utilities, Rent, Other, <custom...>
+CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): [{ id, name }, ...]
 
-Classify the user's intent as one of:
-- "ADD_EXPENSE"       → user wants to log/add a new expense
-- "EDIT_EXPENSE"      → user wants to change an existing expense
-- "DELETE_EXPENSE"    → user wants to remove an expense from history
-- "ADD_CATEGORY"      → user wants to create a new custom category
-- "EDIT_CATEGORY"     → user wants to rename a custom category
-- "DELETE_CATEGORY"   → user wants to delete a custom category (default categories cannot be deleted)
-- "QUERY"             → user asks a question about their spending data
-- "SET_DATE_RANGE"    → user's message IS a date range (e.g. "last month", "July 2026")
-- "ASK_DATE_RANGE"    → query has no time period; ask the user which period they mean
-- "CHAT"              → greeting, general question, or unclear intent
+TASK: Respond with ONLY raw JSON — no markdown, no code fences.
 
-Rules:
-- Include "expenseData" ONLY for ADD_EXPENSE
-- Include "editExpenseData" ONLY for EDIT_EXPENSE — "updates" contains only the changed fields; use the expense's id from history
-- Include "deleteExpenseData" ONLY for DELETE_EXPENSE — use the id from history
-- Include "categoryData" ONLY for ADD_CATEGORY
-- Include "editCategoryData" / "deleteCategoryData" ONLY for their respective intents — use the id from CUSTOM CATEGORIES
-- Default categories (Food, Transport, etc.) cannot be renamed or deleted; use CHAT and explain why
-- Include "dateRange" ONLY for SET_DATE_RANGE — parse to exact from/to dates; "label" is a short human-friendly name
-- If the expense/category is ambiguous, use CHAT and ask for more detail
+Classify intent as one of:
+- "ADD_EXPENSE"     → log/add a new expense
+- "EDIT_EXPENSE"    → change an existing expense
+- "DELETE_EXPENSE"  → remove an expense from history
+- "ADD_CATEGORY"    → create a new custom category
+- "EDIT_CATEGORY"   → rename a custom category
+- "DELETE_CATEGORY" → delete a custom category
+- "QUERY"           → spending question AND a time period is known
+- "ASK_DATE_RANGE"  → spending question but no time period is mentioned and no session range set
+- "SET_DATE_RANGE"  → the message IS a date range / time period (e.g. "last month", "July 2026")
+- "CHAT"            → greeting, unclear, or not enough info to act
+
+Key rules:
+- For QUERY: use the SPENDING SUMMARY totals (covers all records, not just the recent 50)
+- For EDIT/DELETE: find the expense in RECENT EXPENSES by id; fuzzy-match spelling mistakes
+- Default categories (Food, Transport, etc.) cannot be renamed or deleted; use CHAT if asked
+- For ASK_DATE_RANGE: ONLY use this when no session range is set AND no period is mentioned
+- If the expense or category is ambiguous, use CHAT and list the options or ask for more detail
 - If amount or title is missing for ADD_EXPENSE, use CHAT and ask for the missing detail
 
 User message: "{user's message}"
 ```
 
 **Key design decisions:**
-- Expense history is trimmed to the **last 200 records** to keep the prompt short
-- `temperature: 0.2` makes categorization and expense matching deterministic
+- The prompt pre-aggregates spending data (totals, by-category, by-month, counts, largest expense) over **all** records in the active date range — so QUERY answers are accurate even when there are thousands of records.
+- Only the **last 50 individual records** are sent for EDIT/DELETE context. This keeps the prompt small while still covering nearly all practical cases.
+- `temperature: 0.2` makes categorization and expense matching deterministic.
 - Injecting today's date lets the model interpret "yesterday", "last Monday", etc.
-- Injecting the current date-range context lets the model know what period is already active
-- Each expense in history includes its Firestore `id` so edits and deletes can target the exact record
-- JSON-only output makes parsing reliable; the regex fallback handles rare markdown wrapping
+- The session date range (or its absence) controls when `ASK_DATE_RANGE` fires — if a range is already set, the model always answers using it instead of asking.
+- Fuzzy matching rules in the prompt let the model handle common misspellings (e.g. "coffe" → "Coffee").
+- JSON-only output + `responseMimeType: "application/json"` makes parsing reliable; a regex fallback (`/\{[\s\S]*\}/`) handles rare cases where the model wraps the output in markdown.
 
 ---
 
@@ -176,28 +202,34 @@ User message: "{user's message}"
 Shows a **confirmation card** with the detected title, amount, category, and date. User must click **"Add Expense"** to write to Firestore. "Cancel" dismisses without saving.
 
 ### EDIT_EXPENSE
-Shows a **confirmation card** listing the current values and the proposed changes. User clicks **"Confirm Edit"** to apply the update to Firestore.
+Shows a **confirmation card** listing the current and proposed values for every field. User clicks **"Save Changes"** to apply the update to Firestore.
 
 ### DELETE_EXPENSE
-Shows a **confirmation card** identifying the expense to be removed. User clicks **"Confirm Delete"** to delete from Firestore.
+Shows a **confirmation card** with the full expense details. User clicks **"Delete Expense"** (styled as a danger button) to remove it from Firestore.
 
 ### ADD_CATEGORY
 Shows a **confirmation card** with the new category name. User clicks **"Add Category"** to create it in Firestore.
 
-### EDIT_CATEGORY / DELETE_CATEGORY
-Same confirmation-card pattern — user must confirm before the Firestore write happens.
+### EDIT_CATEGORY
+Shows a **confirmation card** with the current name and the proposed new name. User clicks **"Rename"** to save.
+
+### DELETE_CATEGORY
+Shows a **confirmation card** with the category name. User clicks **"Delete Category"** (danger button) to remove it. Only custom (user-created) categories can be deleted — attempting to delete a default category (Food, Transport, etc.) returns a CHAT response explaining why.
 
 ### SET_DATE_RANGE
-Calls `setDateFilter()` / `setCustomDateRange()` on `DateRangeContext` immediately (no confirmation needed — it's reversible). All dashboard views update to show the new period.
+Sets the **chat's own internal session date range** (`sessionDateRange` state in `AIChat.jsx`). This is displayed in the chat header: `Showing: <label> ×`. The × button clears it. This does **not** affect the dashboard date filter — it only scopes the AI's spending queries within the chat session.
 
 ### ASK_DATE_RANGE
-The AI responds with a clarifying question asking which time period the user wants. The user's next message is sent as a follow-up.
+Renders a **date range picker card** with 6 preset buttons: Today, This Week, This Month, Last Month, This Year, All Time. When the user picks one, the chat sets `sessionDateRange` and immediately re-runs the original question with the chosen period. The user can also type a custom range as a follow-up message.
 
 ### QUERY
-The model computes the answer from the expense history in the prompt (sums, averages, max values, etc.) and returns it in `message`. Displayed as a chat bubble.
+The model uses the pre-aggregated spending summary in the prompt (totals, by-category, by-month, daily average, largest expense) to compute accurate answers. The result appears as a plain chat bubble.
 
 ### CHAT
-For greetings, out-of-scope questions, or ambiguous messages. The model asks for clarification or responds conversationally.
+For greetings, out-of-scope questions, or messages where the intent is unclear. The model responds conversationally or asks for clarification.
+
+### Pending action reminders
+If a user sends a new message while there are **already-unconfirmed** action cards on screen (e.g. they asked to add an expense but haven't clicked "Add Expense" yet), the AI appends a **reminder bubble** after responding, listing everything that still needs confirmation. This only fires for cards that were pending _before_ the current message — it won't remind about a card that was just created.
 
 ---
 
@@ -210,12 +242,16 @@ For greetings, out-of-scope questions, or ambiguous messages. The model asks for
 "How much did I spend on food?"
 "What's my average daily spending?"
 "Add $25 for coffee today"
-"Delete my Uber expense from last Tuesday"
-"Rename my 'Snacks' category to 'Dining'"
-"Show me last month"
 ```
 
-These are hardcoded chips in `AIChat.jsx` that call `sendMessage()` directly when clicked.
+These are hardcoded chips in `AIChat.jsx` (`SUGGESTED_QUESTIONS` constant) that call `sendMessage()` directly when clicked. They are shown only when the conversation is empty.
+
+## Chat message persistence
+
+Chat messages are saved to and restored from **`sessionStorage`** under the key `ai-chat-messages`. This means:
+- Messages survive page refreshes within the same browser tab.
+- Messages are cleared when the tab is closed or the user opens a new session (unlike `localStorage`, `sessionStorage` is tab-scoped).
+- The chat's `sessionDateRange` is **not** persisted — it resets when the page reloads.
 
 ---
 
@@ -235,6 +271,29 @@ To get a key: [Google AI Studio](https://aistudio.google.com/) → Create API Ke
 > ```bash
 > curl "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY" | grep '"name"'
 > ```
+
+---
+
+## `generateSummary` — Reports Page AI Summary
+
+`aiService.js` exports a second function used by the **Reports page**:
+
+```js
+generateSummary(expenses, filterLabel) → Promise<string>
+```
+
+This sends up to 200 expense records (title, amount, category, date — no ids) and the current filter label to Gemini and asks for a **3–4 sentence plain-text paragraph** that:
+1. States the total spent and the period.
+2. Identifies the top spending category and any notable pattern.
+3. Gives one actionable suggestion to reduce spending.
+
+| Config | Value |
+|--------|-------|
+| Temperature | 0.4 (slightly more creative than `processMessage`) |
+| maxOutputTokens | 256 |
+| responseMimeType | not set (plain text) |
+
+Unlike `processMessage`, this returns a raw string (not JSON) and does not include expense IDs or categories in the response. It also counts against the same 50-request daily limit.
 
 ---
 

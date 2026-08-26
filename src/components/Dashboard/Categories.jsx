@@ -1,11 +1,13 @@
 /* istanbul ignore file */
-import { useState, useEffect } from 'react';
-import { LuTag, LuPlus, LuBarChart2, LuChevronDown, LuChevronUp } from 'react-icons/lu';
+import { useState, useEffect, useMemo } from 'react';
+import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
-import { addCategory, deleteCategory, subscribeToExpenses, subscribeToCategories } from '../../services/database';
+import { addCategory, deleteCategory, subscribeToCategories } from '../../services/categoryService';
+import { subscribeToExpenses } from '../../services/expenseService';
 import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
 import { getCategoryColor } from '../../utils/getCategoryColor';
+import { useCategoryData } from '../../hooks/useCategoryData';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -134,7 +136,6 @@ export default function Categories() {
     }
   };
 
-  // Default categories that are always available
   const defaultCategories = [
     { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
     { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
@@ -144,72 +145,14 @@ export default function Categories() {
     { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
   ];
 
-  // Combine default and custom categories
-  const allCategories = [
+  const allCategories = useMemo(() => [
     ...defaultCategories,
     ...categories
       .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
       .map(cat => ({ ...cat, Icon: LuTag })),
-  ];
+  ], [categories]);
 
-  // Prepare data for charts
-  const getCategoryData = () => {
-    const categoryMap = {};
-    
-    // Initialize all categories (default + custom) with 0
-    allCategories.forEach(cat => {
-      if (cat.name && cat.name !== 'undefined' && cat.name !== 'null') {
-        categoryMap[cat.name] = 0;
-      }
-    });
-    
-    // Sum expenses by category. If a category was deleted its key won't be in
-    // categoryMap, so we add it on the fly — otherwise those expenses silently
-    // vanish from totals while still showing on the Expenses page.
-    filteredExpenses.forEach(expense => {
-      if (expense &&
-          expense.category &&
-          expense.category !== 'undefined' &&
-          expense.category !== 'null' &&
-          typeof expense.category === 'string' &&
-          expense.category.trim() !== '') {
-        if (!categoryMap.hasOwnProperty(expense.category)) {
-          categoryMap[expense.category] = 0;
-        }
-        categoryMap[expense.category] += (expense.amount || 0);
-      }
-    });
-    
-    // Filter out categories with zero values and undefined/null keys
-    const filteredLabels = [];
-    const filteredData = [];
-    const filteredColors = [];
-    
-    Object.entries(categoryMap).forEach(([label, value], index) => {
-      if (value > 0 && 
-          label && 
-          label !== 'undefined' && 
-          label !== 'null' && 
-          typeof label === 'string' &&
-          label.trim() !== '') {
-        filteredLabels.push(label);
-        filteredData.push(value);
-        filteredColors.push(getCategoryColor(label));
-      }
-    });
-    
-    return {
-      labels: filteredLabels,
-      datasets: [{
-        label: 'Spending',
-        data: filteredData,
-        backgroundColor: filteredColors
-      }]
-    };
-  };
-
-  const categoryData = getCategoryData();
-  const totalSpent = categoryData.datasets[0].data.reduce((sum, val) => sum + val, 0);
+  const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
 
   const expandableCategoryNames = allCategories
     .filter(cat => filteredExpenses.some(e => e.category === cat.name))
@@ -264,7 +207,6 @@ export default function Categories() {
       {/* Date Filter Bar */}
       <div className="filter-controls">
         <div className="filter-section">
-          <h3>Date Range</h3>
           <DateFilterBar
             dateFilter={dateFilter}
             onChange={setDateFilter}

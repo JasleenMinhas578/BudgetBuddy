@@ -8,11 +8,24 @@ Features identified for future development. Ordered roughly by impact vs. effort
 
 | Feature | Where |
 |---------|-------|
-| AI chat widget (add expenses in plain English, query spending) | `src/components/AI/AIChat.jsx` |
-| AI spending summary on Reports page | `src/components/Dashboard/Reports.jsx` |
+| AI chat — add, edit, delete expenses in plain English | `src/components/AI/AIChat.jsx` |
+| AI chat — add, rename, delete custom categories in plain English | `src/components/AI/AIChat.jsx` |
+| AI chat — natural-language spending queries (totals, averages, top category, etc.) | `src/services/aiService.js` → `processMessage()` |
+| AI chat — set a session date range via chat (e.g. "show me last month") | `src/components/AI/AIChat.jsx` — `sessionDateRange` state |
+| AI chat — date range picker UI card (preset buttons: Today, This Week, etc.) | `src/components/AI/AIChat.jsx` |
+| AI chat — pending action reminder (notifies user of unconfirmed cards) | `src/components/AI/AIChat.jsx` |
+| AI chat — daily rate limit (50 requests/day, tracked in localStorage) | `src/services/aiService.js` — `checkAndIncrementUsage()` |
+| AI chat — chat history persisted in sessionStorage (survives page refresh) | `src/components/AI/AIChat.jsx` |
+| AI spending summary paragraph on Reports page | `src/services/aiService.js` → `generateSummary()` |
 | CSV export on Reports page | `src/components/Dashboard/Reports.jsx` — `exportToCSV()` |
 | PDF export on Reports page | `src/components/Dashboard/Reports.jsx` — `generatePDF()` |
-| Date filter (this month, last month, custom range, etc.) | `src/hooks/useDateFilter.js` |
+| Date filter bar (today, this week, this month, last month, select month, this year, last year, all time, custom range) | `src/hooks/useDateFilter.js` + `src/components/UI/DateFilterBar.jsx` |
+| Shared date filter across all dashboard views (via DateRangeContext) | `src/context/DateRangeContext.js` |
+| Select Month filter (pick any specific month from a dropdown) | `src/components/UI/DateFilterBar.jsx` — `pickMonth` filter key |
+| User Settings page (display name, password reset, default date range) | `src/components/Dashboard/Settings.jsx` |
+| Default date range preference saved to Firestore, applied on login | `src/context/DateRangeContext.js` + `src/services/database.js` — `saveUserSettings()` |
+| Display name collected on signup and saved to Firebase profile | `src/components/Auth/Signup.jsx` |
+| Sortable expense table with column-level sort | `src/components/UI/ExpenseTable.jsx` |
 | Pagination on Expenses and Reports | `src/components/UI/Pagination.jsx` |
 
 ---

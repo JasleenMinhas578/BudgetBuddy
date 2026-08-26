@@ -11,9 +11,9 @@ jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn()
 }));
 
-jest.mock('../services/database', () => ({
+jest.mock('../services/expenseService', () => ({
   getExpenses: jest.fn(),
-  deleteExpense: jest.fn()
+  deleteExpense: jest.fn(),
 }));
 
 jest.mock('framer-motion', () => ({
@@ -24,7 +24,7 @@ jest.mock('framer-motion', () => ({
 }));
 
 const { useAuth } = require('../context/AuthContext');
-const { getExpenses, deleteExpense } = require('../services/database');
+const { getExpenses, deleteExpense } = require('../services/expenseService');
 
 const sampleExpenses = [
   {

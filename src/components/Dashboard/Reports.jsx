@@ -9,7 +9,7 @@ import {
 import ExpenseTable from '../UI/ExpenseTable';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import { useReportData } from '../../hooks/useReportData';
-import { subscribeToExpenses } from '../../services/database';
+import { subscribeToExpenses } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -336,7 +336,6 @@ export default function Reports() {
       {/* Date Filter Controls */}
       <div className="filter-controls">
         <div className="filter-section">
-          <h3>Date Range</h3>
           <DateFilterBar
             dateFilter={dateFilter}
             onChange={setDateFilter}

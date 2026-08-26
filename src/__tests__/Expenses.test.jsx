@@ -55,9 +55,11 @@ jest.mock('chart.js', () => ({
   ArcElement: jest.fn(),
 }));
 
-// Mock database service
-jest.mock('../services/database', () => ({
-  addExpense: jest.fn(),
+// Mock expense service
+jest.mock('../services/expenseService', () => ({
+  subscribeToExpenses: jest.fn(),
+  deleteExpense: jest.fn(),
+  updateExpense: jest.fn(),
 }));
 
 // Mock Toast component

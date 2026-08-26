@@ -42,7 +42,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ Responsive design (desktop, tablet, mobile)
 - ✅ Real-time data synchronization
 - ✅ **User settings** — update display name, send password-reset email, and save a default date-range preference that persists across sessions
-- ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, Categories, and Reports; loads the user's saved preference on login
+- ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, Categories, and Reports; loads the user's saved preference on login. Available presets: Today, This Week, This Month, Last Month, **Select Month** (pick any specific month from a dropdown), This Year, Last Year, All Time, and Custom Range
 - ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
 
 ### Testing & Quality Assurance
@@ -82,6 +82,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 | **Unit Test Docs** | [`Documents/Jest_Unit_Testing/`](Documents/Jest_Unit_Testing/) |
 | **Suggested Improvements Document** | [`Documents/Suggested_Improvements_Documents.pdf`](Documents/Suggested_Improvements_Documents.pdf) |
 | **AI Feature Documentation** | [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md) |
+| **API Reference** | [`Documents/API_Reference.md`](Documents/API_Reference.md) |
 
 ---
 
@@ -313,7 +314,8 @@ src/
 ├── utils/
 │   ├── getCategoryIcon.js   # Returns Lucide icon JSX for a given category name
 │   ├── getCategoryColor.js  # Deterministic colour per category (used by charts)
-│   └── formatDate.js        # Date formatting helpers
+│   ├── formatDate.js        # Date formatting helpers
+│   └── validatePassword.js  # Password strength rules (used on Signup)
 └── firebaseConfig.js  # Firebase initialization
 ```
 
@@ -325,9 +327,14 @@ src/
 
 ![Firestore Structure](Documents/UML/Firestore_Structure.png)
 
-- `users/` - User profiles
-- `expenses/` - Expense records (userId, title, amount, category, date)
-- `categories/` - Category records (userId, name)
+All user data is nested under subcollections — no cross-user access is possible:
+
+```
+users/{userId}/
+  expenses/{expenseId}/   → title, amount, category, date
+  categories/{categoryId}/ → name
+  settings/preferences    → defaultDateFilter
+```
 
 **Security Rules**: User-level data isolation, authenticated access only
 
@@ -811,7 +818,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 - ✅ Edit expenses via chat (e.g., "change my coffee yesterday to $6")
 - ✅ Delete expenses via chat (e.g., "remove the Uber ride on July 3")
 - ✅ Add/delete/rename custom categories via chat
-- ✅ Natural language date-range control (e.g., "show me last month" changes the dashboard filter)
+- ✅ Natural language date-range control (e.g., "show me last month" focuses the chat's queries on that period)
 - 🔜 Predictive analytics for spending patterns
 - 🔜 Budget alerts when nearing category limits
 

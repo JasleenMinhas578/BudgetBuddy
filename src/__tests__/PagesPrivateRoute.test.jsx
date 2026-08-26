@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 // - Mocks `AuthContext` to simulate authenticated vs unauthenticated users.
 // - Verifies that protected children render when a user is present and that navigation redirects to `/login` when the user is missing.
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import PrivateRoute from '../pages/PrivateRoute';
+import PrivateRoute from '../components/Layout/PrivateRoute';
 
 jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn()
@@ -32,13 +32,13 @@ describe('pages/PrivateRoute component', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('renders children when authenticated', () => {
-    useAuth.mockReturnValue({ currentUser: { uid: 'abc' } });
+    useAuth.mockReturnValue({ currentUser: { uid: 'abc' }, loading: false });
     renderRoutes();
     expect(screen.getByText('Secret content')).toBeInTheDocument();
   });
 
   it('redirects to login when unauthenticated', () => {
-    useAuth.mockReturnValue({ currentUser: null });
+    useAuth.mockReturnValue({ currentUser: null, loading: false });
     renderRoutes();
     expect(screen.getByText('Login page')).toBeInTheDocument();
   });

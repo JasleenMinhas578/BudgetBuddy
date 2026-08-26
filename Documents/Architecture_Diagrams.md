@@ -277,10 +277,10 @@ Component Unmount → Cleanup Listener (unsubscribe)
 The Package Diagram illustrates the high-level architecture and dependencies of the application's source code, showing the layered structure from components to external Firebase SDK.
 
 **Key Layers**:
-- **Components Layer**: React frontend components (Auth, Dashboard, Expense, Charts, Layout, UI)
-- **Context Layer**: State management and business logic (AuthContext, AuthProvider, useAuth hook)
-- **Services Layer**: Data access layer (database.js with Firestore operations)
-- **External Layer**: Firebase SDK (firebase/auth and firebase/firestore)
+- **Components Layer**: React frontend components (Auth, Dashboard, Expense, Charts, Layout, UI, AI)
+- **Context Layer**: Global state management — `AuthContext` (authentication) and `DateRangeContext` (shared date filter across all dashboard views)
+- **Services Layer**: Data access and AI — `database.js` (Firestore CRUD) and `aiService.js` (Gemini API)
+- **External Layer**: Firebase SDK (firebase/auth, firebase/firestore) and Google Gemini REST API
 
 **Dependency Flow**: Components → Context → Services → Firebase SDK
 
@@ -371,10 +371,12 @@ CI/CD Infrastructure (GitHub Actions)
 - **Registered User**: Full access to all features
 
 **Use Cases**:
-- **Authentication**: Sign Up, Login, Logout
+- **Authentication**: Sign Up (with display name), Login, Logout, Reset Password
 - **Expense Management**: Add, Edit, Delete, View, Filter Expenses
 - **Category Management**: Create, Delete, View Categories
 - **Dashboard & Reports**: View Overview, Charts, Generate PDF, Export CSV, View Statistics
+- **AI Chat**: Add/edit/delete expenses and categories via natural language, query spending data, set date range via chat
+- **User Settings**: Update display name, send password reset email, save default date-range preference
 
 ### 2.5.2 Key Use Case: Add Expense
 

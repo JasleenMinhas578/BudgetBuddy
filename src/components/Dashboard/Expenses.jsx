@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
 import { LuPlus, LuSearch, LuX } from 'react-icons/lu';
-import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/database';
+import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -168,7 +168,6 @@ export default function Expenses() {
       {/* Date Filter Bar */}
       <div className="filter-controls">
         <div className="filter-section">
-          <h3>Date Range</h3>
           <DateFilterBar
             dateFilter={dateFilter}
             onChange={setDateFilter}

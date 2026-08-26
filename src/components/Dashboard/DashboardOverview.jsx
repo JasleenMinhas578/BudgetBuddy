@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { LuDollarSign, LuTrendingUp, LuAward, LuPlus } from 'react-icons/lu';
-import { subscribeToExpenses } from '../../services/database';
+import { subscribeToExpenses } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -87,7 +87,6 @@ export default function DashboardOverview() {
       {/* Date Filter */}
       <div className="filter-controls">
         <div className="filter-section">
-          <h3>Date Range</h3>
           <DateFilterBar
             dateFilter={dateFilter}
             onChange={setDateFilter}

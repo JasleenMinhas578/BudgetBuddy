@@ -7,7 +7,7 @@ import ForgotPassword from './components/Auth/ForgotPassword';
 import ResetPassword from './components/Auth/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Expenses from './components/Dashboard/Expenses';
-import PrivateRoute from './pages/PrivateRoute';
+import PrivateRoute from './components/Layout/PrivateRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';

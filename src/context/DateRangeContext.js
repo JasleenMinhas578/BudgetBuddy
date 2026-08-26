@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from './AuthContext';
-import { getUserSettings } from '../services/database';
+import { getUserSettings } from '../services/settingsService';
 
 const DateRangeContext = createContext(null);
 const today = () => format(new Date(), 'yyyy-MM-dd');

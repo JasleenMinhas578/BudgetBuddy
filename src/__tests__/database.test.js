@@ -8,14 +8,16 @@ import {
   getExpenses,
   updateExpense,
   deleteExpense,
+  subscribeToExpenses,
+  subscribeToExpensesByCategory,
+} from '../services/expenseService';
+import {
   addCategory,
   getCategories,
   updateCategory,
   deleteCategory,
-  subscribeToExpenses,
   subscribeToCategories,
-  subscribeToExpensesByCategory
-} from '../services/database';
+} from '../services/categoryService';
 
 jest.mock('../firebaseConfig', () => ({
   db: 'db-instance'

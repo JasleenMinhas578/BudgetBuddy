@@ -1,0 +1,233 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { collection, query, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { useAuth } from '../context/AuthContext';
+import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
+import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
+import { processMessage } from '../services/aiService';
+
+const ACTION_TYPES = [
+  'expense_confirm', 'category_confirm',
+  'delete_expense_confirm', 'edit_expense_confirm',
+  'delete_category_confirm', 'edit_category_confirm',
+];
+
+// Maps AI intent names → message type + data key
+const INTENT_MAP = {
+  ADD_EXPENSE:     { type: 'expense_confirm',         dataKey: 'expenseData' },
+  ADD_CATEGORY:    { type: 'category_confirm',        dataKey: 'categoryData' },
+  DELETE_EXPENSE:  { type: 'delete_expense_confirm',  dataKey: 'deleteExpenseData' },
+  EDIT_EXPENSE:    { type: 'edit_expense_confirm',    dataKey: 'editExpenseData' },
+  DELETE_CATEGORY: { type: 'delete_category_confirm', dataKey: 'deleteCategoryData' },
+  EDIT_CATEGORY:   { type: 'edit_category_confirm',   dataKey: 'editCategoryData' },
+};
+
+const ERROR_LABELS = {
+  expense_confirm:         'add expense',
+  category_confirm:        'add category',
+  delete_expense_confirm:  'delete expense',
+  edit_expense_confirm:    'update expense',
+  delete_category_confirm: 'delete category',
+  edit_category_confirm:   'rename category',
+};
+
+const getPendingReminder = (currentMessages) => {
+  const pending = currentMessages.filter(
+    (m) => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
+  );
+  if (!pending.length) return null;
+  const labels = pending.map((m) => {
+    if (m.type === 'expense_confirm')         return `add expense "${m.expenseData?.title}"`;
+    if (m.type === 'category_confirm')        return `add category "${m.categoryData?.name}"`;
+    if (m.type === 'delete_expense_confirm')  return `delete expense "${m.deleteExpenseData?.title}"`;
+    if (m.type === 'edit_expense_confirm')    return `update expense "${m.editExpenseData?.title}"`;
+    if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
+    if (m.type === 'edit_category_confirm')   return `rename category "${m.editCategoryData?.name}"`;
+    return '';
+  }).filter(Boolean);
+  return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
+};
+
+const buildPresetRange = (label) => {
+  const today = new Date();
+  const fmt = (d) => d.toISOString().split('T')[0];
+  switch (label) {
+    case 'Today':      return { label: 'today',      from: fmt(today), to: fmt(today) };
+    case 'This Week': {
+      const start = new Date(today); start.setDate(today.getDate() - 6);
+      return { label: 'this week', from: fmt(start), to: fmt(today) };
+    }
+    case 'This Month': {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { label: 'this month', from: fmt(start), to: fmt(today) };
+    }
+    case 'Last Month': {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end   = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { label: 'last month', from: fmt(start), to: fmt(end) };
+    }
+    case 'This Year':  return { label: 'this year', from: `${today.getFullYear()}-01-01`, to: fmt(today) };
+    case 'All Time':   return { label: 'all time',  from: '2000-01-01', to: fmt(today) };
+    default:           return null;
+  }
+};
+
+export function useAIChat() {
+  const { currentUser } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [sessionDateRange, setSessionDateRange] = useState(null);
+
+  // Ref so sendMessage can read current messages without stale closure
+  const messagesRef = useRef([]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
+
+  // Persist chat across page navigations within the same tab
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('ai-chat-messages');
+      if (saved) setMessages(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { sessionStorage.setItem('ai-chat-messages', JSON.stringify(messages)); }
+    catch {}
+  }, [messages]);
+
+  // Load expenses + live-subscribe to categories when chat opens
+  useEffect(() => {
+    if (!isOpen || !currentUser) return;
+    getExpenses(currentUser.uid).then(setExpenses).catch(console.error);
+    const q = query(collection(db, 'users', currentUser.uid, 'categories'));
+    return onSnapshot(q, (snap) =>
+      setCustomCategories(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+    );
+  }, [isOpen, currentUser]);
+
+  const sendMessage = useCallback(async (text) => {
+    const trimmed = text?.trim();
+    if (!trimmed || loading) return;
+
+    const hadPendingBefore = messagesRef.current.some(
+      (m) => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
+    );
+
+    setMessages((prev) => [...prev, { role: 'user', content: trimmed, type: 'text' }]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange);
+
+      const mapped = INTENT_MAP[result.intent];
+      if (mapped && result[mapped.dataKey]) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: result.message, type: mapped.type,
+            [mapped.dataKey]: result[mapped.dataKey], confirmed: false, dismissed: false },
+        ]);
+      } else if (result.intent === 'SET_DATE_RANGE' && result.dateRange) {
+        setSessionDateRange(result.dateRange);
+        setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
+      } else if (result.intent === 'ASK_DATE_RANGE') {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: result.message, type: 'date_range_picker',
+            resolved: false, originalQuestion: trimmed },
+        ]);
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
+      }
+
+      if (hadPendingBefore) {
+        setMessages((prev) => {
+          const reminder = getPendingReminder(prev);
+          return reminder ? [...prev, { role: 'assistant', content: reminder, type: 'reminder' }] : prev;
+        });
+      }
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Sorry, something went wrong: ${err.message}`, type: 'text', isError: true },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, expenses, customCategories, sessionDateRange]);
+
+  const handleDismiss = useCallback((idx) => {
+    setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg)));
+  }, []);
+
+  const handleConfirmAction = useCallback(async (msg, idx) => {
+    const { type } = msg;
+    const needsExpenseRefresh = ['expense_confirm', 'delete_expense_confirm', 'edit_expense_confirm'];
+    try {
+      if (type === 'expense_confirm')              await addExpense(currentUser.uid, msg.expenseData);
+      else if (type === 'category_confirm')        await addCategory(currentUser.uid, { name: msg.categoryData.name });
+      else if (type === 'delete_expense_confirm')  await deleteExpense(currentUser.uid, msg.deleteExpenseData.id);
+      else if (type === 'edit_expense_confirm')    await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);
+      else if (type === 'delete_category_confirm') await deleteCategory(currentUser.uid, msg.deleteCategoryData.id);
+      else if (type === 'edit_category_confirm')   await updateCategory(currentUser.uid, msg.editCategoryData.id, { name: msg.editCategoryData.newName });
+
+      setMessages((prev) => prev.map((m, i) => (i === idx ? { ...m, confirmed: true } : m)));
+      if (needsExpenseRefresh.includes(type)) setExpenses(await getExpenses(currentUser.uid));
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Failed to ${ERROR_LABELS[type]}: ${err.message}`, type: 'text', isError: true },
+      ]);
+    }
+  }, [currentUser]);
+
+  const handlePickDateRange = useCallback(async (idx, presetLabel, originalQuestion) => {
+    const range = buildPresetRange(presetLabel);
+    if (!range) return;
+
+    setSessionDateRange(range);
+    setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, resolved: true } : msg)));
+
+    if (!originalQuestion) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Got it! Using ${range.label} for your questions.`, type: 'text' },
+      ]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await processMessage(originalQuestion, expenses, customCategories, range);
+      setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Sorry, something went wrong: ${err.message}`, type: 'text', isError: true },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [expenses, customCategories]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
+  }, [sendMessage, input]);
+
+  return {
+    isOpen, setIsOpen,
+    messages,
+    input, setInput,
+    loading,
+    sessionDateRange, setSessionDateRange,
+    sendMessage,
+    handleDismiss,
+    handleConfirmAction,
+    handlePickDateRange,
+    handleKeyDown,
+  };
+}

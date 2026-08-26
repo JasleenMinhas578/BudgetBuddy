@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LuChevronDown, LuCheck, LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
-import { addExpense } from '../../services/database';
+import { addExpense } from '../../services/expenseService';
 import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';

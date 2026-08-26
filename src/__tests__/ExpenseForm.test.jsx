@@ -12,8 +12,8 @@ jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn()
 }));
 
-jest.mock('../services/database', () => ({
-  addExpense: jest.fn()
+jest.mock('../services/expenseService', () => ({
+  addExpense: jest.fn(),
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -27,7 +27,7 @@ jest.mock('../firebaseConfig', () => ({
 }));
 
 const { useAuth } = require('../context/AuthContext');
-const { addExpense } = require('../services/database');
+const { addExpense } = require('../services/expenseService');
 const { onSnapshot, query } = require('firebase/firestore');
 
 const setup = (props = {}) =>
