@@ -244,6 +244,7 @@ export default function DashboardOverview() {
 
         <ExpenseTable
           expenses={recentExpenses}
+          showCategoryFilter={true}
           itemsPerPage={5}
           showPagination={false}
           emptyMessage="No expenses yet"

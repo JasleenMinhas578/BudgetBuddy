@@ -294,7 +294,7 @@ export default function Categories() {
                               onMouseDown={(e) => {
                                 e.stopPropagation();
                                 setOpenMenu(null);
-                                handleDeleteCategory(category.id, category.name, isDefaultCategory);
+                                handleDeleteCategory(category.id, category.name, isDefaultCategory, expenses.filter(e => e.category === category.name).length);
                               }}
                             >
                               <LuTrash2 size={13} />
@@ -457,16 +457,14 @@ export default function Categories() {
                       ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will become uncategorized:`
                       : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will also be permanently deleted:`}
                   </p>
-                  <ul className="cd-expense-list">
-                    {catExpenses.slice(0, 6).map(e => (
+                  <ul className={`cd-expense-list${catExpenses.length > 10 ? ' cd-expense-list--scrollable' : ''}`}>
+                    {catExpenses.map(e => (
                       <li key={e.id}>
                         <span className="cd-exp-title">{e.title}</span>
+                        <span className="cd-exp-date">{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
                         <span className="cd-exp-amount">${Number(e.amount).toFixed(2)}</span>
                       </li>
                     ))}
-                    {catExpenses.length > 6 && (
-                      <li className="cd-exp-more">…and {catExpenses.length - 6} more</li>
-                    )}
                   </ul>
                 </div>
               )}

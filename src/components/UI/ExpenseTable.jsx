@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown } from 'react-icons/lu';
+import { useState, useEffect, useRef } from 'react';
+import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter } from 'react-icons/lu';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { formatDate } from '../../utils/formatDate';
 import Pagination from './Pagination';
@@ -32,6 +32,7 @@ export default function ExpenseTable({
   onDelete,
   itemsPerPage = 15,
   showPagination = true,
+  showCategoryFilter = false,
   hiddenColumns = [],
   emptyIcon,
   emptyMessage = 'No expenses found',
@@ -42,11 +43,34 @@ export default function ExpenseTable({
   const [sortKey, setSortKey] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef(null);
 
-  // Reset to page 1 whenever the data set changes (e.g. parent date-filter change)
+  // Reset to page 1 whenever the data set or category filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [expenses]);
+  }, [expenses, categoryFilter]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!filterOpen) return;
+    const handler = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setFilterOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [filterOpen]);
+
+  const uniqueCategories = showCategoryFilter
+    ? [...new Set(expenses.map(e => e.category).filter(Boolean))].sort()
+    : [];
+
+  const visibleExpenses = showCategoryFilter && categoryFilter
+    ? expenses.filter(e => e.category === categoryFilter)
+    : expenses;
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -58,7 +82,7 @@ export default function ExpenseTable({
     setCurrentPage(1);
   };
 
-  const sorted = [...expenses].sort((a, b) => {
+  const sorted = [...visibleExpenses].sort((a, b) => {
     let aVal, bVal;
     switch (sortKey) {
       case 'date':
@@ -90,7 +114,7 @@ export default function ExpenseTable({
   const page = sorted.slice(startIdx, startIdx + itemsPerPage);
   const showActions = !!(onEdit || onDelete);
 
-  if (expenses.length === 0) {
+  if (visibleExpenses.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-icon">{emptyIcon || <CuteEmptyFace size={96} />}</div>
@@ -109,9 +133,40 @@ export default function ExpenseTable({
             <tr>
               {!hide.has('category') && (
                 <th>
-                  <button className="th-sort-btn" onClick={() => handleSort('category')}>
-                    Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
-                  </button>
+                  <div className="th-category-wrapper" ref={showCategoryFilter ? filterRef : null}>
+                    <button className="th-sort-btn" onClick={() => handleSort('category')}>
+                      Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
+                    </button>
+                    {showCategoryFilter && (
+                      <button
+                        className={`th-filter-btn${categoryFilter ? ' th-filter-active' : ''}`}
+                        onClick={() => setFilterOpen(o => !o)}
+                        title={categoryFilter ? `Filtering: ${categoryFilter}` : 'Filter by category'}
+                      >
+                        <LuFilter size={12} />
+                      </button>
+                    )}
+                    {showCategoryFilter && filterOpen && (
+                      <div className="category-filter-dropdown">
+                        <button
+                          className={`category-filter-option${!categoryFilter ? ' active' : ''}`}
+                          onClick={() => { setCategoryFilter(''); setFilterOpen(false); }}
+                        >
+                          All Categories
+                        </button>
+                        {uniqueCategories.map(cat => (
+                          <button
+                            key={cat}
+                            className={`category-filter-option${categoryFilter === cat ? ' active' : ''}`}
+                            onClick={() => { setCategoryFilter(cat); setFilterOpen(false); }}
+                          >
+                            <span className="category-option-icon">{getCategoryIcon(cat)}</span>
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </th>
               )}
               {!hide.has('title') && (

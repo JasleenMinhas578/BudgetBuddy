@@ -103,11 +103,16 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 160px;
-  overflow-y: auto;
   border: 1px solid var(--glass-10);
   border-radius: var(--radius-md);
   background: var(--glass-5);
+}
+
+.cd-expense-list--scrollable {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-20) transparent;
 }
 
 .cd-expense-list li {
@@ -131,11 +136,24 @@
   max-width: 180px;
 }
 
-.cd-exp-amount {
+.cd-exp-date {
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
   flex-shrink: 0;
-  margin-left: 0.5rem;
+  margin-left: auto;
+}
+
+.cd-exp-date::after {
+  content: ' ·';
+  opacity: 0.4;
+  margin-right: 0.4rem;
+}
+
+.cd-exp-amount {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .cd-exp-more {

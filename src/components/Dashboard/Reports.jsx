@@ -176,6 +176,7 @@ export default function Reports() {
           </div>
           <ExpenseTable
             expenses={filteredExpenses}
+            showCategoryFilter={true}
             itemsPerPage={15}
             emptyIcon={<CuteEmptyFace size={96} />}
             emptyMessage="No expenses found"

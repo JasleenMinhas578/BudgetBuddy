@@ -80,17 +80,17 @@ export function useCategoryActions(currentUser, allCategories) {
     }
   };
 
-  const handleDeleteCategory = (categoryId, categoryName, isDefault = false) => {
+  const handleDeleteCategory = (categoryId, categoryName, isDefault = false, expenseCount = 0) => {
     if (!currentUser) {
       setToast({ message: 'Please log in to delete categories.', type: 'error' });
       return;
     }
-    setPendingDeleteCategory({ id: categoryId, name: categoryName, isDefault });
+    setPendingDeleteCategory({ id: categoryId, name: categoryName, isDefault, expenseCount });
   };
 
   const confirmDeleteCategory = async () => {
     if (!pendingDeleteCategory) return;
-    const { id, name, isDefault } = pendingDeleteCategory;
+    const { id, name, isDefault, expenseCount } = pendingDeleteCategory;
     setPendingDeleteCategory(null);
     setIsLoading(true);
     try {
@@ -99,7 +99,10 @@ export function useCategoryActions(currentUser, allCategories) {
       } else {
         await deleteCategoryAndExpenses(currentUser.uid, id, name);
       }
-      setToast({ message: `Category "${name}" deleted.`, type: 'success' });
+      const expenseNote = expenseCount > 0
+        ? ` and ${expenseCount} expense${expenseCount !== 1 ? 's' : ''}`
+        : '';
+      setToast({ message: `Category "${name}"${expenseNote} deleted.`, type: 'success' });
     } catch (error) {
       console.error('Error deleting category:', error);
       setToast({ message: 'Failed to delete category. Please try again.', type: 'error' });

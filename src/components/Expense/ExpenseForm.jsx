@@ -111,7 +111,7 @@ export default function ExpenseForm({
    * 
    * Checks:
    * - Amount is a positive number
-   * - Amount does not exceed 1 billion
+   * - Amount does not exceed $1 million
    * - Description is not empty
    * - Date is not in the future
    * - Category is selected
@@ -125,10 +125,10 @@ export default function ExpenseForm({
       return { isValid: false, message: 'Please enter a valid amount' };
     }
     
-    // Check if amount exceeds 1 billion
-    const MAX_AMOUNT = 1000000000; // 1 billion
+    // Check if amount exceeds $1 million
+    const MAX_AMOUNT = 1000000;
     if (amountValue > MAX_AMOUNT) {
-      return { isValid: false, message: 'Amount cannot exceed $1,000,000,000' };
+      return { isValid: false, message: 'Amount cannot exceed $1,000,000' };
     }
     
     // Check if title is provided
@@ -232,12 +232,12 @@ export default function ExpenseForm({
     setAmount(cleanValue);
     
     // Validate amount in real-time
-    const MAX_AMOUNT = 1000000000; // 1 billion
+    const MAX_AMOUNT = 1000000;
     const amountValue = parseFloat(cleanValue);
-    
+
     if (cleanValue && !isNaN(amountValue)) {
       if (amountValue > MAX_AMOUNT) {
-        setAmountError('Amount cannot exceed $1,000,000,000');
+        setAmountError('Amount cannot exceed $1,000,000');
       } else {
         setAmountError('');
       }
