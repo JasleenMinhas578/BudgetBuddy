@@ -30,7 +30,7 @@ const safeFormatDate = (dateStr, fmt) => {
 export default function Reports() {
   const [expenses, setExpenses] = useState([]);
   const dateRangeCtx = useDateRangeContext();
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [aiSummary, setAiSummary] = useState(null);
@@ -341,6 +341,9 @@ export default function Reports() {
             onChange={setDateFilter}
             customDateRange={customDateRange}
             onCustomDateRangeChange={setCustomDateRange}
+            pickedMonth={pickedMonth}
+            onPickedMonthChange={setPickedMonth}
+            availableMonths={availableMonths}
             buttons={FILTER_BUTTONS_REPORTS}
           />
         </div>

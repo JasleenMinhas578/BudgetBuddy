@@ -5,6 +5,7 @@ import { getUserSettings } from '../services/database';
 
 const DateRangeContext = createContext(null);
 const today = () => format(new Date(), 'yyyy-MM-dd');
+const currentMonth = () => format(new Date(), 'yyyy-MM');
 
 export function DateRangeProvider({ children }) {
   const { currentUser } = useAuth();
@@ -13,6 +14,7 @@ export function DateRangeProvider({ children }) {
     startDate: today(),
     endDate: today(),
   });
+  const [pickedMonth, setPickedMonth] = useState(currentMonth());
 
   // On login, reset the filter to whatever the user saved as their default.
   // This runs every time currentUser changes (login / logout / switch account).
@@ -29,7 +31,7 @@ export function DateRangeProvider({ children }) {
   }, [currentUser]);
 
   return (
-    <DateRangeContext.Provider value={{ dateFilter, setDateFilter, customDateRange, setCustomDateRange }}>
+    <DateRangeContext.Provider value={{ dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth }}>
       {children}
     </DateRangeContext.Provider>
   );

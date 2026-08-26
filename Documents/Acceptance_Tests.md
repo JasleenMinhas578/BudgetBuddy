@@ -7,7 +7,7 @@
 **Status**: ✅ 100% Complete Coverage | ✅ 102/102 E2E Tests Passing | ✅ 295/295 Unit Tests Passing
 
 > 📋 **Related Documents**:  
-> - [`Documents/Requirements.md`](Documents/Requirements.md) - Functional and non-functional requirements (21 requirements)  
+> - [`Documents/Requirements.md`](Documents/Requirements.md) - Functional and non-functional requirements (28 requirements)  
 > - [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md) - Issue mapping, story points, and team contributions (211 SP total)  
 > - [`README.md`](../README.md) - Project overview and documentation  
 
@@ -19,15 +19,15 @@
 
 | Category | Total | Tested/Verified | Coverage | Status |
 |----------|-------|-----------------|----------|--------|
-| **Functional Requirements** | 11 | 11 | 100% | ✅ Complete |
+| **Functional Requirements** | 18 | 18 | 100% | ✅ Complete |
 | **Non-Functional Requirements** | 10 | 10 | 100% | ✅ Complete |
 | **Feature Issues** | 29 | 29 | 100% | ✅ Complete |
 | **Story Points for Feature Issues** | 113 | 113 | 100% | ✅ Complete |
 | **Infrastructure Issues** | 24 | 24 | 100% | ✅ Complete |
-| **Story Points for Infrastucture** | 98 | 98 | 100% | ✅ Complete |
+| **Story Points for Infrastructure** | 98 | 98 | 100% | ✅ Complete |
 | **GitHub Issues** | 53 | 53 | 100% | ✅ Complete |
 | **Story Points for Total Project** | 211 | 211 | 100% | ✅ Complete |
-| **Acceptance Criteria** | 38 | 38 | 100% | ✅ Complete |
+| **Acceptance Criteria** | 48 | 48 | 100% | ✅ Complete |
 | **E2E Tests (Cypress)** | 102 | 102 | 100% | ✅ Passing |
 | **Unit Tests (Jest)** | 295 | 295 | 100% | ✅ Passing |
 
@@ -315,11 +315,11 @@ Test Results (102/102 PASSING)
 
 | ID | Criteria | Test Coverage |
 |----|----------|---------------|
-| **AC-034** | User can filter by date range | ✅ `it('should filter reports by date range')` (in `06-reports.cy.js`) |
-| **AC-035** | User can filter by month/year | ✅ `it('should filter by specific month')`, `it('should filter by specific year')` (in `06-reports.cy.js`) |
-| **AC-036** | UI adapts to desktop viewport (1920x1080) | ✅ Tested across all test files with viewport changes |
-| **AC-037** | UI adapts to tablet viewport (768x1024) | ✅ Tested across all test files with viewport changes |
-| **AC-038** | UI adapts to mobile viewport (375x667) | ✅ Tested across all test files with viewport changes |
+| **AC-034** | Logout button is visible to authenticated users in the navigation | ✅ `it('should show logout button when authenticated')` (in `07-logout.cy.js`) |
+| **AC-035** | Clicking logout ends the session and redirects user to login/landing page | ✅ `it('should log out successfully and redirect to login')` (in `07-logout.cy.js`) |
+| **AC-036** | After logout, attempting to access protected dashboard routes redirects to login | ✅ `it('should redirect to login when accessing dashboard after logout')` (in `07-logout.cy.js`) |
+
+> **Note**: Date-range filtering criteria (previously mislabeled here) belong to US-006. Responsiveness criteria (AC-037 to AC-039) appear in the "Extra: Responsiveness" section below.
 
 --- 
 
@@ -343,9 +343,60 @@ Test Results (102/102 PASSING)
 
 | ID | Criteria | Test Coverage |
 |----|----------|---------------|
-| **AC-036** | UI adapts to desktop viewport (1920x1080) | ✅ Tested across all test files with viewport changes |
-| **AC-037** | UI adapts to tablet viewport (768x1024) | ✅ Tested across all test files with viewport changes |
-| **AC-038** | UI adapts to mobile viewport (375x667) | ✅ Tested across all test files with viewport changes |
+| **AC-037** | UI adapts to desktop viewport (1920x1080) | ✅ Tested across all test files with viewport changes |
+| **AC-038** | UI adapts to tablet viewport (768x1024) | ✅ Tested across all test files with viewport changes |
+| **AC-039** | UI adapts to mobile viewport (375x667) | ✅ Tested across all test files with viewport changes |
+
+---
+
+### US-008: AI Chat Assistant
+
+**As a** logged-in user,  
+**I want to** manage my expenses and query my spending using natural language,  
+**So that** I can interact with the app conversationally without navigating menus.
+
+| Property | Value |
+|----------|-------|
+| **Priority** | High |
+| **Story Points** | — (post-semester addition) |
+| **Requirements** | FR6.1, FR6.2, FR6.3, FR6.4 |
+| **Component** | `src/components/AI/AIChat.jsx`, `src/services/aiService.js` |
+| **Status** | ✅ Implemented |
+
+#### Acceptance Criteria
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| **AC-040** | AI chat widget is visible on all dashboard routes | ✅ Manual — floating button appears in bottom-right corner |
+| **AC-041** | Typing "add $X for Y today" creates a confirmation card before writing to Firestore | ✅ Manual — confirmation card requires explicit user click |
+| **AC-042** | User can edit an expense via natural language (e.g., "change my coffee to $6") | ✅ Manual — edit confirmation card shown, Firestore updated on confirm |
+| **AC-043** | User can delete an expense via natural language | ✅ Manual — delete confirmation card shown, Firestore deleted on confirm |
+| **AC-044** | User can query spending totals, averages, and highest expense in plain English | ✅ Manual — AI computes from expense history and returns answer |
+| **AC-045** | Typing a date range (e.g., "show me last month") updates the dashboard date filter | ✅ Manual — `DateRangeContext` updates, all dashboard views reflect change |
+
+---
+
+### US-009: User Settings
+
+**As a** logged-in user,  
+**I want to** update my profile and save preferences,  
+**So that** the app remembers my settings across sessions.
+
+| Property | Value |
+|----------|-------|
+| **Priority** | Medium |
+| **Story Points** | — (post-semester addition) |
+| **Requirements** | FR7.1, FR7.2, FR7.3 |
+| **Component** | `src/components/Dashboard/Settings.jsx` |
+| **Status** | ✅ Implemented |
+
+#### Acceptance Criteria
+
+| ID | Criteria | Verification |
+|----|----------|--------------|
+| **AC-046** | User can update their display name from the Settings page | ✅ Manual — Firebase Auth `updateProfile` called, success message shown |
+| **AC-047** | User can trigger a password-reset email from Settings without logging out | ✅ Manual — email sent to registered address, confirmation shown |
+| **AC-048** | User can set a default date-range preference that is applied on next login | ✅ Manual — preference saved to Firestore; `DateRangeContext` loads it on login |
 
 ---
 
@@ -365,7 +416,14 @@ Test Results (102/102 PASSING)
 | **FR4.1** | Users shall view expense trends via Pie, Bar, Line charts | US-006 | AC-029 to AC-031 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.2** | Users shall generate and export PDF summaries and charts | US-006 | AC-032 to AC-033 | `06-reports.cy.js` | 16 | ✅ Pass |
 | **FR4.3** | Users shall filter expenses by date, month, year | US-006 | AC-034 to AC-035 | `06-reports.cy.js` | 16 | ✅ Pass |
-| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All Categories | AC-036 to AC-038 | `smoke.cy.js` | 10 | ✅ Pass |
+| **FR5.1** | App shall adapt to desktop, tablet, mobile devices | All Categories | AC-037 to AC-039 | `smoke.cy.js` | 10 | ✅ Pass |
+| **FR6.1** | Add, edit, delete expenses via AI chat | US-008 | AC-041 to AC-043 | Manual (AI widget) | — | ✅ Pass |
+| **FR6.2** | Add and manage categories via AI chat | US-008 | AC-041 | Manual (AI widget) | — | ✅ Pass |
+| **FR6.3** | Query spending data in plain English | US-008 | AC-044 | Manual (AI widget) | — | ✅ Pass |
+| **FR6.4** | Change dashboard date filter via chat | US-008 | AC-045 | Manual (AI widget) | — | ✅ Pass |
+| **FR7.1** | Update display name from Settings page | US-009 | AC-046 | Manual (Settings page) | — | ✅ Pass |
+| **FR7.2** | Send password-reset email from Settings | US-009 | AC-047 | Manual (Settings page) | — | ✅ Pass |
+| **FR7.3** | Save default date-range preference persistently | US-009 | AC-048 | Manual (Settings page) | — | ✅ Pass |
 
 ### 3.2 FR Coverage Summary
 
@@ -376,7 +434,9 @@ Test Results (102/102 PASSING)
 | **FR3 - Category Management** | 2 | 2 | 100% | ✅ Complete |
 | **FR4 - Visualization & Reports** | 3 | 3 | 100% | ✅ Complete |
 | **FR5 - Responsive Design** | 1 | 1 | 100% | ✅ Complete |
-| **TOTAL** | **11** | **11** | **100%** | ✅ **Complete** |
+| **FR6 - AI Chat Assistant** | 4 | 4 | 100% | ✅ Complete |
+| **FR7 - User Settings** | 3 | 3 | 100% | ✅ Complete |
+| **TOTAL** | **18** | **18** | **100%** | ✅ **Complete** |
 
 ---
 

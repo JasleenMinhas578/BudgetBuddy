@@ -37,20 +37,31 @@ This project follows the **Agile Methodology** with incremental delivery across 
 - **FR4.3**: Users shall filter expenses by date, month, year.  
 
 ### FR5 — Responsive Design
-- **FR5.1**: The app shall adapt to desktop, tablet, and mobile devices.  
+- **FR5.1**: The app shall adapt to desktop, tablet, and mobile devices.
 
-**Total Functional Requirements**: 11 (FR1.1, FR1.2, FR2.1, FR2.2, FR2.3, FR3.1, FR3.2, FR4.1, FR4.2, FR4.3, FR5.1)
+### FR6 — AI Chat Assistant
+- **FR6.1**: Users shall be able to add, edit, and delete expenses using natural-language messages (powered by Google Gemini).
+- **FR6.2**: Users shall be able to add and manage categories via the AI chat.
+- **FR6.3**: Users shall be able to query their spending data in plain English (e.g., totals, averages, highest expense).
+- **FR6.4**: Users shall be able to change the dashboard date filter by typing a time period (e.g., "show me last month").
+
+### FR7 — User Settings
+- **FR7.1**: Users shall be able to update their display name.
+- **FR7.2**: Users shall be able to trigger a password-reset email from within the app.
+- **FR7.3**: Users shall be able to save a default date-range preference that persists across sessions.
+
+**Total Functional Requirements**: 18 (FR1.1–FR1.2, FR2.1–FR2.3, FR3.1–FR3.2, FR4.1–FR4.3, FR5.1, FR6.1–FR6.4, FR7.1–FR7.3)
 
 ---
 
 ## 3. Extended Functional Requirements (Future Scope)
 
-The following features are documented for future implementation beyond the current semester scope:
+The following features are documented for future implementation:
 
-- AI-driven insights using LLMs (e.g., spending pattern suggestions).  
-- OCR support for expense extraction from uploaded bills.  
-- Notifications/reminders for budget goals or overspending.  
-- Import transactions via CSV (Export CSV is implemented).  
+- AI-driven predictive analytics and spending pattern suggestions (basic AI is implemented; deeper insights are future work).
+- OCR support for expense extraction from uploaded bills.
+- Notifications/reminders for budget goals or overspending.
+- Import transactions via CSV (CSV export is implemented).
 - Shared budgeting with family/friends.  
 
 ---
@@ -85,7 +96,7 @@ The following features are documented for future implementation beyond the curre
 
 - **Timeframe**: September 22, 2025 – November 30, 2025 (5 iterations, 10 weeks)
 - **Team Size**: 6 members
-- **Tech Stack**: React.js, Firebase (Auth + Firestore), Chart.js, date-fns, jsPDF, html2canvas
+- **Tech Stack**: React.js, Firebase (Auth + Firestore), Chart.js, date-fns, jsPDF, html2canvas, Google Gemini API, react-icons (Lucide)
 - **Scope**: Core features to be completed within this semester; extended features considered as future work
 
 ---
@@ -107,9 +118,9 @@ All requirements have been implemented and verified through comprehensive testin
 
 | Requirement Type | Total | Implemented | Tested | Status |
 |------------------|-------|-------------|--------|--------|
-| **Functional Requirements** | 11 | 11 | 11 | ✅ Complete |
+| **Functional Requirements** | 18 | 18 | 18 | ✅ Complete |
 | **Non-Functional Requirements** | 10 | 10 | 10 | ✅ Complete |
-| **Total Requirements** | **21** | **21** | **21** | ✅ **100% Complete** |
+| **Total Requirements** | **28** | **28** | **28** | ✅ **100% Complete** |
 
 ### Test Coverage
 - **E2E Tests (Cypress)**: 102 tests covering all feature issues
@@ -142,6 +153,13 @@ All requirements have been implemented and verified through comprehensive testin
 - ✅ FR4.2: Export PDF reports
 - ✅ FR4.3: Filter by date/month/year
 - ✅ FR5.1: Responsive design
+- ✅ FR6.1: Add/edit/delete expenses via AI chat
+- ✅ FR6.2: Add/manage categories via AI chat
+- ✅ FR6.3: Natural-language spending queries
+- ✅ FR6.4: Change dashboard date filter via chat
+- ✅ FR7.1: Update display name
+- ✅ FR7.2: Password-reset email from settings
+- ✅ FR7.3: Persistent default date-range preference
 
 **Non-Functional Requirements (10/10)**:
 - ✅ NFR1.1: Firebase security rules
@@ -158,5 +176,5 @@ All requirements have been implemented and verified through comprehensive testin
 ---
 
 **Status**: ✅ **ALL REQUIREMENTS COMPLETE**  
-**Last Updated**: November 26, 2025  
+**Last Updated**: August 26, 2026  
 **Verification**: See [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) for complete test coverage

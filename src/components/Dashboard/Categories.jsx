@@ -21,7 +21,7 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const dateRangeCtx = useDateRangeContext();
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -269,6 +269,9 @@ export default function Categories() {
             onChange={setDateFilter}
             customDateRange={customDateRange}
             onCustomDateRangeChange={setCustomDateRange}
+            pickedMonth={pickedMonth}
+            onPickedMonthChange={setPickedMonth}
+            availableMonths={availableMonths}
           />
         </div>
       </div>
@@ -385,7 +388,7 @@ export default function Categories() {
         <div className="charts-section">
           <div className="chart-container">
             <div className="chart-card">
-              <h3>Spending by Category</h3>
+              <h3>Share of Spending</h3>
               <div className="chart-wrapper">
                 <PieChart data={categoryData} />
               </div>
@@ -393,7 +396,7 @@ export default function Categories() {
           </div>
           <div className="chart-container">
             <div className="chart-card">
-              <h3>Category Breakdown</h3>
+              <h3>Amount per Category</h3>
               <div className="chart-wrapper">
                 <BarChart data={categoryData} />
               </div>

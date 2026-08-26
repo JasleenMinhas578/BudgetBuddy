@@ -52,9 +52,14 @@
 **Examples**:
 ```
 ✅ database.js
+✅ aiService.js
 ✅ firebaseConfig.js
 ✅ reportWebVitals.js
 ✅ setupTests.js
+✅ getCategoryIcon.js
+✅ getCategoryColor.js
+✅ formatDate.js
+✅ validatePassword.js
 ```
 
 **Rationale**:
@@ -68,6 +73,7 @@
 **Examples**:
 ```
 ✅ AuthContext.js
+✅ DateRangeContext.js
 ```
 
 **Rationale**:
@@ -80,15 +86,18 @@
 
 **Examples**:
 ```
+✅ src/components/AI/        ← AIChat widget (Gemini)
 ✅ src/components/Auth/
 ✅ src/components/Dashboard/
 ✅ src/components/Expense/
 ✅ src/components/Charts/
 ✅ src/components/Layout/
 ✅ src/components/UI/
-✅ src/services/
 ✅ src/context/
+✅ src/hooks/
+✅ src/services/
 ✅ src/styles/
+✅ src/utils/
 ✅ src/__tests__/
 ```
 
@@ -272,13 +281,24 @@ export default function Toast() { }
 
 **Examples**:
 ```javascript
+// Expenses
 ✅ export const addExpense = async (userId, expenseData) => { }
 ✅ export const getExpenses = async (userId) => { }
 ✅ export const updateExpense = async (userId, expenseId, updateData) => { }
 ✅ export const deleteExpense = async (userId, expenseId) => { }
+✅ export const subscribeToExpenses = (userId, callback) => { }
+✅ export const subscribeToExpensesByCategory = (userId, category, callback) => { }
+
+// Categories
 ✅ export const addCategory = async (userId, categoryData) => { }
 ✅ export const getCategories = async (userId) => { }
-✅ export const subscribeToExpenses = (userId, callback, onError) => { }
+✅ export const updateCategory = async (userId, categoryId, updateData) => { }
+✅ export const deleteCategory = async (userId, categoryId) => { }
+✅ export const subscribeToCategories = (userId, callback) => { }
+
+// User settings
+✅ export const getUserSettings = async (userId) => { }
+✅ export const saveUserSettings = async (userId, settings) => { }
 ```
 
 **Pattern**:
@@ -287,6 +307,7 @@ export default function Toast() { }
 - `update` + entity (update)
 - `delete` + entity (delete)
 - `subscribeTo` + entity (real-time listener)
+- `get`/`save` + entity + `Settings` (persisted user preferences)
 
 **Rationale**:
 - Consistent CRUD naming
@@ -671,12 +692,17 @@ export default function Toast() { }
 
 **Examples**:
 ```javascript
-✅ useAuth()
+// React built-ins
 ✅ useState()
 ✅ useEffect()
 ✅ useCallback()
 ✅ useNavigate()
 ✅ useLocation()
+
+// Project-specific custom hooks
+✅ useAuth()                 ← exported from AuthContext.js
+✅ useDateRangeContext()     ← exported from DateRangeContext.js
+✅ useDateFilter()           ← src/hooks/useDateFilter.js
 ```
 
 **Rationale**:
@@ -828,7 +854,7 @@ By following these conventions, the Budget Buddy project maintains a professiona
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: November 25, 2025  
+**Document Version**: 1.1  
+**Last Updated**: August 26, 2026  
 **Project**: Budget Buddy | Group 6 | Memorial University of Newfoundland
 

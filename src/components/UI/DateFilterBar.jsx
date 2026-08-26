@@ -1,45 +1,93 @@
 export const FILTER_BUTTONS_DEFAULT = [
-  { key: 'today',     label: 'Today'        },
-  { key: 'thisWeek',  label: 'This Week'    },
-  { key: 'thisMonth', label: 'This Month'   },
-  { key: 'lastMonth', label: 'Last Month'   },
-  { key: 'thisYear',  label: 'This Year'    },
-  { key: 'lastYear',  label: 'Last Year'    },
-  { key: 'all',       label: 'All Time'     },
-  { key: 'custom',    label: 'Custom Range' },
+  { key: 'today',      label: 'Today'        },
+  { key: 'thisWeek',   label: 'This Week'    },
+  { key: 'thisMonth',  label: 'This Month'   },
+  { key: 'lastMonth',  label: 'Last Month'   },
+  { key: 'pickMonth',  label: 'Select Month' },
+  { key: 'thisYear',   label: 'This Year'    },
+  { key: 'lastYear',   label: 'Last Year'    },
+  { key: 'all',        label: 'All Time'     },
+  { key: 'custom',     label: 'Custom Range' },
 ];
 
 export const FILTER_BUTTONS_REPORTS = [
-  { key: 'all',       label: 'All Time'     },
-  { key: 'today',     label: 'Today'        },
-  { key: 'thisWeek',  label: 'This Week'    },
-  { key: 'thisMonth', label: 'This Month'   },
-  { key: 'lastMonth', label: 'Last Month'   },
-  { key: 'thisYear',  label: 'This Year'    },
-  { key: 'lastYear',  label: 'Last Year'    },
-  { key: 'custom',    label: 'Custom Range' },
+  { key: 'all',        label: 'All Time'     },
+  { key: 'today',      label: 'Today'        },
+  { key: 'thisWeek',   label: 'This Week'    },
+  { key: 'thisMonth',  label: 'This Month'   },
+  { key: 'lastMonth',  label: 'Last Month'   },
+  { key: 'pickMonth',  label: 'Select Month' },
+  { key: 'thisYear',   label: 'This Year'    },
+  { key: 'lastYear',   label: 'Last Year'    },
+  { key: 'custom',     label: 'Custom Range' },
 ];
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const currentYear = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentYear - i);
 
 export default function DateFilterBar({
   dateFilter,
   onChange,
   customDateRange,
   onCustomDateRangeChange,
+  pickedMonth,
+  onPickedMonthChange,
+  availableMonths,
   buttons = FILTER_BUTTONS_DEFAULT,
   onPageReset,
 }) {
+  // Build sorted list of "yyyy-MM" values with data, newest first
+  const monthOptions = availableMonths && availableMonths.size > 0
+    ? [...availableMonths].sort((a, b) => b.localeCompare(a)).map(value => {
+        const [yr, mo] = value.split('-').map(Number);
+        return { value, label: `${MONTH_NAMES[mo - 1]} ${yr}` };
+      })
+    : YEAR_OPTIONS.flatMap(yr =>
+        MONTH_NAMES.map((name, i) => ({
+          value: `${yr}-${String(i + 1).padStart(2, '0')}`,
+          label: `${name} ${yr}`,
+        }))
+      );
+
   return (
     <div className="date-filter-bar">
       <div className="filter-buttons">
-        {buttons.map(({ key, label }) => (
-          <button
-            key={key}
-            className={`filter-btn ${dateFilter === key ? 'active' : ''}`}
-            onClick={() => { onChange(key); onPageReset?.(); }}
-          >
-            {label}
-          </button>
-        ))}
+        {buttons.map(({ key, label }) => {
+          if (key === 'pickMonth') {
+            return (
+              <select
+                key={key}
+                className={`filter-btn ${dateFilter === 'pickMonth' ? 'active' : ''}`}
+                value={dateFilter === 'pickMonth' ? pickedMonth : ''}
+                onChange={e => {
+                  if (!e.target.value) return;
+                  onChange('pickMonth');
+                  onPickedMonthChange(e.target.value);
+                  onPageReset?.();
+                }}
+              >
+                <option value="" disabled>{label}</option>
+                {monthOptions.map(({ value, label: optLabel }) => (
+                  <option key={value} value={value}>{optLabel}</option>
+                ))}
+              </select>
+            );
+          }
+          return (
+            <button
+              key={key}
+              className={`filter-btn ${dateFilter === key ? 'active' : ''}`}
+              onClick={() => { onChange(key); onPageReset?.(); }}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
       {dateFilter === 'custom' && (
         <div className="custom-date-inputs">

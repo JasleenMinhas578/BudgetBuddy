@@ -542,17 +542,3 @@
   transform: scale(0.96);
 }
 
-/* ── Trend delta on Total Spent card ────────────────────── */
-.card-trend {
-  font-size: var(--font-size-xs, 11px);
-  font-weight: var(--font-weight-semibold, 600);
-  margin-top: 2px;
-}
-
-.trend-up {
-  color: var(--danger, #fc8181);
-}
-
-.trend-down {
-  color: var(--accent-teal, #4fd1c5);
-}

@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { LuPlus, LuFileText } from 'react-icons/lu';
+import { LuPlus, LuFileText, LuSearch, LuX } from 'react-icons/lu';
 import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -17,7 +17,7 @@ import ConfirmDialog from '../UI/ConfirmDialog';
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
   const dateRangeCtx = useDateRangeContext();
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
+  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [toast, setToast] = useState(null);
 
   const { currentUser } = useAuth();
@@ -25,6 +25,7 @@ export default function Expenses() {
   const [isEditExpenseFormOpen, setIsEditExpenseFormOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!currentUser) return;
@@ -97,7 +98,16 @@ export default function Expenses() {
     }
   };
 
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
+  const q = searchQuery.trim().toLowerCase();
+  const searchFilteredExpenses = q
+    ? filteredExpenses.filter(e =>
+        e.title?.toLowerCase().includes(q) ||
+        e.category?.toLowerCase().includes(q) ||
+        e.amount?.toString().includes(q)
+      )
+    : filteredExpenses;
+
+  const totalAmount = searchFilteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
 
   const handleExpenseAdded = () => {
     setIsExpenseFormOpen(false);
@@ -145,12 +155,12 @@ export default function Expenses() {
         </div>
         <div className="summary-stat">
           <span className="stat-label">Total Transactions</span>
-          <span className="stat-value">{filteredExpenses.length}</span>
+          <span className="stat-value">{searchFilteredExpenses.length}</span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">Average Amount</span>
           <span className="stat-value">
-            ${filteredExpenses.length > 0 ? (totalAmount / filteredExpenses.length).toFixed(2) : '0.00'}
+            ${searchFilteredExpenses.length > 0 ? (totalAmount / searchFilteredExpenses.length).toFixed(2) : '0.00'}
           </span>
         </div>
       </div>
@@ -164,18 +174,40 @@ export default function Expenses() {
             onChange={setDateFilter}
             customDateRange={customDateRange}
             onCustomDateRangeChange={setCustomDateRange}
+            pickedMonth={pickedMonth}
+            onPickedMonthChange={setPickedMonth}
+            availableMonths={availableMonths}
           />
         </div>
       </div>
 
+      {/* Search Filter */}
+      <div className="search-filter">
+        <div className="search-input-wrapper">
+          <LuSearch size={16} className="search-icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by title, category, or amount…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button className="search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">
+              <LuX size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+
       <ExpenseTable
-        expenses={filteredExpenses}
+        expenses={searchFilteredExpenses}
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
         itemsPerPage={15}
         emptyIcon={<LuFileText size={48} />}
-        emptyMessage={expenses.length === 0 ? 'No expenses yet' : 'No expenses in this period'}
-        emptySubMessage={expenses.length === 0 ? 'Start tracking your expenses to see them here' : 'Try a different date range or add a new expense'}
+        emptyMessage={expenses.length === 0 ? 'No expenses yet' : searchQuery ? 'No results found' : 'No expenses in this period'}
+        emptySubMessage={expenses.length === 0 ? 'Start tracking your expenses to see them here' : searchQuery ? `No expenses match "${searchQuery}"` : 'Try a different date range or add a new expense'}
         emptyAction={expenses.length === 0 ? (
           <button onClick={() => setIsExpenseFormOpen(true)} className="btn btn-primary">
             Add First Expense
