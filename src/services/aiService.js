@@ -86,6 +86,23 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     }
   });
 
+  const avgPerTransaction = filteredExpenses.length > 0
+    ? +(grandTotal / filteredExpenses.length).toFixed(2)
+    : 0;
+
+  let numDays = 0;
+  if (sessionDateRange) {
+    numDays = Math.round((new Date(sessionDateRange.to) - new Date(sessionDateRange.from)) / 86400000) + 1;
+  } else if (filteredExpenses.length > 0) {
+    const dates = filteredExpenses.map(e => e.date).filter(Boolean).sort();
+    numDays = Math.round((new Date(dates[dates.length - 1]) - new Date(dates[0])) / 86400000) + 1;
+  }
+  const dailyAvg = numDays > 0 ? +(grandTotal / numDays).toFixed(2) : null;
+
+  const spendingByMonthSorted = Object.keys(spendingByMonth)
+    .sort()
+    .map(month => ({ month, total: spendingByMonth[month] }));
+
   // Only last 50 individual records — enough for EDIT/DELETE context without bloating the prompt
   const recentExpenses = filteredExpenses
     .slice(-50)
@@ -101,8 +118,10 @@ ${dateRangeSection}
 
 SPENDING SUMMARY (all ${filteredExpenses.length} records${sessionDateRange ? ` — ${sessionDateRange.label}` : ''}):
 Total spent: $${grandTotal}
+Average per transaction: $${avgPerTransaction}
+Daily average: ${dailyAvg !== null ? `$${dailyAvg}` : 'n/a'}
 By category: ${JSON.stringify(spendingByCategory)}
-By month: ${JSON.stringify(spendingByMonth)}
+By month (chronological — use for trend analysis): ${JSON.stringify(spendingByMonthSorted)}
 By category and month: ${JSON.stringify(spendingByCategoryMonth)}
 Count by category: ${JSON.stringify(countByCategory)}
 Count by month: ${JSON.stringify(countByMonth)}
