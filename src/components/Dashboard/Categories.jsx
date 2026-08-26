@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { LuTag, LuPlus, LuBarChart2, LuChevronDown, LuChevronUp, LuReceipt } from 'react-icons/lu';
+import { LuTag, LuPlus, LuBarChart2, LuChevronDown, LuChevronUp } from 'react-icons/lu';
+import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
 import { addCategory, deleteCategory, subscribeToExpenses, subscribeToCategories } from '../../services/database';
 import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
@@ -355,7 +356,6 @@ export default function Categories() {
                         expenses={categoryExpenses}
                         hiddenColumns={['category']}
                         itemsPerPage={5}
-                        emptyIcon={<LuReceipt size={32} />}
                         emptyMessage="No expenses in this category"
                         emptySubMessage="Try a different date range"
                       />
@@ -367,7 +367,7 @@ export default function Categories() {
           </div>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon"><LuBarChart2 size={48} /></div>
+            <div className="empty-icon"><CuteEmptyFace size={96} /></div>
             <h4>No categories available</h4>
             <p>Add custom categories to start organizing your expenses</p>
             <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">

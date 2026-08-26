@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFileText } from 'react-icons/lu';
+import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown } from 'react-icons/lu';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { formatDate } from '../../utils/formatDate';
 import Pagination from './Pagination';
+import CuteEmptyFace from './CuteEmptyFace';
 
 function SortIcon({ active, dir }) {
   if (!active) return <LuArrowUpDown size={13} className="sort-icon-inactive" />;
@@ -92,7 +93,7 @@ export default function ExpenseTable({
   if (expenses.length === 0) {
     return (
       <div className="empty-state">
-        <div className="empty-icon">{emptyIcon || <LuFileText size={48} />}</div>
+        <div className="empty-icon">{emptyIcon || <CuteEmptyFace size={96} />}</div>
         <h4>{emptyMessage}</h4>
         {emptySubMessage && <p>{emptySubMessage}</p>}
         {emptyAction}

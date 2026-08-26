@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LuDollarSign, LuTrendingUp, LuAward, LuReceipt, LuPlus } from 'react-icons/lu';
+import { LuDollarSign, LuTrendingUp, LuAward, LuPlus } from 'react-icons/lu';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -153,7 +153,6 @@ export default function DashboardOverview() {
           expenses={recentExpenses}
           itemsPerPage={5}
           showPagination={false}
-          emptyIcon={<LuReceipt size={48} />}
           emptyMessage="No expenses yet"
           emptySubMessage="Start tracking your expenses to see them here"
           emptyAction={

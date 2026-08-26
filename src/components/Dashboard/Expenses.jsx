@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
-import { LuPlus, LuFileText, LuSearch, LuX } from 'react-icons/lu';
+import { LuPlus, LuSearch, LuX } from 'react-icons/lu';
 import { subscribeToExpenses, deleteExpense, updateExpense } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -205,7 +205,6 @@ export default function Expenses() {
         onEdit={handleEditExpense}
         onDelete={handleDeleteExpense}
         itemsPerPage={15}
-        emptyIcon={<LuFileText size={48} />}
         emptyMessage={expenses.length === 0 ? 'No expenses yet' : searchQuery ? 'No results found' : 'No expenses in this period'}
         emptySubMessage={expenses.length === 0 ? 'Start tracking your expenses to see them here' : searchQuery ? `No expenses match "${searchQuery}"` : 'Try a different date range or add a new expense'}
         emptyAction={expenses.length === 0 ? (

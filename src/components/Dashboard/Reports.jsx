@@ -7,6 +7,7 @@ import {
   LuBarChart2,
 } from 'react-icons/lu';
 import ExpenseTable from '../UI/ExpenseTable';
+import CuteEmptyFace from '../UI/CuteEmptyFace';
 import { useReportData } from '../../hooks/useReportData';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
@@ -445,7 +446,7 @@ export default function Reports() {
           <ExpenseTable
             expenses={filteredExpenses}
             itemsPerPage={15}
-            emptyIcon={<LuBarChart2 size={48} />}
+            emptyIcon={<CuteEmptyFace size={96} />}
             emptyMessage="No expenses found"
             emptySubMessage="No expenses match the selected date range"
           />
