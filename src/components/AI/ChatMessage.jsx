@@ -2,6 +2,24 @@ import { LuCheck } from 'react-icons/lu';
 
 const DATE_PRESETS = ['Today', 'This Week', 'This Month', 'Last Month', 'This Year', 'All Time'];
 
+// Renders plain text, but splits on bullet lines (• …) into a proper list
+function MessageText({ text, className }) {
+  const lines = text.split('\n').flatMap(line => line.split(/(?=•)/)).map(l => l.trim()).filter(Boolean);
+  const hasBullets = lines.some(l => l.startsWith('•'));
+
+  if (!hasBullets) return <p className={className}>{text}</p>;
+
+  return (
+    <div className={className}>
+      {lines.map((line, i) =>
+        line.startsWith('•')
+          ? <div key={i} className="ai-bullet-line">{line}</div>
+          : <p key={i} className="ai-bullet-intro">{line}</p>
+      )}
+    </div>
+  );
+}
+
 const CONFIRMED_LABELS = {
   category_confirm:        'Category added successfully!',
   delete_expense_confirm:  'Expense deleted!',
@@ -223,5 +241,5 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
     return <p className="ai-reminder">{msg.content}</p>;
   }
 
-  return <p>{msg.content}</p>;
+  return <MessageText text={msg.content} />;
 }

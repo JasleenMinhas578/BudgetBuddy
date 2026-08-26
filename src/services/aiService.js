@@ -130,6 +130,8 @@ Total monthly budget: ${totalLimit > 0 ? `$${totalLimit}` : 'not set'}`;
 
   const prompt = `You are BudgetBuddy AI, a helpful personal finance assistant. Today is ${today}.
 
+⚠️ OUTPUT FORMAT RULE (ABSOLUTE): Your entire response MUST be a single valid JSON object. Never write plain text, never use markdown, never use code fences (\`\`\`). Start your response with { and end with }. If you cannot answer, still return JSON with intent "CHAT" and put your reply in "message".
+
 ${dateRangeSection}
 
 SPENDING SUMMARY (all ${filteredExpenses.length} records${sessionDateRange ? ` — ${sessionDateRange.label}` : ''}):
@@ -152,6 +154,7 @@ CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): ${JSON.stringif
 ${budgetSection}
 
 TASK: Read the user message and respond with ONLY raw JSON — no markdown, no code fences, no explanation.
+For QUERY answers that have multiple data points (e.g. category breakdown, budget status per category, top expenses), format the "message" using short bullet lines with • so it's easy to scan. Keep each bullet concise. For simple single-fact answers, a plain sentence is fine.
 
 Classify the user's intent as one of:
 - "ADD_EXPENSE"     → user wants to log/add/record an expense (e.g. "spent $30 on lunch", "add coffee $5")
@@ -234,10 +237,16 @@ User message: "${userMessage}"`;
   // Extract JSON even if the model wraps it in backticks
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    return { intent: 'CHAT', message: "I didn't quite catch that. You can ask me to add, edit, or delete expenses and categories, or ask questions about your spending. For example: \"delete my coffee expense\", \"rename Masti to Fun\", or \"how much did I spend this month?\"" };
+    // Model returned plain text instead of JSON — treat the raw text as the message
+    const plainText = text.replace(/```[a-z]*\n?/gi, '').trim();
+    return { intent: 'CHAT', message: plainText || "Sorry, I couldn't process that. Try rephrasing your question." };
   }
 
-  return JSON.parse(jsonMatch[0]);
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return { intent: 'CHAT', message: "Sorry, I got a malformed response. Please try again." };
+  }
 };
 
 export const generateSummary = async (expenses, filterLabel) => {
