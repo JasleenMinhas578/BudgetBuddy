@@ -29,12 +29,13 @@ import '../../styles/main.css';
  */
 export default function Signup() {
   // Form state management
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth();
+  const { signup, updateDisplayName } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -57,7 +58,12 @@ export default function Signup() {
     
     // Clear any previous error messages
     setError('');
-    
+
+    if (!displayName.trim()) {
+      setError('Please enter a display name');
+      return;
+    }
+
     // Validate password strength
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
@@ -77,7 +83,8 @@ export default function Signup() {
       
       // Attempt to create user account with Firebase
       await signup(email, password);
-      
+      await updateDisplayName(displayName.trim());
+
       // Redirect to dashboard on successful signup
       navigate('/dashboard');
     } catch (error) {
@@ -146,6 +153,21 @@ export default function Signup() {
         )}
         
         <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="displayName">Display Name</label>
+            <div className="input-wrapper">
+              <input
+                type="text"
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="What should we call you?"
+                maxLength={50}
+                required
+              />
+            </div>
+          </div>
+
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <div className="input-wrapper">

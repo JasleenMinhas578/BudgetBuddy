@@ -410,25 +410,27 @@ export default function Reports() {
             {aiSummaryLoading ? <LuLoader size={15} /> : <LuSparkles size={15} />}
             {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
           </button>
-          <button
-            onClick={() => setShowExportOptions(!showExportOptions)}
-            className="btn btn-secondary"
-          >
-            <LuUpload size={15} />
-            Export
-          </button>
-          {showExportOptions && (
-            <div className="export-dropdown">
-              <button onClick={generatePDF} className="export-option" disabled={isGeneratingPDF}>
-                {isGeneratingPDF ? <LuLoader size={14} /> : <LuFileText size={14} />}
-                {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
-              </button>
-              <button onClick={exportToCSV} className="export-option">
-                <LuFileSpreadsheet size={14} />
-                Export as CSV
-              </button>
-            </div>
-          )}
+          <div className="export-btn-wrapper">
+            <button
+              onClick={() => setShowExportOptions(!showExportOptions)}
+              className="btn btn-secondary"
+            >
+              <LuUpload size={15} />
+              Export
+            </button>
+            {showExportOptions && (
+              <div className="export-dropdown">
+                <button onClick={generatePDF} className="export-option" disabled={isGeneratingPDF}>
+                  {isGeneratingPDF ? <LuLoader size={14} /> : <LuFileText size={14} />}
+                  {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF Report'}
+                </button>
+                <button onClick={exportToCSV} className="export-option">
+                  <LuFileSpreadsheet size={14} />
+                  Export as CSV
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -3,7 +3,7 @@ import { LuBot, LuWallet, LuX, LuCheck, LuSend } from 'react-icons/lu';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useAuth } from '../../context/AuthContext';
-import { getExpenses, addExpense } from '../../services/database';
+import { getExpenses, addExpense, addCategory, deleteExpense, updateExpense, deleteCategory, updateCategory } from '../../services/database';
 import { processMessage } from '../../services/aiService';
 import './AIChat.css';
 
@@ -16,6 +16,37 @@ const SUGGESTED_QUESTIONS = [
   "Add $25 for coffee today",
 ];
 
+const DATE_PRESETS = ['Today', 'This Week', 'This Month', 'Last Month', 'This Year', 'All Time'];
+
+const buildPresetRange = (label) => {
+  const today = new Date();
+  const fmt = (d) => d.toISOString().split('T')[0];
+  switch (label) {
+    case 'Today':
+      return { label: 'today', from: fmt(today), to: fmt(today) };
+    case 'This Week': {
+      const start = new Date(today);
+      start.setDate(today.getDate() - 6);
+      return { label: 'this week', from: fmt(start), to: fmt(today) };
+    }
+    case 'This Month': {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { label: 'this month', from: fmt(start), to: fmt(today) };
+    }
+    case 'Last Month': {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { label: 'last month', from: fmt(start), to: fmt(end) };
+    }
+    case 'This Year':
+      return { label: 'this year', from: `${today.getFullYear()}-01-01`, to: fmt(today) };
+    case 'All Time':
+      return { label: 'all time', from: '2000-01-01', to: fmt(today) };
+    default:
+      return null;
+  }
+};
+
 export default function AIChat() {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -24,8 +55,25 @@ export default function AIChat() {
   const [loading, setLoading] = useState(false);
   const [expenses, setExpenses] = useState([]);
   const [customCategories, setCustomCategories] = useState([]);
+  const [sessionDateRange, setSessionDateRange] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const widgetRef = useRef(null);
+
+  // Restore messages from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('ai-chat-messages');
+      if (saved) setMessages(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  // Persist messages to sessionStorage whenever they change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('ai-chat-messages', JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
 
   // Fetch expenses + subscribe to custom categories when chat opens
   useEffect(() => {
@@ -54,6 +102,35 @@ export default function AIChat() {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
   }, [isOpen]);
 
+  // Close on outside click only when no conversation has started
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e) => {
+      if (messages.length === 0 && widgetRef.current && !widgetRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, messages.length]);
+
+  const ACTION_TYPES = ['expense_confirm', 'category_confirm', 'delete_expense_confirm', 'edit_expense_confirm', 'delete_category_confirm', 'edit_category_confirm'];
+
+  const getPendingReminder = (currentMessages) => {
+    const pending = currentMessages.filter(m => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed);
+    if (!pending.length) return null;
+    const labels = pending.map(m => {
+      if (m.type === 'expense_confirm')        return `add expense "${m.expenseData?.title}"`;
+      if (m.type === 'category_confirm')       return `add category "${m.categoryData?.name}"`;
+      if (m.type === 'delete_expense_confirm') return `delete expense "${m.deleteExpenseData?.title}"`;
+      if (m.type === 'edit_expense_confirm')   return `update expense "${m.editExpenseData?.title}"`;
+      if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
+      if (m.type === 'edit_category_confirm')  return `rename category "${m.editCategoryData?.name}"`;
+      return '';
+    }).filter(Boolean);
+    return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
+  };
+
   const sendMessage = useCallback(async (text) => {
     const trimmed = text?.trim();
     if (!trimmed || loading) return;
@@ -63,7 +140,7 @@ export default function AIChat() {
     setLoading(true);
 
     try {
-      const result = await processMessage(trimmed, expenses, customCategories);
+      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange);
 
       if (result.intent === 'ADD_EXPENSE' && result.expenseData) {
         setMessages((prev) => [
@@ -77,12 +154,90 @@ export default function AIChat() {
             dismissed: false,
           },
         ]);
+      } else if (result.intent === 'ADD_CATEGORY' && result.categoryData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: result.message,
+            type: 'category_confirm',
+            categoryData: result.categoryData,
+            confirmed: false,
+            dismissed: false,
+          },
+        ]);
+      } else if (result.intent === 'DELETE_EXPENSE' && result.deleteExpenseData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: result.message,
+            type: 'delete_expense_confirm',
+            deleteExpenseData: result.deleteExpenseData,
+            confirmed: false,
+            dismissed: false,
+          },
+        ]);
+      } else if (result.intent === 'EDIT_EXPENSE' && result.editExpenseData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: result.message,
+            type: 'edit_expense_confirm',
+            editExpenseData: result.editExpenseData,
+            confirmed: false,
+            dismissed: false,
+          },
+        ]);
+      } else if (result.intent === 'DELETE_CATEGORY' && result.deleteCategoryData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: result.message,
+            type: 'delete_category_confirm',
+            deleteCategoryData: result.deleteCategoryData,
+            confirmed: false,
+            dismissed: false,
+          },
+        ]);
+      } else if (result.intent === 'EDIT_CATEGORY' && result.editCategoryData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: result.message,
+            type: 'edit_category_confirm',
+            editCategoryData: result.editCategoryData,
+            confirmed: false,
+            dismissed: false,
+          },
+        ]);
+      } else if (result.intent === 'SET_DATE_RANGE' && result.dateRange) {
+        setSessionDateRange(result.dateRange);
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: result.message, type: 'text' },
+        ]);
+      } else if (result.intent === 'ASK_DATE_RANGE') {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: result.message, type: 'date_range_picker', resolved: false, originalQuestion: trimmed },
+        ]);
       } else {
         setMessages((prev) => [
           ...prev,
           { role: 'assistant', content: result.message, type: 'text' },
         ]);
       }
+
+      // After any response, remind about unconfirmed actions
+      setMessages((prev) => {
+        const reminder = getPendingReminder(prev);
+        if (!reminder) return prev;
+        return [...prev, { role: 'assistant', content: reminder, type: 'reminder' }];
+      });
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -96,7 +251,7 @@ export default function AIChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, expenses, customCategories]);
+  }, [loading, expenses, customCategories, sessionDateRange]);
 
   const handleConfirmExpense = async (expenseData, idx) => {
     try {
@@ -121,6 +276,94 @@ export default function AIChat() {
     );
   };
 
+  const handleConfirmCategory = async (categoryData, idx) => {
+    try {
+      await addCategory(currentUser.uid, { name: categoryData.name });
+      setMessages((prev) =>
+        prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg))
+      );
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Failed to add category: ${err.message}`, type: 'text', isError: true },
+      ]);
+    }
+  };
+
+  const handleConfirmDeleteExpense = async (data, idx) => {
+    try {
+      await deleteExpense(currentUser.uid, data.id);
+      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
+      const updated = await getExpenses(currentUser.uid);
+      setExpenses(updated);
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to delete expense: ${err.message}`, type: 'text', isError: true }]);
+    }
+  };
+
+  const handleConfirmEditExpense = async (data, idx) => {
+    try {
+      await updateExpense(currentUser.uid, data.id, data.updates);
+      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
+      const updated = await getExpenses(currentUser.uid);
+      setExpenses(updated);
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to update expense: ${err.message}`, type: 'text', isError: true }]);
+    }
+  };
+
+  const handleConfirmDeleteCategory = async (data, idx) => {
+    try {
+      await deleteCategory(currentUser.uid, data.id);
+      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to delete category: ${err.message}`, type: 'text', isError: true }]);
+    }
+  };
+
+  const handleConfirmEditCategory = async (data, idx) => {
+    try {
+      await updateCategory(currentUser.uid, data.id, { name: data.newName });
+      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to rename category: ${err.message}`, type: 'text', isError: true }]);
+    }
+  };
+
+  const handlePickDateRange = useCallback(async (idx, presetLabel, originalQuestion) => {
+    const range = buildPresetRange(presetLabel);
+    if (!range) return;
+
+    setSessionDateRange(range);
+    setMessages((prev) =>
+      prev.map((msg, i) => (i === idx ? { ...msg, resolved: true } : msg))
+    );
+
+    if (!originalQuestion) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Got it! Using ${range.label} for your questions.`, type: 'text' },
+      ]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await processMessage(originalQuestion, expenses, customCategories, range);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: result.message, type: 'text' },
+      ]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Sorry, something went wrong: ${err.message}`, type: 'text', isError: true },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [expenses, customCategories]);
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -132,7 +375,7 @@ export default function AIChat() {
   if (!currentUser) return null;
 
   return (
-    <div className="ai-chat-widget">
+    <div className="ai-chat-widget" ref={widgetRef}>
       {/* ── Chat Panel ── */}
       {isOpen && (
         <div className="ai-chat-panel">
@@ -142,7 +385,20 @@ export default function AIChat() {
               <span className="ai-chat-avatar"><LuBot size={28} /></span>
               <div>
                 <h3>BudgetBuddy AI</h3>
-                <span className="ai-chat-status">Powered by Gemini · Free</span>
+                {sessionDateRange ? (
+                  <span className="ai-chat-status">
+                    Showing: <strong>{sessionDateRange.label}</strong>
+                    <button
+                      className="ai-date-range-clear"
+                      onClick={() => setSessionDateRange(null)}
+                      title="Clear date range"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ) : (
+                  <span className="ai-chat-status">Powered by Gemini · Free</span>
+                )}
               </div>
             </div>
             <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
@@ -181,7 +437,102 @@ export default function AIChat() {
                 key={i}
                 className={`ai-message ai-message--${msg.role}${msg.isError ? ' ai-error-message' : ''}`}
               >
-                {msg.type === 'expense_confirm' && !msg.confirmed && !msg.dismissed ? (
+                {msg.type === 'date_range_picker' ? (
+                  <div className="ai-date-range-picker">
+                    <p>{msg.content}</p>
+                    {!msg.resolved && (
+                      <>
+                        <div className="ai-date-preset-grid">
+                          {DATE_PRESETS.map((label) => (
+                            <button
+                              key={label}
+                              className="ai-date-preset-btn"
+                              onClick={() => handlePickDateRange(i, label, msg.originalQuestion)}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="ai-date-custom-hint">Or type a custom range below (e.g. "January 2026", "past 3 weeks")</p>
+                      </>
+                    )}
+                  </div>
+                ) : msg.type === 'category_confirm' && !msg.confirmed && !msg.dismissed ? (
+                  <div className="ai-expense-confirm">
+                    <p>{msg.content}</p>
+                    <div className="ai-expense-card">
+                      <div className="ai-expense-row">
+                        <span>Category</span>
+                        <strong>{msg.categoryData.name}</strong>
+                      </div>
+                    </div>
+                    <div className="ai-expense-actions">
+                      <button
+                        className="btn-confirm"
+                        onClick={() => handleConfirmCategory(msg.categoryData, i)}
+                      >
+                        <LuCheck size={14} /> Add Category
+                      </button>
+                      <button
+                        className="btn-dismiss"
+                        onClick={() => handleDismissExpense(i)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : msg.type === 'delete_expense_confirm' && !msg.confirmed && !msg.dismissed ? (
+                  <div className="ai-expense-confirm">
+                    <p>{msg.content}</p>
+                    <div className="ai-expense-card">
+                      <div className="ai-expense-row"><span>Title</span><strong>{msg.deleteExpenseData.title}</strong></div>
+                      <div className="ai-expense-row"><span>Amount</span><strong>${Number(msg.deleteExpenseData.amount).toFixed(2)}</strong></div>
+                      <div className="ai-expense-row"><span>Category</span><strong>{msg.deleteExpenseData.category}</strong></div>
+                      <div className="ai-expense-row"><span>Date</span><strong>{msg.deleteExpenseData.date}</strong></div>
+                    </div>
+                    <div className="ai-expense-actions">
+                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmDeleteExpense(msg.deleteExpenseData, i)}>Delete Expense</button>
+                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : msg.type === 'edit_expense_confirm' && !msg.confirmed && !msg.dismissed ? (
+                  <div className="ai-expense-confirm">
+                    <p>{msg.content}</p>
+                    <div className="ai-expense-card">
+                      <div className="ai-expense-row"><span>Title</span><strong>{msg.editExpenseData.updates.title ?? msg.editExpenseData.title}</strong></div>
+                      <div className="ai-expense-row"><span>Amount</span><strong>${Number(msg.editExpenseData.updates.amount ?? msg.editExpenseData.amount).toFixed(2)}</strong></div>
+                      <div className="ai-expense-row"><span>Category</span><strong>{msg.editExpenseData.updates.category ?? msg.editExpenseData.category}</strong></div>
+                      <div className="ai-expense-row"><span>Date</span><strong>{msg.editExpenseData.updates.date ?? msg.editExpenseData.date}</strong></div>
+                    </div>
+                    <div className="ai-expense-actions">
+                      <button className="btn-confirm" onClick={() => handleConfirmEditExpense(msg.editExpenseData, i)}><LuCheck size={14} /> Save Changes</button>
+                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : msg.type === 'delete_category_confirm' && !msg.confirmed && !msg.dismissed ? (
+                  <div className="ai-expense-confirm">
+                    <p>{msg.content}</p>
+                    <div className="ai-expense-card">
+                      <div className="ai-expense-row"><span>Category</span><strong>{msg.deleteCategoryData.name}</strong></div>
+                    </div>
+                    <div className="ai-expense-actions">
+                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmDeleteCategory(msg.deleteCategoryData, i)}>Delete Category</button>
+                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : msg.type === 'edit_category_confirm' && !msg.confirmed && !msg.dismissed ? (
+                  <div className="ai-expense-confirm">
+                    <p>{msg.content}</p>
+                    <div className="ai-expense-card">
+                      <div className="ai-expense-row"><span>Current Name</span><strong>{msg.editCategoryData.name}</strong></div>
+                      <div className="ai-expense-row"><span>New Name</span><strong>{msg.editCategoryData.newName}</strong></div>
+                    </div>
+                    <div className="ai-expense-actions">
+                      <button className="btn-confirm" onClick={() => handleConfirmEditCategory(msg.editCategoryData, i)}><LuCheck size={14} /> Rename</button>
+                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : msg.type === 'expense_confirm' && !msg.confirmed && !msg.dismissed ? (
                   <div className="ai-expense-confirm">
                     <p>{msg.content}</p>
                     <div className="ai-expense-card">
@@ -220,13 +571,24 @@ export default function AIChat() {
                 ) : msg.confirmed ? (
                   <div className="ai-expense-confirm">
                     <p>{msg.content}</p>
-                    <div className="ai-expense-confirmed"><LuCheck size={14} /> Expense added successfully!</div>
+                    <div className="ai-expense-confirmed">
+                      <LuCheck size={14} /> {
+                        msg.type === 'category_confirm' ? 'Category added successfully!' :
+                        msg.type === 'delete_expense_confirm' ? 'Expense deleted!' :
+                        msg.type === 'edit_expense_confirm' ? 'Expense updated!' :
+                        msg.type === 'delete_category_confirm' ? 'Category deleted!' :
+                        msg.type === 'edit_category_confirm' ? 'Category renamed!' :
+                        'Expense added successfully!'
+                      }
+                    </div>
                   </div>
                 ) : msg.dismissed ? (
                   <div className="ai-expense-confirm">
                     <p>{msg.content}</p>
                     <div className="ai-expense-dismissed">Cancelled</div>
                   </div>
+                ) : msg.type === 'reminder' ? (
+                  <p className="ai-reminder">{msg.content}</p>
                 ) : (
                   <p>{msg.content}</p>
                 )}

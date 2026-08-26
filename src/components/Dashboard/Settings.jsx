@@ -1,10 +1,23 @@
 import { useState } from 'react';
-import { LuUser, LuLock } from 'react-icons/lu';
+import { LuUser, LuLock, LuCalendar } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useDateRangeContext } from '../../context/DateRangeContext';
+import { saveUserSettings, getUserSettings } from '../../services/database';
+import { useEffect } from 'react';
 import '../../styles/main.css';
+
+const DATE_RANGE_OPTIONS = [
+  { value: 'today',     label: 'Today' },
+  { value: 'thisMonth', label: 'This Month' },
+  { value: 'lastMonth', label: 'Last Month' },
+  { value: 'thisYear',  label: 'This Year' },
+  { value: 'lastYear',  label: 'Last Year' },
+  { value: 'all',       label: 'All Time' },
+];
 
 export default function Settings() {
   const { currentUser, updateDisplayName, resetPassword } = useAuth();
+  const { setDateFilter } = useDateRangeContext();
 
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [nameLoading, setNameLoading] = useState(false);
@@ -12,6 +25,17 @@ export default function Settings() {
 
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailMsg, setEmailMsg] = useState({ text: '', type: '' });
+
+  const [defaultRange, setDefaultRange] = useState('thisMonth');
+  const [rangeLoading, setRangeLoading] = useState(false);
+  const [rangeMsg, setRangeMsg] = useState({ text: '', type: '' });
+
+  useEffect(() => {
+    if (!currentUser) return;
+    getUserSettings(currentUser.uid).then(settings => {
+      if (settings.defaultDateFilter) setDefaultRange(settings.defaultDateFilter);
+    });
+  }, [currentUser]);
 
   const handleUpdateName = async (e) => {
     e.preventDefault();
@@ -28,6 +52,20 @@ export default function Settings() {
       setNameMsg({ text: 'Failed to update display name. Please try again.', type: 'error' });
     } finally {
       setNameLoading(false);
+    }
+  };
+
+  const handleSaveDefaultRange = async () => {
+    setRangeLoading(true);
+    setRangeMsg({ text: '', type: '' });
+    try {
+      await saveUserSettings(currentUser.uid, { defaultDateFilter: defaultRange });
+      setDateFilter(defaultRange);
+      setRangeMsg({ text: 'Default date range saved!', type: 'success' });
+    } catch {
+      setRangeMsg({ text: 'Failed to save. Please try again.', type: 'error' });
+    } finally {
+      setRangeLoading(false);
     }
   };
 
@@ -54,61 +92,103 @@ export default function Settings() {
         <p className="settings-subtitle">Manage your profile and security preferences.</p>
       </div>
 
-      {/* Display Name */}
-      <div className="settings-card">
-        <div className="settings-card-header">
-          <span className="settings-card-icon"><LuUser size={22} /></span>
-          <div>
-            <h2 className="settings-card-title">Display Name</h2>
-            <p className="settings-card-desc">This name appears across your dashboard.</p>
+      {/* Top row — 2 columns */}
+      <div className="settings-cards-grid">
+        {/* Display Name */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <span className="settings-card-icon"><LuUser size={22} /></span>
+            <div>
+              <h2 className="settings-card-title">Display Name</h2>
+              <p className="settings-card-desc">This name appears across your dashboard.</p>
+            </div>
           </div>
+
+          <form onSubmit={handleUpdateName} className="settings-form">
+            <div className="form-group">
+              <label htmlFor="displayName">Name</label>
+              <input
+                id="displayName"
+                type="text"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                placeholder="Enter your display name"
+                maxLength={50}
+              />
+            </div>
+
+            {nameMsg.text && (
+              <p className={`settings-feedback ${nameMsg.type}`}>{nameMsg.text}</p>
+            )}
+
+            <button type="submit" className="btn btn-primary settings-btn" disabled={nameLoading}>
+              {nameLoading ? 'Saving...' : 'Save Name'}
+            </button>
+          </form>
         </div>
 
-        <form onSubmit={handleUpdateName} className="settings-form">
-          <div className="form-group">
-            <label htmlFor="displayName">Name</label>
-            <input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={e => setDisplayName(e.target.value)}
-              placeholder="Enter your display name"
-              maxLength={50}
-            />
+        {/* Change Password */}
+        <div className="settings-card settings-card-violet">
+          <div className="settings-card-header">
+            <span className="settings-card-icon"><LuLock size={22} /></span>
+            <div>
+              <h2 className="settings-card-title">Change Password</h2>
+              <p className="settings-card-desc">
+                We'll send a secure link to <strong>{currentUser?.email}</strong>. Open the email and click the link to choose a new password.
+              </p>
+            </div>
           </div>
 
-          {nameMsg.text && (
-            <p className={`settings-feedback ${nameMsg.type}`}>{nameMsg.text}</p>
+          {emailMsg.text && (
+            <p className={`settings-feedback ${emailMsg.type}`}>{emailMsg.text}</p>
           )}
 
-          <button type="submit" className="btn btn-primary settings-btn" disabled={nameLoading}>
-            {nameLoading ? 'Saving...' : 'Save Name'}
+          <button
+            className="btn btn-secondary settings-btn"
+            onClick={handleSendResetEmail}
+            disabled={emailLoading}
+          >
+            {emailLoading ? 'Sending...' : 'Send Reset Email'}
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* Change Password */}
-      <div className="settings-card">
+      {/* Default Date Range — full width */}
+      <div className="settings-card settings-card-green">
         <div className="settings-card-header">
-          <span className="settings-card-icon"><LuLock size={22} /></span>
+          <span className="settings-card-icon"><LuCalendar size={22} /></span>
           <div>
-            <h2 className="settings-card-title">Change Password</h2>
+            <h2 className="settings-card-title">Default Date Range</h2>
             <p className="settings-card-desc">
-              We'll send a secure link to <strong>{currentUser?.email}</strong>. Open the email and click the link to choose a new password.
+              The date range shown on every page when you log in. You can still change it per session.
             </p>
           </div>
         </div>
 
-        {emailMsg.text && (
-          <p className={`settings-feedback ${emailMsg.type}`}>{emailMsg.text}</p>
+        <div className="form-group">
+          <label htmlFor="defaultRange">Date Range</label>
+          <select
+            id="defaultRange"
+            value={defaultRange}
+            onChange={e => setDefaultRange(e.target.value)}
+            className="settings-select"
+          >
+            {DATE_RANGE_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {rangeMsg.text && (
+          <p className={`settings-feedback ${rangeMsg.type}`}>{rangeMsg.text}</p>
         )}
 
         <button
-          className="btn btn-secondary settings-btn"
-          onClick={handleSendResetEmail}
-          disabled={emailLoading}
+          className="btn btn-primary settings-btn"
+          onClick={handleSaveDefaultRange}
+          disabled={rangeLoading}
         >
-          {emailLoading ? 'Sending...' : 'Send Reset Email'}
+          {rangeLoading ? 'Saving...' : 'Save Default'}
         </button>
       </div>
     </div>

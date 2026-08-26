@@ -26,7 +26,7 @@ const checkAndIncrementUsage = () => {
   try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
 };
 
-export const processMessage = async (userMessage, expenses = [], customCategories = []) => {
+export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
     throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
   }
@@ -41,39 +41,73 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
       .map(c => c.name),
   ];
 
-  // Trim to last 200 records to keep the prompt small
-  const expenseContext = expenses
+  // Pre-filter expenses to the active session date range (reduces prompt size + keeps AI focused)
+  const filteredExpenses = sessionDateRange
+    ? expenses.filter(e => e.date >= sessionDateRange.from && e.date <= sessionDateRange.to)
+    : expenses;
+
+  const expenseContext = filteredExpenses
     .slice(-200)
-    .map(e => ({ title: e.title, amount: e.amount, category: e.category, date: e.date }));
+    .map(e => ({ id: e.id, title: e.title, amount: e.amount, category: e.category, date: e.date }));
+
+  const dateRangeSection = sessionDateRange
+    ? `ACTIVE SESSION DATE RANGE: ${sessionDateRange.label} (${sessionDateRange.from} to ${sessionDateRange.to}). Treat this as the default period for all spending questions unless the user explicitly names a different period.`
+    : `NO SESSION DATE RANGE SET. If the user asks a spending QUERY that does not mention any time period (no "this month", "last week", "today", "January", specific dates, etc.), respond with intent "ASK_DATE_RANGE" to ask which period they want.`;
 
   const prompt = `You are BudgetBuddy AI, a helpful personal finance assistant. Today is ${today}.
 
-USER'S EXPENSE HISTORY (${expenseContext.length} records):
+${dateRangeSection}
+
+USER'S EXPENSE HISTORY (${expenseContext.length} records${sessionDateRange ? ` — pre-filtered to ${sessionDateRange.label}` : ''}):
 ${JSON.stringify(expenseContext)}
 
 AVAILABLE CATEGORIES: ${allCategories.join(', ')}
+CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): ${JSON.stringify(customCategories.map(c => ({ id: c.id, name: c.name })))}
 
 TASK: Read the user message and respond with ONLY raw JSON — no markdown, no code fences, no explanation.
 
 Classify the user's intent as one of:
-- "ADD_EXPENSE"  → user wants to log/add/record an expense (e.g. "spent $30 on lunch", "add coffee $5")
-- "QUERY"        → user asks a question about their spending data
-- "CHAT"         → greeting, general question, or unclear intent
+- "ADD_EXPENSE"     → user wants to log/add/record an expense (e.g. "spent $30 on lunch", "add coffee $5")
+- "ADD_CATEGORY"    → user wants to create a new category (e.g. "add category gym", "create a travel category", "new category masti")
+- "DELETE_EXPENSE"  → user wants to delete/remove a specific expense from their history
+- "EDIT_EXPENSE"    → user wants to change/update/fix a specific expense (amount, title, category, or date)
+- "DELETE_CATEGORY" → user wants to delete/remove a custom category (only custom categories, not default ones)
+- "EDIT_CATEGORY"   → user wants to rename a custom category
+- "QUERY"           → user asks a question about their spending data AND a time period is known (either mentioned in the message or set as the session range)
+- "ASK_DATE_RANGE"  → user asks a spending question but no time period is mentioned and no session range is set
+- "SET_DATE_RANGE"  → user's message IS a date range / time period (e.g. "last month", "January", "past 3 weeks", "2026-07-01 to 2026-07-31")
+- "CHAT"            → greeting, general question, or unclear intent (including when you cannot identify which expense/category the user means)
 
 Required JSON format:
 {
-  "intent": "ADD_EXPENSE" | "QUERY" | "CHAT",
+  "intent": "ADD_EXPENSE" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
   "message": "friendly 1-3 sentence response",
-  "expenseData": {
-    "title": "short descriptive title",
-    "amount": 0,
-    "category": "must be one of the available categories above",
-    "date": "YYYY-MM-DD"
-  }
+  "expenseData": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
+  "categoryData": { "name": "..." },
+  "deleteExpenseData": { "id": "...", "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
+  "editExpenseData": { "id": "...", "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD", "updates": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" } },
+  "deleteCategoryData": { "id": "...", "name": "..." },
+  "editCategoryData": { "id": "...", "name": "...", "newName": "..." },
+  "dateRange": { "label": "human-friendly label", "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }
 }
 
 Rules:
 - Include "expenseData" ONLY when intent is "ADD_EXPENSE"
+- Include "categoryData" ONLY when intent is "ADD_CATEGORY" — "name" should be the category name the user specified, capitalised properly
+- Include "deleteExpenseData" ONLY when intent is "DELETE_EXPENSE" — find the matching expense from the history by its id, title, amount, category, and date
+- Include "editExpenseData" ONLY when intent is "EDIT_EXPENSE" — "updates" contains only the fields being changed; use the expense's id from the history
+- Include "deleteCategoryData" ONLY when intent is "DELETE_CATEGORY" — use the id from CUSTOM CATEGORIES list; if it's a default category, use CHAT intent and explain it can't be deleted
+- Include "editCategoryData" ONLY when intent is "EDIT_CATEGORY" — use the id from CUSTOM CATEGORIES list; if it's a default category, use CHAT intent and explain it can't be renamed
+- Include "dateRange" ONLY when intent is "SET_DATE_RANGE"
+- If the user says "add category X" prefer ADD_CATEGORY over ADD_EXPENSE even if X sounds like a purchase
+- Spelling mistakes are common — use fuzzy matching to find the closest expense title or category name from the lists above, even if the user's spelling is off (e.g. "masti categor" → "Masti", "coffe" → "Coffee"). Always pick the best match rather than giving up.
+- If you matched a misspelled name, mention what you found in "message" (e.g. "I found 'Masti' — confirming before I delete it.") so the user can verify on the confirm card.
+- If there are two or more equally close matches and you genuinely cannot tell which one the user means, use CHAT intent and list the options (e.g. "I found 'Food' and 'Foods' — which one did you mean?")
+- If you cannot identify any matching expense or category even with fuzzy matching, use CHAT intent and ask them to be more specific (e.g. mention the amount, date, or title)
+- If the user wants to edit/update an expense but hasn't said what to change (no new amount, title, category, or date mentioned), use CHAT intent and ask: "What would you like to change — the amount, title, category, or date?"
+- If the user says "last expense" or "most recent expense", look at the expense history and identify the one with the latest date as the target
+- For SET_DATE_RANGE: parse the period into exact from/to dates. "label" is a short human-friendly name (e.g. "last month", "July 2026", "past 3 weeks"). message should confirm the range and invite the user to ask their spending questions.
+- For ASK_DATE_RANGE: message should ask the user which time period they want (offer examples: this month, last month, a specific range).
 - For QUERY: compute the answer from the expense history and put it in "message". Be specific with numbers.
 - For ADD_EXPENSE: "amount" must be a number (not a string), "date" must be YYYY-MM-DD
 - Interpret relative dates: "today" = ${today}, "yesterday" = one day before, etc.
@@ -104,7 +138,7 @@ User message: "${userMessage}"`;
   // Extract JSON even if the model wraps it in backticks
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    return { intent: 'CHAT', message: "I didn't quite understand that — could you rephrase? For example: \"Add 80 for groceries on August 1 2026\" or \"how much did I spend last month?\"" };
+    return { intent: 'CHAT', message: "I didn't quite catch that. You can ask me to add, edit, or delete expenses and categories, or ask questions about your spending. For example: \"delete my coffee expense\", \"rename Masti to Fun\", or \"how much did I spend this month?\"" };
   }
 
   return JSON.parse(jsonMatch[0]);

@@ -140,6 +140,20 @@
   display: inline-block;
   box-shadow: 0 0 6px var(--ai-online);
 }
+.ai-date-range-clear {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+.ai-date-range-clear:hover {
+  color: #fff;
+}
 .ai-chat-close {
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.2);
@@ -272,6 +286,48 @@
   border: 1px solid var(--glass-08);
 }
 
+/* ── Date range picker card ──────────────────────────────────────────── */
+.ai-date-range-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+}
+.ai-date-range-picker > p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ai-date-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.ai-date-preset-btn {
+  background: var(--surface-1, rgba(255,255,255,0.07));
+  border: 1px solid var(--border, rgba(255,255,255,0.12));
+  border-radius: var(--radius-sm, 6px);
+  color: var(--text-primary, #e2e8f0);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.ai-date-preset-btn:hover {
+  background: var(--accent, rgba(99,102,241,0.25));
+  border-color: var(--accent-border, rgba(99,102,241,0.5));
+  color: #fff;
+}
+.ai-date-custom-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-muted, rgba(255,255,255,0.45));
+  font-style: italic;
+}
+
 /* ── Expense confirmation card ───────────────────────────────────────── */
 .ai-expense-confirm {
   display: flex;
@@ -331,6 +387,10 @@
   opacity: 0.9;
   transform: translateY(-1px);
 }
+.ai-expense-actions .btn-confirm.btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
 .ai-expense-actions .btn-dismiss {
   flex: 1;
   background: var(--glass-08);
@@ -365,6 +425,17 @@
   padding: 8px 14px;
   font-size: 12.5px;
   text-align: center;
+}
+
+/* ── Pending action reminder ─────────────────────────────────────────── */
+.ai-reminder {
+  font-size: 12px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0;
 }
 
 /* ── Typing indicator ────────────────────────────────────────────────── */

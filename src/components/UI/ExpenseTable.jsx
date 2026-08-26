@@ -31,11 +31,13 @@ export default function ExpenseTable({
   onDelete,
   itemsPerPage = 15,
   showPagination = true,
+  hiddenColumns = [],
   emptyIcon,
   emptyMessage = 'No expenses found',
   emptySubMessage = '',
   emptyAction,
 }) {
+  const hide = new Set(hiddenColumns);
   const [sortKey, setSortKey] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,51 +106,67 @@ export default function ExpenseTable({
         <table className="expenses-table">
           <thead>
             <tr>
-              <th>
-                <button className="th-sort-btn" onClick={() => handleSort('category')}>
-                  Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
-                </button>
-              </th>
-              <th>
-                <button className="th-sort-btn" onClick={() => handleSort('title')}>
-                  Title <SortIcon active={sortKey === 'title'} dir={sortDir} />
-                </button>
-              </th>
-              <th>
-                <button className="th-sort-btn" onClick={() => handleSort('amount')}>
-                  Amount <SortIcon active={sortKey === 'amount'} dir={sortDir} />
-                </button>
-              </th>
-              <th>
-                <button className="th-sort-btn" onClick={() => handleSort('date')}>
-                  Date <SortIcon active={sortKey === 'date'} dir={sortDir} />
-                </button>
-              </th>
+              {!hide.has('category') && (
+                <th>
+                  <button className="th-sort-btn" onClick={() => handleSort('category')}>
+                    Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
+                  </button>
+                </th>
+              )}
+              {!hide.has('title') && (
+                <th>
+                  <button className="th-sort-btn" onClick={() => handleSort('title')}>
+                    Title <SortIcon active={sortKey === 'title'} dir={sortDir} />
+                  </button>
+                </th>
+              )}
+              {!hide.has('amount') && (
+                <th>
+                  <button className="th-sort-btn" onClick={() => handleSort('amount')}>
+                    Amount <SortIcon active={sortKey === 'amount'} dir={sortDir} />
+                  </button>
+                </th>
+              )}
+              {!hide.has('date') && (
+                <th>
+                  <button className="th-sort-btn" onClick={() => handleSort('date')}>
+                    Date <SortIcon active={sortKey === 'date'} dir={sortDir} />
+                  </button>
+                </th>
+              )}
               {showActions && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {page.map((expense) => (
               <tr key={expense.id}>
-                <td>
-                  <div className="category-cell">
-                    <span className="category-icon">{getCategoryIcon(expense.category)}</span>
-                    <span className="category-name">{expense.category}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className="title-cell">
-                    <span className="expense-title">{expense.title}</span>
-                  </div>
-                </td>
-                <td>
-                  <span className="amount-cell">
-                    ${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}
-                  </span>
-                </td>
-                <td>
-                  <span className="date-cell">{formatDate(expense.date)}</span>
-                </td>
+                {!hide.has('category') && (
+                  <td>
+                    <div className="category-cell">
+                      <span className="category-icon">{getCategoryIcon(expense.category)}</span>
+                      <span className="category-name">{expense.category}</span>
+                    </div>
+                  </td>
+                )}
+                {!hide.has('title') && (
+                  <td>
+                    <div className="title-cell">
+                      <span className="expense-title">{expense.title}</span>
+                    </div>
+                  </td>
+                )}
+                {!hide.has('amount') && (
+                  <td>
+                    <span className="amount-cell">
+                      ${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}
+                    </span>
+                  </td>
+                )}
+                {!hide.has('date') && (
+                  <td>
+                    <span className="date-cell">{formatDate(expense.date)}</span>
+                  </td>
+                )}
                 {showActions && (
                   <td>
                     <div className="action-buttons">

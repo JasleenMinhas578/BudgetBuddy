@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LuDollarSign, LuTrendingUp, LuAward, LuReceipt } from 'react-icons/lu';
+import { LuDollarSign, LuTrendingUp, LuAward, LuReceipt, LuPlus } from 'react-icons/lu';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -8,6 +8,8 @@ import { useDateRangeContext } from '../../context/DateRangeContext';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import ExpenseTable from '../UI/ExpenseTable';
+import Modal from '../UI/Modal';
+import ExpenseForm from '../Expense/ExpenseForm';
 import '../../styles/main.css';
 
 
@@ -15,6 +17,7 @@ export default function DashboardOverview() {
   // State management for data
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
 
@@ -134,7 +137,13 @@ export default function DashboardOverview() {
       <div className="recent-activity">
         <div className="activity-header">
           <h3>Recent Expenses</h3>
-          <Link to="/dashboard/expenses" className="btn btn-primary view-all-link">View All</Link>
+          <div className="activity-header-actions">
+            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
+              <LuPlus size={15} />
+              Add Expense
+            </button>
+            <Link to="/dashboard/expenses" className="btn btn-secondary view-all-link">View All</Link>
+          </div>
         </div>
 
         <ExpenseTable
@@ -145,10 +154,22 @@ export default function DashboardOverview() {
           emptyMessage="No expenses yet"
           emptySubMessage="Start tracking your expenses to see them here"
           emptyAction={
-            <Link to="/dashboard/expenses" className="btn btn-primary">Add First Expense</Link>
+            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
+              Add First Expense
+            </button>
           }
         />
       </div>
+
+      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add New Expense</h2>
+        </div>
+        <ExpenseForm
+          onExpenseAdded={() => setIsAddExpenseOpen(false)}
+          onCancel={() => setIsAddExpenseOpen(false)}
+        />
+      </Modal>
     </div>
   );
 } 

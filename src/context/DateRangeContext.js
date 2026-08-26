@@ -1,32 +1,32 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { useAuth } from './AuthContext';
+import { getUserSettings } from '../services/database';
 
 const DateRangeContext = createContext(null);
-
 const today = () => format(new Date(), 'yyyy-MM-dd');
 
 export function DateRangeProvider({ children }) {
-  const [dateFilter, setDateFilterState] = useState(
-    () => localStorage.getItem('bb_date_filter') || 'thisMonth'
-  );
-  const [customDateRange, setCustomDateRangeState] = useState(() => {
-    try {
-      const stored = localStorage.getItem('bb_custom_date_range');
-      return stored ? JSON.parse(stored) : { startDate: today(), endDate: today() };
-    } catch {
-      return { startDate: today(), endDate: today() };
-    }
+  const { currentUser } = useAuth();
+  const [dateFilter, setDateFilter] = useState('thisMonth');
+  const [customDateRange, setCustomDateRange] = useState({
+    startDate: today(),
+    endDate: today(),
   });
 
-  const setDateFilter = (val) => {
-    setDateFilterState(val);
-    try { localStorage.setItem('bb_date_filter', val); } catch {}
-  };
-
-  const setCustomDateRange = (range) => {
-    setCustomDateRangeState(range);
-    try { localStorage.setItem('bb_custom_date_range', JSON.stringify(range)); } catch {}
-  };
+  // On login, reset the filter to whatever the user saved as their default.
+  // This runs every time currentUser changes (login / logout / switch account).
+  useEffect(() => {
+    if (!currentUser) {
+      setDateFilter('thisMonth');
+      return;
+    }
+    getUserSettings(currentUser.uid).then(settings => {
+      if (settings.defaultDateFilter) {
+        setDateFilter(settings.defaultDateFilter);
+      }
+    });
+  }, [currentUser]);
 
   return (
     <DateRangeContext.Provider value={{ dateFilter, setDateFilter, customDateRange, setCustomDateRange }}>

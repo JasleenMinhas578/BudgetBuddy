@@ -158,6 +158,13 @@
 
     /* ── Semantic shadows ─────────────────────────────────── */
     --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.55);
+
+    /* ── Semantic bg / border / accent aliases ────────────── */
+    --bg-primary:    #0f172a;
+    --bg-secondary:  #232b3e;
+    --bg-card:       #1e2537;
+    --border-color:  rgba(255, 255, 255, 0.1);
+    --accent-green:  #4fd1c5;
   }
   
   * {
@@ -13811,11 +13818,6 @@
     align-items: center;
   }
   
-  .export-dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  
   .export-option {
     background: var(--glass-10);
     border: 1px solid var(--glass-20);
@@ -13826,12 +13828,12 @@
     font-size: var(--font-size-sm);
     transition: var(--transition-base);
   }
-  
+
   .export-option:hover:not(:disabled) {
     background: var(--glass-15);
     border-color: var(--glass-30);
   }
-  
+
   .export-option:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -14489,6 +14491,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  align-items: start;
 }
 
 .category-card {
@@ -14651,25 +14654,46 @@
   align-items: center;
 }
 
-.export-dropdown {
+.export-btn-wrapper {
   position: relative;
-  display: inline-block;
+}
+
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 100;
+  min-width: 180px;
+  background: rgba(30, 41, 59, 0.98);
+  border: 1px solid var(--glass-20);
+  border-radius: var(--radius-lg);
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
 }
 
 .export-option {
-  background: var(--glass-10);
-  border: 1px solid var(--glass-20);
+  background: transparent;
+  border: none;
   color: #ffffff;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-lg);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: var(--font-size-sm);
   transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .export-option:hover:not(:disabled) {
-  background: var(--glass-15);
-  border-color: var(--glass-30);
+  background: var(--glass-10);
 }
 
 .export-option:disabled {
@@ -15960,12 +15984,31 @@
 
 /* ── Settings Page ─────────────────────────────────────────────── */
 
+.activity-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
 .settings-page {
   padding: 2rem;
-  max-width: 600px;
+  max-width: 680px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.settings-cards-grid {
+  display: contents;
+}
+
+.settings-card-violet {
+  border-left-color: var(--accent-violet);
+}
+
+.settings-card-green {
+  border-left-color: var(--accent-teal);
 }
 
 .settings-header {
@@ -15996,10 +16039,6 @@
   gap: 1.125rem;
 }
 
-/* Give the security card an amber/warning left accent */
-.settings-card + .settings-card {
-  border-left-color: var(--accent-violet);
-}
 
 .settings-card-header {
   display: flex;
@@ -16016,7 +16055,7 @@
   margin-top: 0.1rem;
 }
 
-.settings-card + .settings-card .settings-card-icon {
+.settings-card-violet .settings-card-icon {
   color: var(--accent-violet);
 }
 
@@ -16049,14 +16088,41 @@
   align-self: flex-start;
 }
 
+.settings-select {
+  width: 100%;
+  max-width: 280px;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  padding-right: 2.25rem;
+}
+.settings-select:focus {
+  outline: none;
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px var(--teal-10);
+}
+.settings-select option {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
 /* Violet-tinted button for the security section */
-.settings-card + .settings-card .settings-btn {
+.settings-card-violet .settings-btn {
   background: linear-gradient(135deg, var(--accent-violet), #9f7aea);
   color: #fff;
   border: none;
   box-shadow: 0 4px 12px var(--violet-20);
 }
-.settings-card + .settings-card .settings-btn:hover {
+.settings-card-violet .settings-btn:hover {
   box-shadow: 0 6px 20px var(--violet-20);
   opacity: 0.9;
 }
@@ -16346,6 +16412,10 @@
 }
 
 /* ── Category card expand / drill-down ───────────────────── */
+.category-card--clickable {
+  cursor: pointer;
+}
+
 .category-card--expanded {
   border-color: var(--accent-teal) !important;
   box-shadow: 0 0 0 1px var(--accent-teal), 0 4px 16px rgba(79, 209, 197, 0.12);
@@ -16382,6 +16452,10 @@
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid var(--glass-10);
+}
+
+.category-expenses-panel .expenses-table-container {
+  overflow-x: auto;
 }
 
 /* ── Sortable table header buttons ───────────────────────── */

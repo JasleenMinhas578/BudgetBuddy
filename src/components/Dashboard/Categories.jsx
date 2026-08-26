@@ -38,7 +38,16 @@ export default function Categories() {
       return next;
     });
   };
- 
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.category-card') && !e.target.closest('.btn-toggle-all')) {
+        setExpandedCategories(new Set());
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -201,6 +210,15 @@ export default function Categories() {
   const categoryData = getCategoryData();
   const totalSpent = categoryData.datasets[0].data.reduce((sum, val) => sum + val, 0);
 
+  const expandableCategoryNames = allCategories
+    .filter(cat => filteredExpenses.some(e => e.category === cat.name))
+    .map(cat => cat.name);
+  const allExpanded = expandableCategoryNames.length > 0 &&
+    expandableCategoryNames.every(name => expandedCategories.has(name));
+  const toggleAll = () => {
+    setExpandedCategories(allExpanded ? new Set() : new Set(expandableCategoryNames));
+  };
+
   return (
     <div className="categories-container">
       {/* Toast Notification */}
@@ -255,32 +273,19 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="charts-section">
-        <div className="chart-container">
-        <div className="chart-card">
-          <h3>Spending by Category</h3>
-            <div className="chart-wrapper">
-          <PieChart data={categoryData} />
-            </div>
-          </div>
-        </div>
-        
-        <div className="chart-container">
-        <div className="chart-card">
-          <h3>Category Breakdown</h3>
-            <div className="chart-wrapper">
-          <BarChart data={categoryData} />
-            </div>
-          </div>
-        </div>
-      </div>
-      
       {/* Categories List */}
       <div className="categories-list-section">
         <div className="section-subheader">
-          <h3>All Categories</h3>
-          <p>Detailed breakdown of your spending by category (default and custom)</p>
+          <div>
+            <h3>All Categories</h3>
+            <p>Detailed breakdown of your spending by category (default and custom)</p>
+          </div>
+          {expandableCategoryNames.length > 0 && (
+            <button className="btn btn-secondary btn-sm btn-toggle-all" onClick={toggleAll}>
+              {allExpanded ? <LuChevronUp size={14} /> : <LuChevronDown size={14} />}
+              {allExpanded ? 'Collapse All' : 'Expand All'}
+            </button>
+          )}
         </div>
         
         {allCategories.length > 0 ? (
@@ -292,9 +297,14 @@ export default function Categories() {
               
               const isExpanded = expandedCategories.has(category.name);
               const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
+              const isExpandable = categoryExpenses.length > 0;
 
               return (
-                <div key={category.id} className={`category-card${isExpanded ? ' category-card--expanded' : ''}`}>
+                <div
+                  key={category.id}
+                  className={`category-card${isExpandable ? ' category-card--clickable' : ''}${isExpanded ? ' category-card--expanded' : ''}`}
+                  onClick={isExpandable ? () => toggleCategory(category.name) : undefined}
+                >
                   <div className="category-card-header">
                     <div className="category-icon-large">
                       <category.Icon size={22} />
@@ -319,14 +329,11 @@ export default function Categories() {
                           </svg>
                         </button>
                       )}
-                      <button
-                        className="btn-expand"
-                        onClick={() => toggleCategory(category.name)}
-                        title={isExpanded ? 'Collapse' : 'Show expenses'}
-                        aria-expanded={isExpanded}
-                      >
-                        {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
-                      </button>
+                      {isExpandable && (
+                        <span className="btn-expand" aria-hidden="true">
+                          {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="category-progress">
@@ -340,9 +347,10 @@ export default function Categories() {
                   </div>
 
                   {isExpanded && (
-                    <div className="category-expenses-panel">
+                    <div className="category-expenses-panel" onClick={(e) => e.stopPropagation()}>
                       <ExpenseTable
                         expenses={categoryExpenses}
+                        hiddenColumns={['category']}
                         itemsPerPage={5}
                         emptyIcon={<LuReceipt size={32} />}
                         emptyMessage="No expenses in this category"
@@ -365,7 +373,35 @@ export default function Categories() {
           </div>
         )}
       </div>
-      
+
+      {/* Charts Section */}
+      <div className="categories-list-section">
+        <div className="section-subheader">
+          <div>
+            <h3>Charts &amp; Visualizations</h3>
+            <p>Visual breakdown of your spending across categories</p>
+          </div>
+        </div>
+        <div className="charts-section">
+          <div className="chart-container">
+            <div className="chart-card">
+              <h3>Spending by Category</h3>
+              <div className="chart-wrapper">
+                <PieChart data={categoryData} />
+              </div>
+            </div>
+          </div>
+          <div className="chart-container">
+            <div className="chart-card">
+              <h3>Category Breakdown</h3>
+              <div className="chart-wrapper">
+                <BarChart data={categoryData} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
         <div className="modal-header">
           <h2 className="modal-title">Add New Category</h2>

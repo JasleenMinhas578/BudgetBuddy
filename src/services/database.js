@@ -1,11 +1,13 @@
-import { 
-    collection, 
-    addDoc, 
-    getDocs, 
-    query, 
-    where, 
-    doc, 
-    updateDoc, 
+import {
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
+    doc,
+    getDoc,
+    setDoc,
+    updateDoc,
     deleteDoc,
     onSnapshot,
     orderBy,
@@ -363,5 +365,26 @@ import {
     } catch (error) {
       console.error('Error setting up category expense subscription:', error);
       throw new Error(`Failed to subscribe to category expenses: ${error.message}`);
+    }
+  };
+
+  export const getUserSettings = async (userId) => {
+    try {
+      const docRef = doc(db, 'users', userId, 'settings', 'preferences');
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists() ? docSnap.data() : {};
+    } catch (error) {
+      console.error('Error getting user settings:', error);
+      return {};
+    }
+  };
+
+  export const saveUserSettings = async (userId, settings) => {
+    try {
+      const docRef = doc(db, 'users', userId, 'settings', 'preferences');
+      await setDoc(docRef, settings, { merge: true });
+    } catch (error) {
+      console.error('Error saving user settings:', error);
+      throw new Error(`Failed to save settings: ${error.message}`);
     }
   };

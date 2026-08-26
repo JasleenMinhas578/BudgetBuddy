@@ -41,7 +41,9 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ Report generation (PDF & CSV export)
 - ✅ Responsive design (desktop, tablet, mobile)
 - ✅ Real-time data synchronization
-- ✅ **AI chat assistant** — add expenses in plain English, query spending data, auto-categorize expenses (powered by Google Gemini)
+- ✅ **User settings** — update display name, send password-reset email, and save a default date-range preference that persists across sessions
+- ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, Categories, and Reports; loads the user's saved preference on login
+- ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
 
 ### Testing & Quality Assurance
 - **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
@@ -332,7 +334,8 @@ src/
 **Real-time Sync**: `onSnapshot()` listeners for automatic UI updates
 
 ### State Management
-- **React Context API** for global authentication state
+- **`AuthContext`** — global authentication state (current user, login/logout, display-name update, password reset)
+- **`DateRangeContext`** — global date-filter state shared across all dashboard views; loads the user's saved preference from Firestore on login
 - **Local component state** for UI interactions
 - **Firestore real-time listeners** for data state
 
@@ -801,10 +804,14 @@ This beta round confirmed that the core functionality is usable and clearly iden
 
 ## 🚀 Future Enhancements
 
-### AI-Powered Features *(Partially Implemented)*
+### AI-Powered Features *(Substantially Complete)*
 - ✅ Natural language expense input (e.g., "spent $45 on lunch")
 - ✅ Automatic expense categorization via Gemini AI
 - ✅ Natural language spending queries (totals, averages, highest expense)
+- ✅ Edit expenses via chat (e.g., "change my coffee yesterday to $6")
+- ✅ Delete expenses via chat (e.g., "remove the Uber ride on July 3")
+- ✅ Add/delete/rename custom categories via chat
+- ✅ Natural language date-range control (e.g., "show me last month" changes the dashboard filter)
 - 🔜 Predictive analytics for spending patterns
 - 🔜 Budget alerts when nearing category limits
 

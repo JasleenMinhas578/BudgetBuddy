@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 
 export function useDateFilter(expenses, defaultFilter = 'all', external = null) {
   const [localDateFilter, setLocalDateFilter] = useState(defaultFilter);
@@ -20,6 +20,12 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
       case 'today': {
         const today = format(new Date(), 'yyyy-MM-dd');
         filtered = expenses.filter(e => e.date === today);
+        break;
+      }
+      case 'thisWeek': {
+        const start = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const end = format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        filtered = expenses.filter(e => e.date >= start && e.date <= end);
         break;
       }
       case 'thisMonth': {

@@ -1,5 +1,6 @@
 export const FILTER_BUTTONS_DEFAULT = [
   { key: 'today',     label: 'Today'        },
+  { key: 'thisWeek',  label: 'This Week'    },
   { key: 'thisMonth', label: 'This Month'   },
   { key: 'lastMonth', label: 'Last Month'   },
   { key: 'thisYear',  label: 'This Year'    },
@@ -11,6 +12,7 @@ export const FILTER_BUTTONS_DEFAULT = [
 export const FILTER_BUTTONS_REPORTS = [
   { key: 'all',       label: 'All Time'     },
   { key: 'today',     label: 'Today'        },
+  { key: 'thisWeek',  label: 'This Week'    },
   { key: 'thisMonth', label: 'This Month'   },
   { key: 'lastMonth', label: 'Last Month'   },
   { key: 'thisYear',  label: 'This Year'    },
