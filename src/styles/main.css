@@ -16496,3 +16496,47 @@
   align-items: center;
   flex-shrink: 0;
 }
+
+/* ── Floating Action Button ──────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: var(--z-modal, 1000);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  color: #0f172a;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(79, 209, 197, 0.40);
+  transition: transform var(--transition-base, 150ms ease), box-shadow var(--transition-base, 150ms ease);
+}
+
+.fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 22px rgba(79, 209, 197, 0.55);
+}
+
+.fab:active {
+  transform: scale(0.96);
+}
+
+/* ── Trend delta on Total Spent card ────────────────────── */
+.card-trend {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--font-weight-semibold, 600);
+  margin-top: 2px;
+}
+
+.trend-up {
+  color: var(--danger, #fc8181);
+}
+
+.trend-down {
+  color: var(--accent-teal, #4fd1c5);
+}

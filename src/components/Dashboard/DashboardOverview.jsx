@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { LuDollarSign, LuTrendingUp, LuAward, LuReceipt, LuPlus } from 'react-icons/lu';
+import { format, subMonths, subDays, subWeeks, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -50,6 +51,31 @@ export default function DashboardOverview() {
   // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
   const averageExpense = filteredExpenses.length > 0 ? totalSpent / filteredExpenses.length : 0;
+
+  // Compute previous-period total so we can show a trend delta on the Total Spent card
+  const previousPeriodTotal = (() => {
+    switch (dateFilter) {
+      case 'today': {
+        const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+        return expenses.filter(e => e.date === yesterday).reduce((sum, e) => sum + e.amount, 0);
+      }
+      case 'thisWeek': {
+        const lastWeek = subWeeks(new Date(), 1);
+        const start = format(startOfWeek(lastWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const end = format(endOfWeek(lastWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        return expenses.filter(e => e.date >= start && e.date <= end).reduce((sum, e) => sum + e.amount, 0);
+      }
+      case 'thisMonth': {
+        const last = subMonths(new Date(), 1);
+        const start = format(startOfMonth(last), 'yyyy-MM-dd');
+        const end = format(endOfMonth(last), 'yyyy-MM-dd');
+        return expenses.filter(e => e.date >= start && e.date <= end).reduce((sum, e) => sum + e.amount, 0);
+      }
+      default:
+        return null;
+    }
+  })();
+  const trendDelta = previousPeriodTotal !== null ? totalSpent - previousPeriodTotal : null;
 
   const topCategoryName = (() => {
     const map = filteredExpenses.reduce((acc, e) => {
@@ -107,6 +133,11 @@ export default function DashboardOverview() {
             <h3>Total Spent</h3>
             <p className="card-amount">${totalSpent.toFixed(2)}</p>
             <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
+            {trendDelta !== null && (
+              <p className={`card-trend ${trendDelta > 0 ? 'trend-up' : 'trend-down'}`}>
+                {trendDelta > 0 ? '▲' : '▼'} ${Math.abs(trendDelta).toFixed(2)} vs prior period
+              </p>
+            )}
           </div>
         </div>
 

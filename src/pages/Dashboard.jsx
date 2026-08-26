@@ -4,13 +4,17 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Layout/Sidebar';
 import Navbar from '../components/Layout/Navbar';
 import ConfirmDialog from '../components/UI/ConfirmDialog';
+import Modal from '../components/UI/Modal';
+import ExpenseForm from '../components/Expense/ExpenseForm';
 import { useAuth } from '../context/AuthContext';
+import { LuPlus } from 'react-icons/lu';
 import '../styles/main.css';
 
 
 export default function Dashboard() {
   const { logout } = useAuth();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default to open on desktop
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
@@ -233,6 +237,26 @@ export default function Dashboard() {
           <Outlet />
         </div>
       </div>
+
+      {/* Floating Add Expense button — available on every dashboard sub-page */}
+      <button
+        className="fab"
+        onClick={() => setIsAddExpenseOpen(true)}
+        aria-label="Add expense"
+        title="Add expense"
+      >
+        <LuPlus size={22} />
+      </button>
+
+      <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)}>
+        <div className="modal-header">
+          <h2 className="modal-title">Add New Expense</h2>
+        </div>
+        <ExpenseForm
+          onExpenseAdded={() => setIsAddExpenseOpen(false)}
+          onCancel={() => setIsAddExpenseOpen(false)}
+        />
+      </Modal>
 
       <ConfirmDialog
         isOpen={logoutDialogOpen}

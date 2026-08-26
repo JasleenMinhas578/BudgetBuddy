@@ -4,7 +4,6 @@ import {
   LuUpload, LuFileText, LuFileSpreadsheet, LuLoader,
   LuX, LuSparkles, LuZap,
   LuLightbulb,
-  LuDollarSign, LuReceipt, LuTrendingUp, LuAward,
   LuBarChart2,
 } from 'react-icons/lu';
 import { getCategoryColor } from '../../utils/getCategoryColor';
@@ -380,13 +379,13 @@ export default function Reports() {
     if (filteredExpenses.length === 0) return [];
     const insights = [];
     const topCategoryPercentage = totalAmount > 0 ? (maxAmount / totalAmount) * 100 : 0;
-    if (topCategory && topCategoryPercentage > 50) {
+    if (topCategory && topCategoryPercentage > 30) {
       insights.push(`You spend ${topCategoryPercentage.toFixed(1)}% of your money on ${topCategory}`);
     }
-    if (averageAmount > 100) {
+    if (averageAmount > 20) {
       insights.push(`Your average transaction is $${averageAmount.toFixed(2)}, consider reviewing larger expenses`);
     }
-    if (filteredExpenses.length > 50) {
+    if (filteredExpenses.length > 10) {
       insights.push(`You have ${filteredExpenses.length} transactions in this period`);
     }
     return insights;
@@ -511,47 +510,6 @@ export default function Reports() {
             </div>
           </div>
         )}
-
-        {/* Summary Cards */}
-        <div className="summary-cards">
-          <div className="summary-card">
-            <div className="card-icon"><LuDollarSign size={26} /></div>
-            <div className="card-content">
-              <h3>Total Spent</h3>
-              <p className="card-amount">${totalAmount.toFixed(2)}</p>
-              <p className="card-subtitle">{getFilterLabel()}</p>
-            </div>
-          </div>
-
-          <div className="summary-card">
-            <div className="card-icon"><LuReceipt size={26} /></div>
-            <div className="card-content">
-              <h3>Transactions</h3>
-              <p className="card-amount">{filteredExpenses.length}</p>
-              <p className="card-subtitle">Total transactions</p>
-            </div>
-          </div>
-
-          <div className="summary-card">
-            <div className="card-icon"><LuTrendingUp size={26} /></div>
-            <div className="card-content">
-              <h3>Average</h3>
-              <p className="card-amount">${averageAmount.toFixed(2)}</p>
-              <p className="card-subtitle">Per transaction</p>
-            </div>
-          </div>
-
-          <div className="summary-card">
-            <div className="card-icon"><LuAward size={26} /></div>
-            <div className="card-content">
-              <h3>Top Category</h3>
-              <p className="card-amount">
-                {topCategory ? topCategory : 'None'}
-              </p>
-              <p className="card-subtitle">Highest spending</p>
-            </div>
-          </div>
-        </div>
 
         {/* Charts Section */}
         <div className="charts-section-wrapper">

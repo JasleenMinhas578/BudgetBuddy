@@ -306,7 +306,7 @@ export default function Categories() {
                   onClick={isExpandable ? () => toggleCategory(category.name) : undefined}
                 >
                   <div className="category-card-header">
-                    <div className="category-icon-large">
+                    <div className="category-icon-large" style={{ color: getCategoryColor(category.name) }}>
                       <category.Icon size={22} />
                     </div>
                     <div className="category-info">
@@ -340,7 +340,7 @@ export default function Categories() {
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
-                        style={{ width: `${percentage}%` }}
+                        style={{ width: `${percentage}%`, backgroundColor: getCategoryColor(category.name) }}
                       ></div>
                     </div>
                     <span className="progress-text">{percentage.toFixed(1)}%</span>
