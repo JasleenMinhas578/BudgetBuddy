@@ -1,23 +1,18 @@
 /*
  * main.css — entry point only.
  *
- * This file imports the split stylesheets in their original cascade order.
  * Do not add rules here; add them to the appropriate partial below.
  *
  * tokens.css          — :root design tokens (colours, fonts, spacing, shadows)
- * styles-base.css     — Base reset, landing page, auth, layout (copy 1)
- * styles-dashboard.css — Dashboard layout + components (copy 2)
- * styles-components.css — Shared UI widgets: buttons, forms, tables (copy 3)
- * styles-pages.css    — Authoritative page styles: expenses, categories, reports (copy 4)
- * styles-additions.css — Newer unindented additions: categories grid, toast, pagination, 404
+ * styles-landing.css  — Landing page, auth, base reset + shared components
+ * styles-pages.css    — Dashboard layout, expenses, categories, reports (authoritative)
+ * styles-additions.css — Categories grid, toast, pagination, 404, keyframes
  * styles-overrides.css — Visual polish overrides + mobile bug fixes
- * styles-settings.css  — Settings page, sidebar footer, AI chat welcome, misc fixes
+ * styles-settings.css  — Settings page, sidebar footer, AI chat welcome
  */
 
 @import './tokens.css';
-@import './styles-base.css';
-@import './styles-dashboard.css';
-@import './styles-components.css';
+@import './styles-landing.css';
 @import './styles-pages.css';
 @import './styles-additions.css';
 @import './styles-overrides.css';
