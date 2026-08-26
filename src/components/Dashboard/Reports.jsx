@@ -160,10 +160,10 @@ export default function Reports() {
             <h3 className="section-heading-icon"><LuBarChart2 size={18} /> Charts & Visualizations</h3>
           </div>
           <div className="charts-section">
-            <ChartCard title="Spending by Category">
+            <ChartCard title="Spending by Category" isEmpty={filteredExpenses.length === 0}>
               <PieChart data={categoryData} />
             </ChartCard>
-            <ChartCard title="Monthly Trend">
+            <ChartCard title="Monthly Trend" isEmpty={filteredExpenses.length === 0}>
               <LineChart data={monthlyData} />
             </ChartCard>
           </div>

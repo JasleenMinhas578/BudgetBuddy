@@ -11,6 +11,8 @@ import ChartCard from '../UI/ChartCard';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useCategoryData } from '../../hooks/useCategoryData';
 import { useCategoryActions } from '../../hooks/useCategoryActions';
+import { useBudgets } from '../../hooks/useBudgets';
+import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -23,6 +25,37 @@ import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
+
+// Controlled input that syncs when the Firestore value changes from outside,
+// but only pushes to Firestore on blur or Enter so we don't spam writes.
+function CategoryBudgetInput({ id, categoryName, initialValue, onSave }) {
+  const [value, setValue] = useState(initialValue !== null && initialValue !== undefined ? String(initialValue) : '');
+
+  useEffect(() => {
+    setValue(initialValue !== null && initialValue !== undefined ? String(initialValue) : '');
+  }, [initialValue]);
+
+  const save = () => {
+    const parsed = value === '' ? null : parseFloat(value);
+    if (value !== '' && (Number.isNaN(parsed) || parsed < 0)) return;
+    onSave(categoryName, parsed);
+  };
+
+  return (
+    <input
+      id={id}
+      type="number"
+      min="0"
+      step="1"
+      className="budget-input"
+      placeholder="Set budget"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={save}
+      onKeyDown={(e) => e.key === 'Enter' && save()}
+    />
+  );
+}
 
 export default function Categories() {
   const { expenses } = useExpenses();
@@ -69,6 +102,23 @@ export default function Categories() {
   ], [categories]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
+  const { budgets, setCategoryBudget, setMonthlyBudget } = useBudgets();
+  const { categoryProgress, overallProgress } = useBudgetProgress(filteredExpenses, allCategories, budgets);
+
+  // Local input state for monthly budget (controlled input, saved on blur/enter)
+  const [monthlyInput, setMonthlyInput] = useState('');
+  useEffect(() => {
+    setMonthlyInput(budgets.monthly !== null && budgets.monthly !== undefined ? String(budgets.monthly) : '');
+  }, [budgets.monthly]);
+
+  const handleMonthlyBudgetSave = () => {
+    const parsed = monthlyInput === '' ? null : parseFloat(monthlyInput);
+    if (monthlyInput !== '' && (Number.isNaN(parsed) || parsed < 0)) return;
+    setMonthlyBudget(parsed);
+  };
+
+  const catBudgetSum = Object.values(budgets.categories || {}).reduce((s, v) => s + (v || 0), 0);
+  const showCapWarning = budgets.monthly > 0 && catBudgetSum > budgets.monthly;
 
   const monthlyTrendData = useMemo(() => {
     const months = [...new Set(
@@ -172,6 +222,33 @@ export default function Categories() {
         </div>
       </div>
 
+      {/* Monthly budget cap input */}
+      <div className="monthly-budget-row">
+        <label htmlFor="monthly-budget">Monthly budget cap ($)</label>
+        <input
+          id="monthly-budget"
+          type="number"
+          min="0"
+          step="1"
+          className="budget-input"
+          placeholder="e.g. 1500"
+          value={monthlyInput}
+          onChange={(e) => setMonthlyInput(e.target.value)}
+          onBlur={handleMonthlyBudgetSave}
+          onKeyDown={(e) => e.key === 'Enter' && handleMonthlyBudgetSave()}
+        />
+        {budgets.monthly > 0 && (
+          <span className={`budget-remaining${overallProgress.status === 'ok' ? '' : ` budget-remaining--${overallProgress.status}`}`}>
+            {overallProgress.remaining >= 0
+              ? `$${overallProgress.remaining.toFixed(2)} left`
+              : `$${Math.abs(overallProgress.remaining).toFixed(2)} over`}
+          </span>
+        )}
+        {showCapWarning && (
+          <span className="budget-cap-warning">⚠ Category budgets exceed monthly cap</span>
+        )}
+      </div>
+
       <div className="filter-controls">
         <div className="filter-section">
           <DateFilterBar
@@ -185,6 +262,12 @@ export default function Categories() {
           />
         </div>
       </div>
+
+      {dateFilter !== 'thisMonth' && dateFilter !== 'pickedMonth' && (
+        <p className="budget-filter-warning">
+          ⚠ Budget targets are monthly — switch to &ldquo;This Month&rdquo; for accurate progress.
+        </p>
+      )}
 
       <div className="categories-list-section">
         <div className="section-subheader">
@@ -204,11 +287,22 @@ export default function Categories() {
           <div className="categories-grid">
             {allCategories.map((category) => {
               const categoryAmount = categoryData.datasets[0].data[categoryData.labels.indexOf(category.name)] || 0;
-              const percentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
+              const sharePercentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
               const isDefaultCategory = DEFAULT_CATEGORIES.some(dc => dc.name === category.name);
               const isExpanded = expandedCategories.has(category.name);
               const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
               const isExpandable = categoryExpenses.length > 0;
+
+              const prog = categoryProgress.find(p => p.name === category.name);
+              const hasBudget = prog?.budget !== null && prog?.budget !== undefined;
+              // bar shows budget progress when a budget is set; otherwise share-of-total
+              const barPct = hasBudget ? Math.min(prog.pct, 100) : sharePercentage;
+              const barClass = hasBudget
+                ? `progress-fill progress-fill--${prog.status}`
+                : 'progress-fill';
+              const barStyle = hasBudget
+                ? { width: `${barPct}%` }
+                : { width: `${barPct}%`, backgroundColor: getCategoryColor(category.name) };
 
               return (
                 <div
@@ -249,12 +343,30 @@ export default function Categories() {
                   </div>
                   <div className="category-progress">
                     <div className="progress-bar">
-                      <div
-                        className="progress-fill"
-                        style={{ width: `${percentage}%`, backgroundColor: getCategoryColor(category.name) }}
-                      ></div>
+                      <div className={barClass} style={barStyle}></div>
                     </div>
-                    <span className="progress-text">{percentage.toFixed(1)}%</span>
+                    {hasBudget ? (
+                      <div className="budget-row">
+                        <span className={`budget-remaining${prog.status === 'ok' ? '' : ` budget-remaining--${prog.status}`}`}>
+                          {prog.remaining >= 0
+                            ? `$${prog.remaining.toFixed(2)} left of $${prog.budget.toFixed(2)}`
+                            : `$${Math.abs(prog.remaining).toFixed(2)} over budget`}
+                        </span>
+                        <span className="progress-text">{Math.min(prog.pct, 999).toFixed(0)}%</span>
+                      </div>
+                    ) : (
+                      <span className="progress-text">{sharePercentage.toFixed(1)}% of total</span>
+                    )}
+                  </div>
+                  {/* Budget input — stop click from toggling the card */}
+                  <div className="budget-input-row" onClick={(e) => e.stopPropagation()}>
+                    <label htmlFor={`budget-${category.name}`}>Budget $</label>
+                    <CategoryBudgetInput
+                      id={`budget-${category.name}`}
+                      categoryName={category.name}
+                      initialValue={budgets.categories?.[category.name] ?? null}
+                      onSave={setCategoryBudget}
+                    />
                   </div>
                   {isExpanded && (
                     <div className="category-expenses-panel" onClick={(e) => e.stopPropagation()}>
@@ -291,10 +403,10 @@ export default function Categories() {
           </div>
         </div>
         <div className="charts-section">
-          <ChartCard title="Share of Spending">
+          <ChartCard title="Share of Spending" isEmpty={filteredExpenses.length === 0}>
             <PieChart data={categoryData} />
           </ChartCard>
-          <ChartCard title="Monthly Trend by Category">
+          <ChartCard title="Monthly Trend by Category" isEmpty={filteredExpenses.length === 0}>
             {hasMultipleMonths
               ? <BarChart data={monthlyTrendData} />
               : <p className="chart-empty-hint">Select a wider date range to see monthly trends</p>

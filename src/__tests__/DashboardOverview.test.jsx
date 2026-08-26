@@ -25,6 +25,10 @@ jest.mock('firebase/firestore', () => ({
   query: jest.fn(),
   onSnapshot: jest.fn(),
   orderBy: jest.fn(),
+  doc: jest.fn(() => 'mock-doc-ref'),
+  setDoc: jest.fn(() => Promise.resolve()),
+  deleteField: jest.fn(),
+  serverTimestamp: jest.fn(),
 }));
 
 // Mock Firebase config
@@ -44,11 +48,12 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Get the mocked functions
-const { 
-  collection, 
-  query, 
-  onSnapshot, 
-  orderBy 
+const {
+  collection,
+  query,
+  onSnapshot,
+  orderBy,
+  doc,
 } = require('firebase/firestore');
 const { onAuthStateChanged } = require('firebase/auth');
 
@@ -88,14 +93,12 @@ describe('DashboardOverview Component', () => {
       return () => {}; // Return unsubscribe function
     });
 
-    // Default empty expenses mock
-    onSnapshot.mockImplementation((query, callback) => {
+    // Default snap works for expenses/categories (forEach) and budgets (exists/data)
+    onSnapshot.mockImplementation((query, successCb) => {
       setTimeout(() => {
-        callback({
-          forEach: (fn) => [] // Empty array
-        });
+        successCb({ forEach: () => {}, exists: () => false, data: () => ({}) });
       }, 0);
-      return () => {}; // Return unsubscribe function
+      return () => {};
     });
   });
 
@@ -111,7 +114,7 @@ describe('DashboardOverview Component', () => {
       onSnapshot.mockImplementation((query, callback) => {
         setTimeout(() => {
           callback({
-            forEach: (fn) => [] // Empty array
+            forEach: () => {}, exists: () => false, data: () => ({})
           });
         }, 0);
         return () => {}; // Return unsubscribe function
@@ -281,7 +284,7 @@ describe('DashboardOverview Component', () => {
       onSnapshot.mockImplementation((query, callback) => {
         setTimeout(() => {
           callback({
-            forEach: (fn) => []
+            forEach: () => {}, exists: () => false, data: () => ({})
           });
         }, 0);
         return () => {};
@@ -353,17 +356,15 @@ describe('DashboardOverview Component', () => {
 
     it('displays recent expenses section header', async () => {
       onSnapshot.mockImplementation((query, callback) => {
-        act(() => {
-          callback({
-            forEach: (fn) => {
-              mockExpenses.forEach(expense => {
-                fn({
-                  id: expense.id,
-                  data: () => expense
-                });
+        callback({
+          forEach: (fn) => {
+            mockExpenses.forEach(expense => {
+              fn({
+                id: expense.id,
+                data: () => expense
               });
-            }
-          });
+            });
+          }
         });
         return () => {};
       });
@@ -453,7 +454,7 @@ describe('DashboardOverview Component', () => {
       onSnapshot.mockImplementation((query, callback) => {
         setTimeout(() => {
           callback({
-            forEach: (fn) => []
+            forEach: () => {}, exists: () => false, data: () => ({})
           });
         }, 0);
         return () => {};
@@ -513,7 +514,7 @@ describe('DashboardOverview Component', () => {
       onSnapshot.mockImplementation((query, callback) => {
         setTimeout(() => {
           callback({
-            forEach: (fn) => []
+            forEach: () => {}, exists: () => false, data: () => ({})
           });
         }, 0);
         return () => {};
@@ -733,7 +734,7 @@ describe('DashboardOverview Component', () => {
     it('cleans up Firebase listener on unmount', async () => {
       const unsubscribe = jest.fn();
       onSnapshot.mockImplementation((query, callback) => {
-        callback({ forEach: (fn) => [] });
+        callback({ forEach: () => {}, exists: () => false, data: () => ({}) });
         return unsubscribe;
       });
 
@@ -768,6 +769,107 @@ describe('DashboardOverview Component', () => {
       await waitFor(() => {
         expect(screen.getByText('No expenses yet')).toBeInTheDocument();
       }, { timeout: 3000 });
+    });
+  });
+
+  describe('Budget: Closest to Limit Card', () => {
+    it('shows CTA when no budgets are set', async () => {
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Closest to Limit')).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      expect(screen.getByText(/No budgets set yet/)).toBeInTheDocument();
+      expect(screen.getByText('Set a budget')).toBeInTheDocument();
+    });
+
+    it('shows closest category when a category budget is set', async () => {
+      const mockExpenses = [
+        { id: '1', title: 'Groceries', amount: 80, category: 'Food', date: '2026-08-10', createdAt: new Date('2026-08-10') },
+      ];
+
+      let callIdx = 0;
+      onSnapshot.mockImplementation((query, successCb) => {
+        callIdx++;
+        const idx = callIdx;
+        setTimeout(() => {
+          if (idx === 1) {
+            // expenses
+            successCb({
+              forEach: (fn) => mockExpenses.forEach(e => fn({ id: e.id, data: () => e })),
+              exists: () => false,
+              data: () => ({}),
+            });
+          } else if (idx === 2) {
+            // budgets — Food has a $100 budget → 80%
+            successCb({ exists: () => true, data: () => ({ monthly: null, categories: { Food: 100 } }) });
+          } else {
+            successCb({ forEach: () => {}, exists: () => false, data: () => ({}) });
+          }
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('Closest to Limit')).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      await waitFor(() => {
+        // 80% of Food budget used
+        expect(screen.getByText('80%')).toBeInTheDocument();
+      }, { timeout: 3000 });
+    });
+
+    it('shows over-budget state in red when 100% exceeded', async () => {
+      const mockExpenses = [
+        { id: '1', title: 'Big Spend', amount: 150, category: 'Food', date: '2026-08-10', createdAt: new Date('2026-08-10') },
+      ];
+
+      let callIdx = 0;
+      onSnapshot.mockImplementation((query, successCb) => {
+        callIdx++;
+        const idx = callIdx;
+        setTimeout(() => {
+          if (idx === 1) {
+            successCb({
+              forEach: (fn) => mockExpenses.forEach(e => fn({ id: e.id, data: () => e })),
+              exists: () => false,
+              data: () => ({}),
+            });
+          } else if (idx === 2) {
+            // Food budget is $100, spent $150 → 150%
+            successCb({ exists: () => true, data: () => ({ monthly: null, categories: { Food: 100 } }) });
+          } else {
+            successCb({ forEach: () => {}, exists: () => false, data: () => ({}) });
+          }
+        }, 0);
+        return () => {};
+      });
+
+      render(
+        <TestWrapper>
+          <DashboardOverview />
+        </TestWrapper>
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('150%')).toBeInTheDocument();
+      }, { timeout: 3000 });
+
+      // The percentage element should have the danger class
+      const pctEl = screen.getByText('150%');
+      expect(pctEl.className).toMatch(/danger/);
     });
   });
 });

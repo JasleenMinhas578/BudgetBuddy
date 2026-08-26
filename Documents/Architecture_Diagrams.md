@@ -304,15 +304,17 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 
 ```
 budget-buddy/
+├── api/               # Vercel serverless functions
+│   └── ai.js          # Gemini API proxy — key stays server-side in GEMINI_API_KEY env var
 ├── src/
 │   ├── components/
 │   │   ├── AI/            # AIChat.jsx, AIChat.css — floating Gemini chat widget
 │   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                      #   AuthLayout, AuthSubmitButton
 │   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
-│   │   ├── Expense/       # ExpenseForm
+│   │   ├── Expense/       # ExpenseForm, ExpenseList
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
-│   │   ├── Layout/        # Navbar, Sidebar, Navigation
+│   │   ├── Layout/        # Navbar, Sidebar
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
 │   │                      #   CuteEmptyFace, ChartCard, PageHeader,
@@ -361,7 +363,8 @@ Vercel Edge Network (CDN - 100+ locations)
     ↓
 Vercel Hosting Platform
     ├─ React Build (Optimized bundles)
-    └─ Environment Variables (Firebase config)
+    ├─ Serverless Function (api/ai.js — Gemini proxy)
+    └─ Environment Variables (Firebase config, GEMINI_API_KEY)
     ↓ Firebase SDK
 Firebase Cloud Platform
     ├─ Firebase Authentication (Multi-region)
@@ -474,7 +477,7 @@ All UML diagrams are stored in [`Documents/UML/`](Documents/UML/):
 - **Serverless Backend**: Firebase handles all backend operations
 - **CDN Deployment**: Vercel edge network for global distribution
 - **CI/CD Integration**: Automated testing and deployment pipelines
-- **Client-side AI Integration**: Google Gemini API called directly from the browser via REST (`aiService.js`). The API key is stored in `.env` (never committed). This avoids backend infrastructure while providing natural-language expense management. **Known risks**: `REACT_APP_*` variables are compiled into the JS bundle and visible in DevTools — anyone can extract the key and make Gemini API calls at your billing cost. The daily 50-request cap is tracked in `localStorage` and is bypassable client-side. For production, proxy the Gemini call through a backend function (Firebase Cloud Function or Vercel serverless) to keep the key server-side and enforce rate limiting against the Firebase Auth UID.
+- **Server-side AI Proxy**: Google Gemini API calls are proxied through `api/ai.js`, a Vercel serverless function (a small piece of code that runs on Vercel's servers, not in the browser). The `GEMINI_API_KEY` environment variable is set in Vercel's dashboard and never compiled into the React bundle. The React client (`aiService.js`) posts to `/api/ai` instead of calling Gemini directly. This eliminates the key-exposure risk that existed in the previous client-side implementation and enables server-side enforcement of rate limits.
 - **User-preference Persistence**: User settings (e.g. default date filter) are persisted to Firestore under `users/{userId}/settings/preferences` and loaded into `DateRangeContext` on login, ensuring consistent UX across sessions.
 
 ### 4.3 Architecture Benefits

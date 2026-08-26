@@ -46,7 +46,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
 
 ### Testing & Quality Assurance
-- **Unit Testing**: Jest + React Testing Library (295 tests, 100% coverage)
+- **Unit Testing**: Jest + React Testing Library (285 tests, 100% coverage)
 - **E2E Testing**: Cypress (102 tests across 8 test files)
 - **Code Quality**: ESLint (0 errors, 0 warnings)
 - **Acceptance Testing**: Issues coverage
@@ -58,7 +58,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 ## 📊 Project Status & Quick Links
 
 ### ✅ Current Status
-- **All Tests Passing**: 295 unit tests + 102 E2E tests
+- **All Tests Passing**: 285 unit tests + 102 E2E tests
 - **Code Quality**: 100% (0 ESLint errors/warnings)
 - **Test Coverage**: 100% (statements, branches, functions, lines)
 - **Acceptance Testing**: 100% (requirements and issues coverage)
@@ -265,7 +265,7 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **Vercel** | [Vercel](https://vercel.com/) | Zero-config React deployment. Automatic Git deployments, preview URLs, global CDN, built-in SSL. Excellent React optimization with generous free tier. | Netlify (less React optimization), AWS Amplify (more config), Traditional hosting (no CDN/scaling) |
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
-| **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM (Large Language Model — AI that understands natural language) for the AI chat feature. Handles expense intent detection, auto-categorization, and spending queries. Called directly from the browser via REST with no backend required. | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
+| **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM (Large Language Model — AI that understands natural language) for the AI chat feature. Handles expense intent detection, auto-categorization, and spending queries. Calls are proxied through `api/ai.js` (a Vercel serverless function) so the API key stays server-side and is never compiled into the browser bundle. | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
 | **react-icons (Lucide)** | [react-icons](https://react-icons.github.io/react-icons/) | Provides a consistent SVG icon library (`react-icons/lu` — Lucide set) used throughout the app. Replaces emoji with properly sized, theme-aware vector icons. Tree-shakeable so only imported icons are included in the bundle. | Heroicons (separate package), Phosphor Icons (larger), Font Awesome (icon font, not SVG) |
 
 
@@ -296,15 +296,17 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 ### Component Structure
 
 ```
+api/
+└── ai.js              # Vercel serverless Gemini proxy (key stays server-side)
 src/
 ├── components/
 │   ├── AI/            # AIChat — floating AI chat widget (Gemini)
 │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                  #   AuthLayout, AuthSubmitButton
 │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
-│   ├── Expense/       # ExpenseForm
+│   ├── Expense/       # ExpenseForm, ExpenseList
 │   ├── Charts/        # PieChart, BarChart, LineChart
-│   ├── Layout/        # Navbar, Navigation, Sidebar
+│   ├── Layout/        # Navbar, Sidebar
 │   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog,
 │                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace,
 │                      #   ChartCard, PageHeader, PasswordInput, UserAvatar
@@ -460,12 +462,12 @@ budget-buddy/
 
 | Metric | Value |
 |--------|-------|
-| **Test Files** | 26 files |
-| **Total Tests** | 295 tests |
+| **Test Files** | 24 files |
+| **Total Tests** | 285 tests |
 | **Status** | ✅ All passing |
 
 **Test Categories**:
-- Application shell & routing (App, Navigation, Navbar, Sidebar)
+- Application shell & routing (App, Navbar, Sidebar)
 - Authentication flows (Login, Signup, AuthFlow)
 - Dashboard & data (DashboardOverview, Expenses, Categories)
 - Charts & visualization (PieChart, BarChart, LineChart)
@@ -521,8 +523,8 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 │  Passing Tests:                   102 (100%)            │
 │  Failing Tests:                   0 (0%)                │
 │                                                         │
-│  Total Unit Tests:                295                   │
-│  Passing Tests:                   295 (100%)            │
+│  Total Unit Tests:                285                   │
+│  Passing Tests:                   285 (100%)            │
 │  Failing Tests:                   0 (0%)                │
 │                                                         │
 │  Status:                          COMPLETE              │
@@ -607,7 +609,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 1. Checkout code
 2. Setup Node.js 20
 3. Install dependencies (`npm ci`)
-4. Run unit tests (295 tests)
+4. Run unit tests (285 tests)
 5. Generate coverage reports
 6. Build production bundle
 7. Upload artifacts
@@ -646,7 +648,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 |--------|-------|
 | **CI Execution Time** | 3-5 minutes |
 | **E2E Execution Time** | ~20 minutes (parallel) |
-| **Total Tests** | 397 (295 unit + 102 E2E) |
+| **Total Tests** | 387 (285 unit + 102 E2E) |
 | **Success Rate** | 100% |
 | **Browser Coverage** | Chrome, Firefox, Edge |
 
@@ -716,7 +718,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 ✅ **Functional Web Application** (React + Firebase)  
 ✅ **CI/CD Workflows** (GitHub Actions)  
 ✅ **Test Coverage Reports** (100% coverage)  
-✅ **Unit Tests** (295 tests)  
+✅ **Unit Tests** (285 tests)  
 ✅ **E2E Tests** (102 tests)  
 ✅ **Code Quality Reports** (ESLint, Lighthouse)  
 ✅ **Final Project Report**  
@@ -756,7 +758,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 **Challenge**: Achieving 100% coverage with maintainable tests, reliable cross-browser E2E tests.  
 **Solution**: React Testing Library best practices, async testing with `waitFor`, Cypress with fixtures, matrix strategy for cross-browser testing, proper test isolation.  
 **Lesson**: Test quality over quantity. Focus on user behavior and critical paths. Proper setup prevents flaky tests.  
-**Result**: ✅ 295 unit + 102 E2E tests, all passing
+**Result**: ✅ 285 unit + 102 E2E tests, all passing
 
 ### 6. State Management & Context API
 **Challenge**: Managing global auth state and local component state without prop drilling or unnecessary re-renders.  
@@ -899,7 +901,7 @@ Complete documentation of all naming conventions used throughout the codebase. I
 
 Comprehensive acceptance tests, issues (user stories), acceptance criteria, and requirements traceability. Includes 29 feature issues organized into 7 categories, 38 acceptance criteria, 11 functional requirements, 10 non-functional requirements, and complete test mapping.
 
-**Key Metrics**: 100% requirements coverage, 100% test coverage, 397 tests passing
+**Key Metrics**: 100% requirements coverage, 100% test coverage, 387 tests passing
 
 ---
 

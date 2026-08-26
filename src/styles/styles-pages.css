@@ -2467,7 +2467,133 @@
     font-size: var(--font-size-xs);
     color: var(--text-secondary);
   }
-  
+
+  /* Budget progress bar colour states */
+  .progress-fill--ok      { background: var(--accent-teal); }
+  .progress-fill--warning { background: var(--warning); }
+  .progress-fill--danger  { background: var(--danger); }
+
+  /* Budget labels inside category cards */
+  .budget-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .budget-remaining {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--accent-teal);
+  }
+  .budget-remaining--warning { color: var(--warning); }
+  .budget-remaining--danger  { color: var(--danger); }
+
+  .budget-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .budget-input-row label {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .budget-input {
+    width: 90px;
+    padding: 0.2rem 0.4rem;
+    font-size: var(--font-size-xs);
+    background: var(--glass-10);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    outline: none;
+  }
+
+  .budget-input:focus {
+    border-color: var(--accent-teal);
+  }
+
+  /* Monthly budget header row on Categories page */
+  .monthly-budget-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--glass-10);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+  }
+
+  .monthly-budget-row label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .monthly-budget-row .budget-input {
+    width: 110px;
+  }
+
+  .budget-filter-warning {
+    font-size: var(--font-size-xs);
+    color: var(--warning);
+    padding: 0.4rem 0.75rem;
+    background: rgba(246, 173, 85, 0.1);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(246, 173, 85, 0.25);
+    margin-bottom: 0.75rem;
+  }
+
+  .budget-cap-warning {
+    font-size: var(--font-size-xs);
+    color: var(--warning);
+    margin-left: 0.5rem;
+  }
+
+  /* Closest to limit — Dashboard summary card states */
+  .budget-limit-card__cta {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .budget-limit-card__cta a {
+    color: var(--accent-teal);
+    text-decoration: none;
+  }
+
+  .budget-limit-card__name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .budget-limit-card__pct {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .budget-limit-card__pct--ok      { color: var(--accent-teal); }
+  .budget-limit-card__pct--warning { color: var(--warning); }
+  .budget-limit-card__pct--danger  { color: var(--danger); }
+
+  .budget-limit-card__detail {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+  }
+
   /* Reports Specific Styles */
   .reports-container {
     display: flex;
@@ -2699,7 +2825,26 @@
     position: relative;
     height: 300px;
   }
-  
+
+  .chart-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 0.5rem;
+  }
+
+  .chart-empty-emoji {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  .chart-empty-text {
+    color: var(--text-muted, #94a3b8);
+    font-size: var(--font-size-sm, 0.875rem);
+  }
+
   /* Section Subheaders */
   .section-subheader {
     display: flex;

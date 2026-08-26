@@ -1,10 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { LuDollarSign, LuTrendingUp, LuAward, LuPlus } from 'react-icons/lu';
+import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget } from 'react-icons/lu';
 import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import { useExpenses } from '../../hooks/useExpenses';
+import { useAuth } from '../../context/AuthContext';
+import { useBudgets } from '../../hooks/useBudgets';
+import { useBudgetProgress } from '../../hooks/useBudgetProgress';
+import { subscribeToCategories } from '../../services/categoryService';
+import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { LuTag } from 'react-icons/lu';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import ExpenseTable from '../UI/ExpenseTable';
@@ -15,6 +21,9 @@ import '../../styles/main.css';
 
 export default function DashboardOverview() {
   const { expenses, loading } = useExpenses();
+  const { currentUser } = useAuth();
+  const { budgets } = useBudgets();
+  const [firestoreCategories, setFirestoreCategories] = useState([]);
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [showChatHint, setShowChatHint] = useState(false);
 
@@ -28,8 +37,28 @@ export default function DashboardOverview() {
     try { localStorage.setItem('chatHintSeen', '1'); } catch {}
     setShowChatHint(false);
   };
+  useEffect(() => {
+    if (!currentUser) return;
+    let unsub = () => {};
+    try {
+      unsub = subscribeToCategories(currentUser.uid, (data) => {
+        if (data !== null) setFirestoreCategories(data);
+      });
+    } catch {}
+    return () => unsub();
+  }, [currentUser]);
+
+  const allCategories = useMemo(() => [
+    ...DEFAULT_CATEGORIES,
+    ...firestoreCategories
+      .filter(c => c && c.name && c.name !== 'undefined' && c.name !== 'null')
+      .map(c => ({ ...c, Icon: LuTag })),
+  ], [firestoreCategories]);
+
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
+
+  const { closestToLimit } = useBudgetProgress(filteredExpenses, allCategories, budgets);
 
   // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -75,7 +104,7 @@ export default function DashboardOverview() {
       .reduce((sum, e) => sum + e.amount, 0);
   }, [expenses, dateFilter]);
 
-  const trendDelta = prevPeriodTotal !== null && prevPeriodTotal > 0
+  const trendDelta = prevPeriodTotal !== null && prevPeriodTotal > 0 && totalSpent > 0
     ? ((totalSpent - prevPeriodTotal) / prevPeriodTotal) * 100
     : null;
 
@@ -164,6 +193,31 @@ export default function DashboardOverview() {
             <h3>Top Category</h3>
             <p className="card-amount">{topCategoryName}</p>
             <p className="card-subtitle">Most spent category</p>
+          </div>
+        </div>
+
+        <div className="summary-card">
+          <div className="card-icon">
+            <LuTarget size={26} />
+          </div>
+          <div className="card-content">
+            <h3>Closest to Limit</h3>
+            {closestToLimit ? (
+              <>
+                <p className="budget-limit-card__name">{closestToLimit.name}</p>
+                <p className={`budget-limit-card__pct budget-limit-card__pct--${closestToLimit.status}`}>
+                  {Math.min(closestToLimit.pct, 999).toFixed(0)}%
+                </p>
+                <p className="budget-limit-card__detail">
+                  ${closestToLimit.spent.toFixed(2)} of ${closestToLimit.budget.toFixed(2)}
+                </p>
+              </>
+            ) : (
+              <p className="budget-limit-card__cta">
+                No budgets set yet.{' '}
+                <Link to="/dashboard/categories">Set a budget</Link> to track progress.
+              </p>
+            )}
           </div>
         </div>
       </div>
