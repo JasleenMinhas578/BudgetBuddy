@@ -333,9 +333,9 @@ const pct = prog?.pct !== null ? Math.min(prog.pct, 100) : 0;
                   <div className="goal-progress-meta">
                     <span className={`goal-remaining${prog?.status !== 'ok' ? ` goal-remaining--${prog?.status}` : ''}`}
                       style={(!prog?.status || prog.status === 'ok') ? { color: 'var(--accent-teal)' } : {}}>
-                      {prog?.remaining >= 0
-                        ? `$${prog.remaining.toFixed(2)} left of $${prog.budget.toFixed(2)}`
-                        : `$${Math.abs(prog.remaining).toFixed(2)} over $${prog.budget.toFixed(2)}`}
+                      {(prog?.remaining ?? 0) >= 0
+                        ? `$${(prog?.remaining ?? 0).toFixed(2)} left of $${(prog?.budget ?? 0).toFixed(2)}`
+                        : `$${Math.abs(prog?.remaining ?? 0).toFixed(2)} over $${(prog?.budget ?? 0).toFixed(2)}`}
                     </span>
                     <span className={`goal-pct goal-pct--${prog?.status ?? 'ok'}`}
                       style={(!prog?.status || prog.status === 'ok') ? { color: 'var(--accent-teal)' } : {}}>

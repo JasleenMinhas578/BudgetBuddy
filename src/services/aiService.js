@@ -1,7 +1,7 @@
 const GEMINI_MODEL = 'gemini-3.6-flash';
 const AI_PROXY_URL = '/api/ai';
 
-const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Other'];
+const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Shopping', 'Other'];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -114,7 +114,7 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     ? (() => {
         const catBudgets = budgets.categories || {};
         const budgetedCategories = Object.entries(catBudgets)
-          .filter(([, v]) => v !== null && v !== undefined)
+          .filter(([, v]) => v !== null && v !== undefined && v > 0)
           .map(([name, limit]) => {
             const spent = spendingByCategory[name] || 0;
             const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;

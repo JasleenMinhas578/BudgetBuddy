@@ -1,16 +1,40 @@
-import { useRef, useEffect } from 'react';
-import { LuBot, LuWallet, LuX, LuSend } from 'react-icons/lu';
+import { useRef, useEffect, useState } from 'react';
+import { LuBot, LuWallet, LuX, LuSend, LuInfo } from 'react-icons/lu';
 import { useAIChat } from '../../hooks/useAIChat';
 import ChatMessage from './ChatMessage';
 import './AIChat.css';
 
-const SUGGESTED_QUESTIONS = [
-  "What's my total spending this month?",
-  "Which category do I spend most on?",
-  "What's my highest expense this month?",
-  "How much did I spend on food?",
-  "What's my average daily spending?",
-  "Add $25 for coffee today",
+const SUGGESTED_GROUPS = [
+  {
+    label: 'Spending questions',
+    questions: [
+      "What's my total spending this month?",
+      "Which category do I spend the most on?",
+      "What's my average daily spending?",
+      "How much did I spend last month?",
+      "What are my top 3 expenses?",
+      "What's my highest single expense?",
+    ],
+  },
+  {
+    label: 'Add expenses',
+    questions: [
+      "Add $25 for coffee today",
+      "Log $50 for groceries",
+      "Spent $80 on transport this week",
+    ],
+  },
+  {
+    label: 'Goals & budgets',
+    questions: [
+      "Set my food budget to $400",
+      "Am I over budget anywhere?",
+      "How much of my food budget is left?",
+      "What's my total monthly budget?",
+      "Remove my entertainment goal",
+      "Update my rent goal to $1500",
+    ],
+  },
 ];
 
 export default function AIChat() {
@@ -27,6 +51,7 @@ export default function AIChat() {
     handleKeyDown,
   } = useAIChat();
 
+  const [showCapabilities, setShowCapabilities] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const widgetRef = useRef(null);
@@ -77,10 +102,43 @@ export default function AIChat() {
                 )}
               </div>
             </div>
-            <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
-              <LuX size={18} aria-hidden="true" />
-            </button>
+            <div className="ai-chat-header-actions">
+              <button
+                className={`ai-chat-info-btn${showCapabilities ? ' active' : ''}`}
+                onClick={() => setShowCapabilities((v) => !v)}
+                aria-label="What can I ask?"
+                title="What can I ask?"
+              >
+                <LuInfo size={16} />
+              </button>
+              <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
+                <LuX size={18} aria-hidden="true" />
+              </button>
+            </div>
           </div>
+
+          {/* Capabilities panel — slides down from header */}
+          {showCapabilities && (
+            <div className="ai-capabilities-panel">
+              <p className="ai-capabilities-title">Things you can ask me</p>
+              {SUGGESTED_GROUPS.map((group) => (
+                <div key={group.label} className="ai-capabilities-group">
+                  <span className="ai-capabilities-group-label">{group.label}</span>
+                  <div className="ai-capabilities-chips">
+                    {group.questions.map((q) => (
+                      <button
+                        key={q}
+                        className="ai-suggestion-chip"
+                        onClick={() => { sendMessage(q); setShowCapabilities(false); }}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Messages */}
           <div className="ai-chat-messages">
@@ -94,13 +152,18 @@ export default function AIChat() {
                   </div>
                 </div>
                 <p className="ai-suggestions-label">Try asking</p>
-                <div className="ai-chat-suggestions">
-                  {SUGGESTED_QUESTIONS.map((q) => (
-                    <button key={q} className="ai-suggestion-chip" onClick={() => sendMessage(q)}>
-                      {q}
-                    </button>
-                  ))}
-                </div>
+                {SUGGESTED_GROUPS.map((group) => (
+                  <div key={group.label} className="ai-suggestion-group">
+                    <span className="ai-suggestion-group-label">{group.label}</span>
+                    <div className="ai-chat-suggestions">
+                      {group.questions.map((q) => (
+                        <button key={q} className="ai-suggestion-chip" onClick={() => sendMessage(q)}>
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

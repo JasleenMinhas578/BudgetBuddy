@@ -197,7 +197,7 @@ export function useAIChat() {
 
     setLoading(true);
     try {
-      const result = await processMessage(originalQuestion, expenses, customCategories, range);
+      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets);
       setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
     } catch (err) {
       setMessages((prev) => [
@@ -207,7 +207,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [expenses, customCategories]);
+  }, [expenses, customCategories, budgets]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }

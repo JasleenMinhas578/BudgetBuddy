@@ -227,7 +227,7 @@ export default function Categories() {
 
               return (
                 <div
-                  key={category.id}
+                  key={category.id ?? category.name}
                   className={`category-card${isExpandable ? ' category-card--clickable' : ''}${isExpanded ? ' category-card--expanded' : ''}`}
                   onClick={isExpandable ? () => toggleCategory(category.name) : undefined}
                 >

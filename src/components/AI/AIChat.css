@@ -273,7 +273,7 @@
 
 .ai-message--user p {
   background: var(--ai-gradient-2);
-  color: #fff;
+  color: #0d1b1e;
   border-radius: 18px 18px 4px 18px;
   padding: 11px 15px;
   margin: 0;
@@ -534,6 +534,94 @@
   background: rgba(245, 101, 101, 0.1) !important;
   color: var(--danger) !important;
   border-color: rgba(245, 101, 101, 0.2) !important;
+}
+
+/* ── Header actions (info + close) ──────────────────────────────────── */
+.ai-chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-chat-info-btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.75);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+.ai-chat-info-btn:hover,
+.ai-chat-info-btn.active {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* ── Capabilities slide-down panel ──────────────────────────────────── */
+.ai-capabilities-panel {
+  background: #141929;
+  border-bottom: 1px solid var(--glass-10);
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: ai-slide-down 0.2s ease;
+  flex-shrink: 0;
+}
+@keyframes ai-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ai-capabilities-panel::-webkit-scrollbar { width: 3px; }
+.ai-capabilities-panel::-webkit-scrollbar-thumb { background: var(--glass-15); border-radius: 2px; }
+.ai-capabilities-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.ai-capabilities-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ai-capabilities-group-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ai-violet-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
+}
+.ai-capabilities-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── Suggestion groups on welcome screen ─────────────────────────────── */
+.ai-suggestion-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ai-suggestion-group-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ai-violet-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.75;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────── */

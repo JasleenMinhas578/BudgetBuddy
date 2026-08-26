@@ -5,6 +5,7 @@ const FIXED_COLORS = {
   'Entertainment': '#f687b3', // pink
   'Utilities':     '#68d391', // green
   'Rent':          '#63b3ed', // blue
+  'Shopping':      '#f97316', // orange
   'Other':         '#b794f4', // violet
 };
 

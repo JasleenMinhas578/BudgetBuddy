@@ -10,12 +10,16 @@ export function useBudgets() {
     if (!currentUser) return;
     let unsub = () => {};
     try {
+      let cleanedLegacyZeros = false;
       unsub = subscribeToBudgets(currentUser.uid, (data) => {
         setBudgets(data);
-        // Remove any category budgets stored as 0 — GoalInput already prevents saving 0,
-        // but old data may have it. Treat 0 the same as no goal.
-        const zeroCats = Object.entries(data.categories || {}).filter(([, v]) => v === 0);
-        zeroCats.forEach(([name]) => updateCategoryBudget(currentUser.uid, name, null));
+        // Clean up legacy $0 entries once — only on the first snapshot so we don't
+        // write back to Firestore on every subsequent budget update.
+        if (!cleanedLegacyZeros) {
+          cleanedLegacyZeros = true;
+          const zeroCats = Object.entries(data.categories || {}).filter(([, v]) => v === 0);
+          zeroCats.forEach(([name]) => updateCategoryBudget(currentUser.uid, name, null));
+        }
       });
     } catch (err) {
       console.error('Budget listener setup error:', err);
