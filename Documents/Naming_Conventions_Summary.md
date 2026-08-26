@@ -51,8 +51,10 @@
 
 **Examples**:
 ```
-✅ database.js
 ✅ aiService.js
+✅ expenseService.js
+✅ categoryService.js
+✅ settingsService.js
 ✅ firebaseConfig.js
 ✅ reportWebVitals.js
 ✅ setupTests.js
@@ -801,7 +803,7 @@ export const addExpense = async (userId, expenseData) => { };
 | Category | Convention | Example |
 |----------|-----------|---------|
 | **Component Files** | PascalCase.jsx | `Login.jsx`, `ExpenseForm.jsx` |
-| **Utility Files** | camelCase.js | `database.js`, `firebaseConfig.js` |
+| **Utility Files** | camelCase.js | `expenseService.js`, `aiService.js`, `firebaseConfig.js` |
 | **Components** | PascalCase | `function Login()`, `function Toast()` |
 | **Variables** | camelCase | `const expenses`, `const totalAmount` |
 | **State Variables** | camelCase | `const [email, setEmail]` |

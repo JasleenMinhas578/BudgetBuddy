@@ -149,9 +149,10 @@ The Class Diagram shows the core domain model with all classes, attributes, meth
 │  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │    │
 │  │  │   Contexts   │  │   Services   │  │  Utilities  │  │    │
 │  │  │              │  │              │  │             │  │    │
-│  │  │ • AuthContext│  │ • database.js│  │ • Validators│  │    │
-│  │  │ • DateRange  │  │ • aiService.js│  │ • Formatters│  │    │
-│  │  │   Context    │  │              │  │ • Helpers   │  │    │
+│  │  │ • AuthContext│  │ • expenseService.js│ │ • Validators│  │    │
+│  │  │ • DateRange  │  │ • categoryService.js│ │ • Formatters│  │    │
+│  │  │   Context    │  │ • settingsService.js│ │ • Helpers   │  │    │
+│  │  │              │  │ • aiService.js │  │             │  │    │
 │  │  └──────────────┘  └──────────────┘  └─────────────┘  │    │
 │  │         ↓                   ↓                          │    │
 │  └─────────┼───────────────────┼──────────────────────────┘    │
@@ -279,10 +280,19 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 **Key Layers**:
 - **Components Layer**: React frontend components (Auth, Dashboard, Expense, Charts, Layout, UI, AI)
 - **Context Layer**: Global state management — `AuthContext` (authentication) and `DateRangeContext` (shared date filter across all dashboard views)
-- **Services Layer**: Data access and AI — `database.js` (Firestore CRUD) and `aiService.js` (Gemini API)
+- **Services Layer**: Data access and AI — `expenseService.js`, `categoryService.js`, `settingsService.js` (Firestore CRUD, split by domain) and `aiService.js` (Gemini API). There is no single `database.js`.
 - **External Layer**: Firebase SDK (firebase/auth, firebase/firestore) and Google Gemini REST API
 
-**Dependency Flow**: Components → Context → Services → Firebase SDK
+**Dependency Flow**: Components → Hooks → Context → Services → Firebase SDK
+
+**Custom Hooks** (business logic layer, sits between components and services):
+
+| Hook | Purpose |
+|------|---------|
+| `useAIChat.js` | All AI chat state and event handling; consumes `aiService.js`, `expenseService.js`, `categoryService.js` |
+| `useDateFilter.js` | Date-based expense filtering; accepts optional `external` param to bind to `DateRangeContext` |
+| `useCategoryData.js` | Aggregates filtered expenses into Chart.js-ready category data; seeds deleted categories as 0 |
+| `useReportData.js` | Aggregates filtered expenses into report statistics: totals, averages, monthly trend, top category, spending insights |
 
 ### 2.3.2 Component Organization
 
@@ -299,8 +309,10 @@ budget-buddy/
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable
 │   ├── context/           # AuthContext.js, DateRangeContext.js
-│   ├── hooks/             # useDateFilter.js
-│   ├── services/          # database.js, aiService.js
+│   ├── hooks/             # useDateFilter.js, useAIChat.js,
+│   │                      #   useCategoryData.js, useReportData.js
+│   ├── services/          # expenseService.js, categoryService.js,
+│   │                      #   settingsService.js, aiService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,
 │   │                      #   confirm-dialog.css, styles-landing.css,
 │   │                      #   styles-pages.css, styles-settings.css,
@@ -451,14 +463,14 @@ All UML diagrams are stored in [`Documents/UML/`](Documents/UML/):
 - **Serverless Backend**: Firebase handles all backend operations
 - **CDN Deployment**: Vercel edge network for global distribution
 - **CI/CD Integration**: Automated testing and deployment pipelines
-- **Client-side AI Integration**: Google Gemini API called directly from the browser via REST (`aiService.js`). The API key is stored in `.env` (never committed). This avoids backend infrastructure while providing natural-language expense management. For production use, the call should be proxied server-side to keep the key private.
+- **Client-side AI Integration**: Google Gemini API called directly from the browser via REST (`aiService.js`). The API key is stored in `.env` (never committed). This avoids backend infrastructure while providing natural-language expense management. **Known risks**: `REACT_APP_*` variables are compiled into the JS bundle and visible in DevTools — anyone can extract the key and make Gemini API calls at your billing cost. The daily 50-request cap is tracked in `localStorage` and is bypassable client-side. For production, proxy the Gemini call through a backend function (Firebase Cloud Function or Vercel serverless) to keep the key server-side and enforce rate limiting against the Firebase Auth UID.
 - **User-preference Persistence**: User settings (e.g. default date filter) are persisted to Firestore under `users/{userId}/settings/preferences` and loaded into `DateRangeContext` on login, ensuring consistent UX across sessions.
 
 ### 4.3 Architecture Benefits
 
 - ✅ **Scalability**: Firebase auto-scales with user load
 - ✅ **Real-time**: Instant data synchronization across devices
-- ✅ **Security**: Firebase security rules enforce data isolation
+- ✅ **Security**: Firestore Security Rules enforce user data isolation server-side — version-controlled in `firestore.rules` at the project root
 - ✅ **Performance**: CDN distribution ensures fast load times
 - ✅ **Maintainability**: Clear separation of concerns
 - ✅ **Testability**: Comprehensive testing at all levels

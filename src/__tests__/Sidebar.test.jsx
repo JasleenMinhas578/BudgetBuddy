@@ -21,6 +21,7 @@ const renderSidebar = (props = {}) => {
     setSidebarOpen: jest.fn(),
     onTouchStart: jest.fn(),
     onMouseDown: jest.fn(),
+    onLogoutClick: jest.fn(),
     isDragging: false,
     isMobile: false,
     ref: createRef()
@@ -36,6 +37,7 @@ const renderSidebar = (props = {}) => {
         setSidebarOpen={merged.setSidebarOpen}
         onTouchStart={merged.onTouchStart}
         onMouseDown={merged.onMouseDown}
+        onLogoutClick={merged.onLogoutClick}
         isDragging={merged.isDragging}
         isMobile={merged.isMobile}
       />
@@ -76,11 +78,10 @@ describe('Sidebar component', () => {
   });
 
   it('signs out when logout button clicked', () => {
-    const logout = jest.fn();
-    useAuth.mockReturnValue({ currentUser: { email: 'user@example.com' }, logout });
-    renderSidebar();
+    const onLogoutClick = jest.fn();
+    renderSidebar({ onLogoutClick });
     fireEvent.click(screen.getByText(/Logout/));
-    expect(logout).toHaveBeenCalled();
+    expect(onLogoutClick).toHaveBeenCalled();
   });
 
   it('closes sidebar after navigating on mobile', () => {
@@ -110,10 +111,9 @@ describe('Sidebar component', () => {
     expect(screen.getByRole('navigation')).toBeInTheDocument();
   });
 
-  it('shows correct toggle text when collapsed on desktop', () => {
+  it('shows correct toggle title when collapsed on desktop', () => {
     renderSidebar({ sidebarOpen: false });
     const toggle = screen.getByRole('button', { name: /toggle sidebar/i });
-    expect(toggle).toHaveTextContent('▶');
     expect(toggle).toHaveAttribute('title', 'Show sidebar');
   });
 });

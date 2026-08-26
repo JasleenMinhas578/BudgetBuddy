@@ -119,16 +119,17 @@ jest.mock('framer-motion', () => ({
 global.confirm = jest.fn();
 
 // Get the mocked functions
-const { 
-  collection, 
-  query, 
-  onSnapshot, 
-  deleteDoc, 
-  doc, 
-  orderBy, 
-  updateDoc 
+const {
+  collection,
+  query,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  orderBy,
+  updateDoc
 } = require('firebase/firestore');
 const { onAuthStateChanged } = require('firebase/auth');
+const { subscribeToExpenses } = require('../services/expenseService');
 
 // Test wrapper component
 const TestWrapper = ({ children }) => (
@@ -156,6 +157,9 @@ describe('Expenses Component', () => {
     query.mockReturnValue('mock-query');
     orderBy.mockReturnValue('mock-order-by');
     doc.mockReturnValue('mock-doc');
+
+    // subscribeToExpenses must return a function so the component can call it on unmount
+    subscribeToExpenses.mockReturnValue(() => {});
     
     // Mock onSnapshot to simulate empty Firebase listener (empty state)
     onSnapshot.mockImplementation((query, callback) => {

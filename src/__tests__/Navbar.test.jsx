@@ -15,19 +15,19 @@ const { useAuth } = require('../context/AuthContext');
 
 const setup = (path = '/dashboard', overrides = {}) => {
   const setSidebarOpen = jest.fn();
+  const onLogoutClick = jest.fn();
   useAuth.mockReturnValue({
     currentUser: { email: 'user@example.com' },
-    logout: jest.fn(),
     ...overrides
   });
 
   render(
     <MemoryRouter initialEntries={[path]}>
-      <Navbar setSidebarOpen={setSidebarOpen} />
+      <Navbar setSidebarOpen={setSidebarOpen} onLogoutClick={onLogoutClick} />
     </MemoryRouter>
   );
 
-  return { setSidebarOpen };
+  return { setSidebarOpen, onLogoutClick };
 };
 
 describe('Navbar component', () => {
@@ -46,13 +46,12 @@ describe('Navbar component', () => {
   });
 
   it.each([
-    ['/dashboard', '📊', 'Dashboard'],
-    ['/dashboard/expenses', '💸', 'Expenses'],
-    ['/dashboard/categories', '📂', 'Categories'],
-    ['/dashboard/reports', '📈', 'Reports']
-  ])('shows contextual icon and title for %s', (path, icon, title) => {
+    ['/dashboard', 'Dashboard'],
+    ['/dashboard/expenses', 'Expenses'],
+    ['/dashboard/categories', 'Categories'],
+    ['/dashboard/reports', 'Reports']
+  ])('shows contextual icon and title for %s', (path, title) => {
     setup(path);
-    expect(screen.getByText(icon)).toBeInTheDocument();
     expect(screen.getByText(title)).toBeInTheDocument();
   });
 
@@ -66,19 +65,17 @@ describe('Navbar component', () => {
   });
 
   it('confirms before logging out', () => {
-    const logout = jest.fn();
-    setup('/dashboard', { logout });
+    const { onLogoutClick } = setup('/dashboard');
     fireEvent.click(screen.getByTitle('Click to logout'));
-    expect(window.confirm).toHaveBeenCalled();
-    expect(logout).toHaveBeenCalled();
+    expect(onLogoutClick).toHaveBeenCalled();
   });
 
   it('does not logout when confirmation is cancelled', () => {
-    const logout = jest.fn();
-    window.confirm = jest.fn(() => false);
-    setup('/dashboard', { logout });
+    // The Navbar delegates logout confirmation to the parent via onLogoutClick prop.
+    // Cancellation logic lives in the parent (Dashboard), not Navbar.
+    const { onLogoutClick } = setup('/dashboard');
     fireEvent.click(screen.getByTitle('Click to logout'));
-    expect(logout).not.toHaveBeenCalled();
+    expect(onLogoutClick).toHaveBeenCalledTimes(1);
   });
 
   it('hides user section when no currentUser', () => {

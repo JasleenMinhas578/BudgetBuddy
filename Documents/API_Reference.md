@@ -6,7 +6,7 @@
 
 Budget Buddy has two API surfaces:
 1. **Google Gemini API** — the external AI REST endpoint called from `src/services/aiService.js`
-2. **Firebase/Firestore functions** — the internal database service in `src/services/database.js`
+2. **Firebase/Firestore functions** — split across `src/services/expenseService.js`, `categoryService.js`, and `settingsService.js`
 
 ---
 
@@ -28,7 +28,15 @@ Budget Buddy has two API surfaces:
 
 ## 1. Google Gemini API
 
-**File**: `src/services/aiService.js`  
+**Files involved in AI chat**:
+
+| File | Role |
+|------|------|
+| `src/services/aiService.js` | Gemini REST calls (`processMessage`, `generateSummary`), rate limiting, retry logic |
+| `src/hooks/useAIChat.js` | All AI chat state and event handling (the "brain" of the chat widget) |
+| `src/components/AI/AIChat.jsx` | UI shell — renders the panel, header, input, and delegates everything to `useAIChat` |
+| `src/components/AI/ChatMessage.jsx` | Renders individual messages including all 6 confirmation card types |
+
 **Documentation**: [`Documents/AI_Chat_Feature.md`](AI_Chat_Feature.md)
 
 ### 1.1 Endpoint
@@ -49,6 +57,8 @@ POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:ge
 The key is read from `process.env.REACT_APP_GEMINI_API_KEY` (set in `.env`, never committed). If the key is missing or equals the placeholder string `YOUR_GEMINI_KEY_HERE`, the service throws immediately before making any network call.
 
 To get a free key: [Google AI Studio](https://aistudio.google.com/) → Create API Key.
+
+> **Security risk**: Because this is a React (CRA) app, `REACT_APP_*` variables are compiled into the client-side JavaScript bundle. The API key is visible to anyone who opens DevTools → Sources. For a production deployment, proxy the Gemini call through a backend function so the key stays server-side only.
 
 ---
 
@@ -221,6 +231,7 @@ Note: No `responseMimeType` — the response is a plain text paragraph, not JSON
 - **50 requests per user per day**, tracked in `localStorage` under `bb_ai_usage`.
 - Shape: `{ date: "YYYY-MM-DD", count: number }`.
 - The counter resets when `date` no longer equals today. If `count >= 50`, an error is thrown before the network call: `"Daily AI limit of 50 requests reached. Resets at midnight."`.
+- **Known bypass**: Because `localStorage` is client-controlled, a user can reset the counter at any time via `localStorage.removeItem('bb_ai_usage')` in the browser console. This is a soft limit only. A production app should enforce the cap server-side, tied to the Firebase Auth UID.
 
 #### 429 retry logic
 When Gemini returns HTTP 429 (rate limit exceeded), the service retries up to 3 times with increasing delays:
@@ -241,10 +252,38 @@ Non-429 errors are thrown immediately using the message from `error.error.messag
 
 ## 2. Firestore Database Functions
 
-**File**: `src/services/database.js`  
+The database layer is split across three service files (there is no single `database.js`):
+
+| File | Functions |
+|------|-----------|
+| `src/services/expenseService.js` | `addExpense`, `getExpenses`, `updateExpense`, `deleteExpense`, `subscribeToExpenses`, `subscribeToExpensesByCategory` |
+| `src/services/categoryService.js` | `addCategory`, `getCategories`, `updateCategory`, `deleteCategory`, `subscribeToCategories` |
+| `src/services/settingsService.js` | `getUserSettings`, `saveUserSettings` |
+
 **Firestore path pattern**: `users/{userId}/{collection}/{docId}`
 
-All functions require a `userId` (from `currentUser.uid` in `AuthContext`). Firestore Security Rules enforce that users can only read/write their own subcollections.
+All functions require a `userId` (from `currentUser.uid` in `AuthContext`). Firestore Security Rules enforce that users can only read/write their own subcollections — this is enforced server-side by Google and cannot be bypassed by client-side code tampering. The rules are version-controlled in [`firestore.rules`](../firestore.rules) at the project root.
+
+#### Deploying Firestore Security Rules
+
+Editing `firestore.rules` locally does **not** automatically update the live database — you must deploy the file using the Firebase CLI.
+
+**Prerequisites** (one-time setup):
+```bash
+npm install -g firebase-tools   # installs the firebase CLI globally
+firebase login                  # opens browser to authenticate with your Google account
+```
+
+**Deploy rules** (run from the project root whenever `firestore.rules` changes):
+```bash
+firebase deploy --only firestore:rules
+```
+
+`--only firestore:rules` limits the deploy to just the rules file — it will not touch hosting, functions, or indexes. After running this, the new rules are live within seconds.
+
+**Verify the deploy worked**: Go to [Firebase Console](https://console.firebase.google.com/) → your project → Firestore Database → Rules tab. The deployed rules should match what's in `firestore.rules`.
+
+> **Rule of thumb**: Any time you edit `firestore.rules`, commit the file AND run `firebase deploy --only firestore:rules`. The two should always stay in sync.
 
 ---
 
@@ -312,7 +351,7 @@ Sets up a real-time Firestore listener for all expenses. Fires immediately with 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `userId` | string | ✅ | Firebase Auth UID |
-| `callback` | `(expenses: Expense[], error?) => void` | ✅ | Called with updated data. On error: `callback(null, error)` |
+| `callback` | `(expenses: Expense[], error?) => void` | ✅ | Called with updated data. On error: `callback([], error)` |
 
 **Returns**: An `unsubscribe` function. Call it on component unmount to stop the listener.  
 **Order**: Expenses ordered by `createdAt` descending.
@@ -354,6 +393,8 @@ Creates a new custom category.
 Fetches all custom categories for the user.
 
 **Returns**: Array of category objects with `id` plus stored fields.
+
+> **Note**: `getCategories` does not apply an `orderBy` — the Firestore default document order is used. `subscribeToCategories` does apply `orderBy('createdAt', 'desc')`, so the two functions may return results in a different order.
 
 ---
 

@@ -66,7 +66,8 @@ describe('ExpenseForm component', () => {
     jest.useFakeTimers().setSystemTime(new Date('2024-02-20T10:00:00Z'));
     setup();
     expect(screen.getByLabelText(/date/i).value).toBe('2024-02-20');
-    expect(screen.getByLabelText(/category/i)).toHaveTextContent(/Travel/);
+    // Category dropdown trigger shows the currently selected category (Food by default)
+    expect(screen.getByRole('button', { name: /Food/i })).toBeInTheDocument();
   });
 
   it('shows validation error for invalid amount', () => {
@@ -212,9 +213,14 @@ describe('ExpenseForm component', () => {
 
   it('updates category when selection changes', () => {
     setup();
-    const select = screen.getByLabelText(/category/i);
-    fireEvent.change(select, { target: { value: 'Travel' } });
-    expect(select.value).toBe('Travel');
+    // Open the custom category dropdown
+    const trigger = screen.getByRole('button', { name: /Food/i });
+    fireEvent.click(trigger);
+    // Click the Travel option
+    const travelOption = screen.getByRole('button', { name: /Travel/i });
+    fireEvent.click(travelOption);
+    // Trigger now shows Travel as the selected category
+    expect(screen.getByRole('button', { name: /Travel/i })).toBeInTheDocument();
   });
 
   it('logs errors when listener setup fails', () => {
@@ -267,12 +273,18 @@ describe('ExpenseForm component', () => {
 
     fireEvent.change(screen.getByLabelText(/amount/i), { target: { value: '12' } });
     fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Temp' } });
-    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Travel' } });
+
+    // Open the custom dropdown and select Travel
+    const trigger = screen.getByRole('button', { name: /Food/i });
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('button', { name: /Travel/i }));
+
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
     expect(screen.getByLabelText(/amount/i).value).toBe('');
     expect(screen.getByLabelText(/title/i).value).toBe('');
-    expect(screen.getByLabelText(/category/i).value).toBe('Food');
+    // After cancel, category resets to fallback 'Food'
+    expect(screen.getByRole('button', { name: /Food/i })).toBeInTheDocument();
   });
 
   it('renders custom categories even when Firestore id is missing', () => {
@@ -288,7 +300,11 @@ describe('ExpenseForm component', () => {
     });
 
     setup();
-    expect(screen.getByRole('option', { name: /Misc/ })).toBeInTheDocument();
+    // Open the custom dropdown to reveal options
+    const trigger = screen.getByRole('button', { name: /Food/i });
+    fireEvent.click(trigger);
+    // Custom category 'Misc' should appear as an option button
+    expect(screen.getByRole('button', { name: /Misc/ })).toBeInTheDocument();
   });
 
   it('handles edit submissions without onExpenseEdited callback', async () => {

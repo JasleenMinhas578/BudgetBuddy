@@ -12,10 +12,12 @@ BudgetBuddy includes a floating AI chat widget (bottom-right corner) powered by 
 User types a message
         │
         ▼
-AIChat.jsx (React component)
-  - Loads user's expenses from Firestore (once on chat open)
-  - Subscribes to user's custom categories via Firestore onSnapshot
-  - Holds its own sessionDateRange (internal — separate from the dashboard filter)
+AIChat.jsx (UI shell) → delegates all logic to useAIChat.js (custom hook)
+  useAIChat.js:
+  - Loads user's expenses from Firestore once on chat open (getExpenses)
+  - Subscribes to user's custom categories via Firestore onSnapshot (direct query)
+  - Holds its own sessionDateRange state (internal — separate from the dashboard filter)
+  - Owns all state: messages, input, loading, expenses, customCategories, sessionDateRange
         │
         ▼
 aiService.js → Gemini API (REST call)
@@ -66,11 +68,14 @@ Every destructive or mutating action requires an explicit user confirmation clic
 
 | File | Purpose |
 |------|---------|
-| `src/components/AI/AIChat.jsx` | The floating chat widget UI component |
+| `src/components/AI/AIChat.jsx` | UI shell — renders the panel, header, input bar, message list, and toggle button. Delegates all state/logic to `useAIChat`. |
+| `src/components/AI/ChatMessage.jsx` | Renders individual chat messages, including all 6 confirmation card types (`expense_confirm`, `category_confirm`, `delete_expense_confirm`, `edit_expense_confirm`, `delete_category_confirm`, `edit_category_confirm`), the date range picker card, reminder bubbles, and plain text bubbles. |
 | `src/components/AI/AIChat.css` | Styles for the chat widget |
-| `src/services/aiService.js` | Gemini API call and response parsing |
-| `src/context/DateRangeContext.js` | Global date-filter context — `SET_DATE_RANGE` writes here |
+| `src/hooks/useAIChat.js` | All AI chat logic: state (`messages`, `input`, `loading`, `expenses`, `customCategories`, `sessionDateRange`), `sendMessage`, `handleConfirmAction`, `handleDismiss`, `handlePickDateRange`, `handleKeyDown`, `getPendingReminder`, `buildPresetRange`. This is the "brain" of the chat — `AIChat.jsx` is just the UI shell. |
+| `src/services/aiService.js` | Gemini API calls: `processMessage()` and `generateSummary()`. Rate limiting, retry logic. |
 | `.env` | Stores the API key as `REACT_APP_GEMINI_API_KEY` |
+
+> **Note**: `src/context/DateRangeContext.js` is **not** involved in the AI chat. `SET_DATE_RANGE` sets `sessionDateRange` state inside `useAIChat.js` only — it never touches `DateRangeContext`.
 
 ---
 
@@ -233,6 +238,72 @@ If a user sends a new message while there are **already-unconfirmed** action car
 
 ---
 
+## `ChatMessage.jsx` — Message Types and Confirmed Labels
+
+`ChatMessage.jsx` is a pure presentational component. It receives a `msg` object and renders the appropriate UI:
+
+| `msg.type` | Rendered as |
+|------------|-------------|
+| `text` | Plain paragraph (also used for errors when `msg.isError: true`) |
+| `reminder` | Styled reminder paragraph (`ai-reminder` CSS class) |
+| `expense_confirm` | Confirmation card with Title / Amount / Category / Date rows + "Add Expense" button |
+| `category_confirm` | Confirmation card with Category row + "Add Category" button |
+| `delete_expense_confirm` | Danger confirmation card + "Delete Expense" button |
+| `edit_expense_confirm` | Confirmation card showing **updated** field values + "Save Changes" button |
+| `delete_category_confirm` | Danger confirmation card + "Delete Category" button |
+| `edit_category_confirm` | Confirmation card with Current Name / New Name rows + "Rename" button |
+| `date_range_picker` | Preset grid with 6 buttons + "Or type a custom range below" hint |
+
+**After confirmation or dismissal**, the card is replaced with a status line:
+
+| `msg.type` after confirm | Status label |
+|--------------------------|--------------|
+| `expense_confirm` | `Done!` |
+| `category_confirm` | `Category added successfully!` |
+| `delete_expense_confirm` | `Expense deleted!` |
+| `edit_expense_confirm` | `Expense updated!` |
+| `delete_category_confirm` | `Category deleted!` |
+| `edit_category_confirm` | `Category renamed!` |
+
+After cancel, all types show `Cancelled`.
+
+---
+
+## `useAIChat.js` — Internal Constants
+
+The hook defines several constants that control AI chat behavior:
+
+**`ACTION_TYPES`** — message types that represent pending user confirmations:
+```js
+['expense_confirm', 'category_confirm', 'delete_expense_confirm',
+ 'edit_expense_confirm', 'delete_category_confirm', 'edit_category_confirm']
+```
+
+**`INTENT_MAP`** — maps AI intent → `{ type, dataKey }` for building the message object:
+```js
+ADD_EXPENSE     → { type: 'expense_confirm',         dataKey: 'expenseData' }
+ADD_CATEGORY    → { type: 'category_confirm',        dataKey: 'categoryData' }
+DELETE_EXPENSE  → { type: 'delete_expense_confirm',  dataKey: 'deleteExpenseData' }
+EDIT_EXPENSE    → { type: 'edit_expense_confirm',    dataKey: 'editExpenseData' }
+DELETE_CATEGORY → { type: 'delete_category_confirm', dataKey: 'deleteCategoryData' }
+EDIT_CATEGORY   → { type: 'edit_category_confirm',   dataKey: 'editCategoryData' }
+```
+
+**`buildPresetRange(label)`** — converts a date preset label to a `DateRange` object. Used by the date range picker card when the user clicks a preset:
+
+| Label | from | to |
+|-------|------|----|
+| `Today` | today | today |
+| `This Week` | today − 6 days | today |
+| `This Month` | 1st of current month | today |
+| `Last Month` | 1st of previous month | last day of previous month |
+| `This Year` | Jan 1 of current year | today |
+| `All Time` | `2000-01-01` | today |
+
+> **Note**: `This Week` in the AI chat date picker means **last 7 days** (today minus 6). This is different from the `thisWeek` filter in `useDateFilter.js`, which uses an ISO Monday-to-Sunday week. Be aware they can return different sets of expenses.
+
+---
+
 ## Suggested Questions (shown in empty state)
 
 ```
@@ -299,6 +370,18 @@ Unlike `processMessage`, this returns a raw string (not JSON) and does not inclu
 
 ## Security Notes
 
-- The API key is exposed to the browser (it's in frontend JS). This is acceptable for a free-tier key with no billing, but a production app should proxy requests through a backend so the key stays server-side.
-- The key is stored in `.env` which is gitignored — it is **never committed** to the repository.
-- User expense data is sent to Google's Gemini API as part of the prompt. Users should be informed of this in a privacy policy for a production deployment.
+### Data isolation
+The AI chat only ever sees the logged-in user's own data. Expenses and categories are loaded with `currentUser.uid` in `useAIChat.js` before being passed to `aiService.js` — the AI service has no direct Firestore access and cannot query any other user's data.
+
+Firestore Security Rules enforce this at the backend level: `users/{userId}/{document=**}` is readable/writable only when `request.auth.uid == userId`. These rules are version-controlled in [`firestore.rules`](../firestore.rules) at the project root and deployed to Firebase.
+
+### Known limitations
+
+**Gemini API key exposed in the browser bundle**
+`REACT_APP_GEMINI_API_KEY` is compiled into the client-side JavaScript by Create React App. Anyone can find it via browser DevTools → Sources. They can then make Gemini API calls charged to your account from outside the app entirely. For a production deployment, proxy the Gemini call through a backend function so the key never leaves the server.
+
+**Daily limit is bypassable client-side**
+The 50 requests/day cap is tracked in `localStorage` under `bb_ai_usage`. A user can reset it instantly by running `localStorage.removeItem('bb_ai_usage')` in the browser console. This is a soft limit — it does not protect against abuse of the Gemini API key. A production app should enforce this limit server-side, tied to the Firebase Auth UID.
+
+**User data sent to Google**
+User expense data (titles, amounts, categories, dates) is included in the Gemini prompt. Users should be informed of this in a privacy policy for a production deployment. No personally identifiable information beyond financial records is sent — names, emails, and passwords are never included in the prompt.

@@ -306,10 +306,12 @@ src/
 │   ├── Layout/        # Navbar, Navigation, Sidebar
 │   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog, BudgetBuddyLogo, ExpenseTable
 ├── context/           # AuthContext, DateRangeContext
-├── hooks/             # useDateFilter
+├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData
 ├── services/
-│   ├── database.js    # Firebase CRUD operations
-│   └── aiService.js   # Gemini API integration
+│   ├── expenseService.js    # Expense CRUD + real-time listener
+│   ├── categoryService.js   # Category CRUD + real-time listener
+│   ├── settingsService.js   # User settings (read/write preferences)
+│   └── aiService.js         # Gemini API — processMessage, generateSummary
 ├── styles/            # main.css (design tokens), modal.css, modal-forms.css
 ├── utils/
 │   ├── getCategoryIcon.js   # Returns Lucide icon JSX for a given category name

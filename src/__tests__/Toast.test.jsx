@@ -17,6 +17,13 @@ jest.mock('framer-motion', () => ({
   }
 }));
 
+jest.mock('react-icons/lu', () => ({
+  LuCheck: () => '✓',
+  LuX: () => '✗',
+  LuAlertTriangle: () => '⚠',
+  LuInfo: () => 'ℹ',
+}));
+
 describe('Toast component', () => {
   beforeEach(() => {
     jest.useFakeTimers();

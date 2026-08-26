@@ -23,7 +23,7 @@ Features identified for future development. Ordered roughly by impact vs. effort
 | Shared date filter across all dashboard views (via DateRangeContext) | `src/context/DateRangeContext.js` |
 | Select Month filter (pick any specific month from a dropdown) | `src/components/UI/DateFilterBar.jsx` — `pickMonth` filter key |
 | User Settings page (display name, password reset, default date range) | `src/components/Dashboard/Settings.jsx` |
-| Default date range preference saved to Firestore, applied on login | `src/context/DateRangeContext.js` + `src/services/database.js` — `saveUserSettings()` |
+| Default date range preference saved to Firestore, applied on login | `src/context/DateRangeContext.js` + `src/services/settingsService.js` — `saveUserSettings()` |
 | Display name collected on signup and saved to Firebase profile | `src/components/Auth/Signup.jsx` |
 | Sortable expense table with column-level sort | `src/components/UI/ExpenseTable.jsx` |
 | Pagination on Expenses and Reports | `src/components/UI/Pagination.jsx` |

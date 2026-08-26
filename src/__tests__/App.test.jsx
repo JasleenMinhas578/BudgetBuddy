@@ -34,7 +34,7 @@ jest.mock('../components/Dashboard/DashboardOverview', () => () => <div>Overview
 jest.mock('../components/Dashboard/Expenses', () => () => <div>Expenses Page</div>);
 jest.mock('../components/Dashboard/Categories', () => () => <div>Categories Page</div>);
 jest.mock('../components/Dashboard/Reports', () => () => <div>Reports Page</div>);
-jest.mock('../pages/PrivateRoute', () => ({ children }) => <div data-testid="private-route">{children}</div>);
+jest.mock('../components/Layout/PrivateRoute', () => ({ children }) => <div data-testid="private-route">{children}</div>);
 
 describe('App routing', () => {
   afterEach(() => {

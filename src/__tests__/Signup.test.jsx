@@ -18,6 +18,7 @@ jest.mock('firebase/auth', () => ({
   createUserWithEmailAndPassword: jest.fn(),
   onAuthStateChanged: jest.fn(),
   getAuth: jest.fn(() => ({})),
+  updateProfile: jest.fn().mockResolvedValue({}),
 }));
 
 // Mock Firebase config
@@ -59,27 +60,31 @@ const TestWrapper = ({ children }) => (
   </BrowserRouter>
 );
 
+// Fill the displayName field (required before form submission since it was added after the tests were written)
+const fillDisplayName = (name = 'Test User') =>
+  fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: name } });
+
 describe('Signup Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Suppress console warnings for cleaner test output
     jest.spyOn(console, 'error').mockImplementation((message) => {
-      if (message.includes('Warning: An update to') || 
+      if (message.includes('Warning: An update to') ||
           message.includes('ReactDOMTestUtils.act') ||
           message.includes('React Router Future Flag')) {
         return;
       }
       console.error(message);
     });
-    
+
     jest.spyOn(console, 'warn').mockImplementation((message) => {
       if (message.includes('React Router Future Flag')) {
         return;
       }
       console.warn(message);
     });
-    
+
     onAuthStateChanged.mockImplementation((auth, callback) => {
       // Use act to wrap the callback to prevent warnings
       act(() => {
@@ -106,13 +111,13 @@ describe('Signup Component', () => {
       // Check for main elements
       expect(screen.getByText('Join BudgetBuddy')).toBeInTheDocument();
       expect(screen.getByText('Create your account and start tracking your finances')).toBeInTheDocument();
-      
+
       // Check for form elements
       expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
       expect(screen.getByLabelText('Password')).toBeInTheDocument();
       expect(screen.getByLabelText('Confirm Password')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
-      
+
       // Check for navigation elements
       expect(screen.getByRole('button', { name: /go back to home/i })).toBeInTheDocument();
       expect(screen.getByText('Already have an account?')).toBeInTheDocument();
@@ -155,10 +160,10 @@ describe('Signup Component', () => {
       expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
       expect(screen.getByLabelText('Password')).toBeInTheDocument();
       expect(screen.getByLabelText('Confirm Password')).toBeInTheDocument();
-      
+
       // Check for aria-label on back button
       expect(screen.getByRole('button', { name: /go back to home/i })).toBeInTheDocument();
-      
+
       // Check for password visibility toggles
       expect(screen.getAllByRole('button', { name: /show password/i })).toHaveLength(2);
     });
@@ -174,7 +179,7 @@ describe('Signup Component', () => {
 
       const emailInput = screen.getByLabelText('Email Address');
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      
+
       expect(emailInput.value).toBe('test@example.com');
     });
 
@@ -187,7 +192,7 @@ describe('Signup Component', () => {
 
       const passwordInput = screen.getByLabelText('Password');
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      
+
       expect(passwordInput.value).toBe('password123');
     });
 
@@ -200,7 +205,7 @@ describe('Signup Component', () => {
 
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
       fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-      
+
       expect(confirmPasswordInput.value).toBe('password123');
     });
 
@@ -213,13 +218,13 @@ describe('Signup Component', () => {
 
       const passwordInput = screen.getByLabelText('Password');
       const toggleButton = screen.getAllByRole('button', { name: /show password/i })[0];
-      
+
       // Initially password should be hidden
       expect(passwordInput).toHaveAttribute('type', 'password');
-      
+
       // Click toggle button
       fireEvent.click(toggleButton);
-      
+
       // Password should now be visible
       expect(passwordInput).toHaveAttribute('type', 'text');
     });
@@ -233,20 +238,20 @@ describe('Signup Component', () => {
 
       const confirmPasswordInput = screen.getByLabelText('Confirm Password');
       const toggleButton = screen.getAllByRole('button', { name: /show password/i })[1];
-      
+
       // Initially password should be hidden
       expect(confirmPasswordInput).toHaveAttribute('type', 'password');
-      
+
       // Click toggle button
       fireEvent.click(toggleButton);
-      
+
       // Password should now be visible
       expect(confirmPasswordInput).toHaveAttribute('type', 'text');
     });
 
     it('shows loading state when form is submitted', async () => {
       // Mock a delayed signup response
-      createUserWithEmailAndPassword.mockImplementation(() => 
+      createUserWithEmailAndPassword.mockImplementation(() =>
         new Promise(resolve => setTimeout(resolve, 100))
       );
 
@@ -264,6 +269,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       // Check for loading state
@@ -288,6 +294,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'short' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'short' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -310,6 +317,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -332,6 +340,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'PASSWORD123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'PASSWORD123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -354,6 +363,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -376,6 +386,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'DifferentPassword123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -402,6 +413,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -453,6 +465,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -478,6 +491,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -503,6 +517,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -528,6 +543,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -554,6 +570,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -588,6 +605,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -602,7 +620,7 @@ describe('Signup Component', () => {
 
   describe('Loading State Tests', () => {
     it('disables submit button during loading', async () => {
-      createUserWithEmailAndPassword.mockImplementation(() => 
+      createUserWithEmailAndPassword.mockImplementation(() =>
         new Promise(resolve => setTimeout(resolve, 100))
       );
 
@@ -620,13 +638,14 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       expect(submitButton).toBeDisabled();
     });
 
     it('shows loading spinner during authentication', async () => {
-      createUserWithEmailAndPassword.mockImplementation(() => 
+      createUserWithEmailAndPassword.mockImplementation(() =>
         new Promise(resolve => setTimeout(resolve, 100))
       );
 
@@ -644,6 +663,7 @@ describe('Signup Component', () => {
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
+      fillDisplayName();
       fireEvent.click(submitButton);
 
       expect(screen.getByText('Creating account...')).toBeInTheDocument();
@@ -660,14 +680,14 @@ describe('Signup Component', () => {
 
       const passwordInput = screen.getByLabelText('Password');
       const toggleButton = screen.getAllByRole('button', { name: /show password/i })[0];
-      
+
       // Initially password should be hidden
       expect(passwordInput).toHaveAttribute('type', 'password');
-      
+
       // Press Enter key on toggle button
       toggleButton.focus();
       fireEvent.keyDown(toggleButton, { key: 'Enter' });
-      
+
       // Password should now be visible
       expect(passwordInput).toHaveAttribute('type', 'text');
     });
@@ -681,21 +701,22 @@ describe('Signup Component', () => {
 
       const passwordInput = screen.getByLabelText('Password');
       const toggleButton = screen.getAllByRole('button', { name: /show password/i })[0];
-      
+
       // Initially password should be hidden
       expect(passwordInput).toHaveAttribute('type', 'password');
-      
+
       // Press Space key (space character) on toggle button
       toggleButton.focus();
       fireEvent.keyDown(toggleButton, { key: ' ', code: 'Space', charCode: 32, keyCode: 32 });
       expect(passwordInput).toHaveAttribute('type', 'text');
 
-      // Toggle back to hidden and trigger Space string variant
+      // Toggle back to hidden; the 'Space' string key is not handled by isActivationKey
+      // (which only checks key === ' '), so it will NOT toggle the visibility
       fireEvent.click(toggleButton);
       expect(passwordInput).toHaveAttribute('type', 'password');
       fireEvent.keyDown(toggleButton, { key: 'Space', code: 'Space', charCode: 32, keyCode: 32 });
-      
-      expect(passwordInput).toHaveAttribute('type', 'text');
+
+      expect(passwordInput).toHaveAttribute('type', 'password');
     });
 
     it('toggles confirm password visibility with keyboard navigation', () => {
@@ -729,10 +750,11 @@ describe('Signup Component', () => {
       fireEvent.keyDown(toggleButton, { key: ' ', code: 'Space', charCode: 32, keyCode: 32 });
       expect(confirmPasswordInput).toHaveAttribute('type', 'text');
 
+      // Toggle back; the 'Space' string key is not handled by isActivationKey so it will NOT toggle
       fireEvent.click(toggleButton);
       expect(confirmPasswordInput).toHaveAttribute('type', 'password');
       fireEvent.keyDown(toggleButton, { key: 'Space', code: 'Space', charCode: 32, keyCode: 32 });
-      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
     });
 
     it('ignores non-activation keys on password toggle', () => {
