@@ -47,6 +47,23 @@ const buildPresetRange = (label) => {
   }
 };
 
+const ACTION_TYPES = ['expense_confirm', 'category_confirm', 'delete_expense_confirm', 'edit_expense_confirm', 'delete_category_confirm', 'edit_category_confirm'];
+
+const getPendingReminder = (currentMessages) => {
+  const pending = currentMessages.filter(m => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed);
+  if (!pending.length) return null;
+  const labels = pending.map(m => {
+    if (m.type === 'expense_confirm')        return `add expense "${m.expenseData?.title}"`;
+    if (m.type === 'category_confirm')       return `add category "${m.categoryData?.name}"`;
+    if (m.type === 'delete_expense_confirm') return `delete expense "${m.deleteExpenseData?.title}"`;
+    if (m.type === 'edit_expense_confirm')   return `update expense "${m.editExpenseData?.title}"`;
+    if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
+    if (m.type === 'edit_category_confirm')  return `rename category "${m.editCategoryData?.name}"`;
+    return '';
+  }).filter(Boolean);
+  return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
+};
+
 export default function AIChat() {
   const { currentUser } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -119,23 +136,6 @@ export default function AIChat() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, messages.length]);
-
-  const ACTION_TYPES = ['expense_confirm', 'category_confirm', 'delete_expense_confirm', 'edit_expense_confirm', 'delete_category_confirm', 'edit_category_confirm'];
-
-  const getPendingReminder = (currentMessages) => {
-    const pending = currentMessages.filter(m => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed);
-    if (!pending.length) return null;
-    const labels = pending.map(m => {
-      if (m.type === 'expense_confirm')        return `add expense "${m.expenseData?.title}"`;
-      if (m.type === 'category_confirm')       return `add category "${m.categoryData?.name}"`;
-      if (m.type === 'delete_expense_confirm') return `delete expense "${m.deleteExpenseData?.title}"`;
-      if (m.type === 'edit_expense_confirm')   return `update expense "${m.editExpenseData?.title}"`;
-      if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
-      if (m.type === 'edit_category_confirm')  return `rename category "${m.editCategoryData?.name}"`;
-      return '';
-    }).filter(Boolean);
-    return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
-  };
 
   const sendMessage = useCallback(async (text) => {
     const trimmed = text?.trim();
