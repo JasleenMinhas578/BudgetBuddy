@@ -299,6 +299,8 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useAuthForm.js` | Shared form state (`error`, `message`, `loading`) reused across Login, Signup, ForgotPassword, and ResetPassword |
 | `useExpenses.js` | Subscribes to the current user's Firestore expenses in real-time via `subscribeToExpenses`; returns `{ expenses, loading }`. Single data source for Expenses page and DashboardOverview. |
 | `useToast.js` | Lightweight toast state management; returns `{ toast, showToast, hideToast }`. Replaces ad-hoc toast state that previously lived inside individual page components. |
+| `useBudgets.js` | Subscribes to the user's budget document in Firestore; exposes `budgets` (category spending targets) and `setCategoryBudget`. Used by Goals page and BudgetProgressPanel. |
+| `useBudgetProgress.js` | Computes spend-vs-budget metrics (per-category `spent`, `budget`, `remaining`, `pct`, `status`) from filtered expenses, categories, and budgets. Always reflects current-month spend regardless of the dashboard date filter. |
 
 ### 2.3.2 Component Organization
 
@@ -311,7 +313,8 @@ budget-buddy/
 │   │   ├── AI/            # AIChat.jsx, AIChat.css — floating Gemini chat widget
 │   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                      #   AuthLayout, AuthSubmitButton
-│   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
+│   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Goals, Reports,
+│   │                      #   Settings, BudgetProgressPanel
 │   │   ├── Expense/       # ExpenseForm, ExpenseList
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar
@@ -323,9 +326,10 @@ budget-buddy/
 │   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
 │   │                      #   useReportData.js, useSidebar.js, useReportExport.js,
 │   │                      #   useCategoryActions.js, useAuthForm.js,
-│   │                      #   useExpenses.js, useToast.js
+│   │                      #   useExpenses.js, useToast.js,
+│   │                      #   useBudgets.js, useBudgetProgress.js
 │   ├── services/          # expenseService.js, categoryService.js,
-│   │                      #   settingsService.js, aiService.js
+│   │                      #   settingsService.js, aiService.js, budgetService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,
 │   │                      #   confirm-dialog.css, styles-landing.css,
 │   │                      #   styles-pages.css, styles-settings.css,

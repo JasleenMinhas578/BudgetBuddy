@@ -44,9 +44,10 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ **User settings** — update display name, send password-reset email, and save a default date-range preference that persists across sessions
 - ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, Categories, and Reports; loads the user's saved preference on login. Available presets: Today, This Week, This Month, Last Month, **Select Month** (pick any specific month from a dropdown), This Year, Last Year, All Time, and Custom Range
 - ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
+- ✅ **Budget goals** — set monthly per-category spending limits on the Goals page; real-time progress bars and alerts (on-track / near-limit / over-budget) surface on the Goals page and as an inline BudgetProgressPanel on the dashboard overview
 
 ### Testing & Quality Assurance
-- **Unit Testing**: Jest + React Testing Library (285 tests, 100% coverage)
+- **Unit Testing**: Jest + React Testing Library (306 tests, 100% coverage)
 - **E2E Testing**: Cypress (102 tests across 8 test files)
 - **Code Quality**: ESLint (0 errors, 0 warnings)
 - **Acceptance Testing**: Issues coverage
@@ -58,7 +59,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 ## 📊 Project Status & Quick Links
 
 ### ✅ Current Status
-- **All Tests Passing**: 285 unit tests + 102 E2E tests
+- **All Tests Passing**: 306 unit tests + 102 E2E tests
 - **Code Quality**: 100% (0 ESLint errors/warnings)
 - **Test Coverage**: 100% (statements, branches, functions, lines)
 - **Acceptance Testing**: 100% (requirements and issues coverage)
@@ -303,7 +304,8 @@ src/
 │   ├── AI/            # AIChat — floating AI chat widget (Gemini)
 │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                  #   AuthLayout, AuthSubmitButton
-│   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
+│   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Goals, Reports,
+│                  #   Settings, BudgetProgressPanel
 │   ├── Expense/       # ExpenseForm, ExpenseList
 │   ├── Charts/        # PieChart, BarChart, LineChart
 │   ├── Layout/        # Navbar, Sidebar
@@ -313,12 +315,13 @@ src/
 ├── context/           # AuthContext, DateRangeContext
 ├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData,
 │                      #   useSidebar, useReportExport, useCategoryActions, useAuthForm,
-│                      #   useExpenses, useToast
+│                      #   useExpenses, useToast, useBudgets, useBudgetProgress
 ├── services/
 │   ├── expenseService.js    # Expense CRUD + real-time listener
 │   ├── categoryService.js   # Category CRUD + real-time listener
 │   ├── settingsService.js   # User settings (read/write preferences)
-│   └── aiService.js         # Gemini API — processMessage, generateSummary
+│   ├── aiService.js         # Gemini API — processMessage, generateSummary
+│   └── budgetService.js     # Budget goals — read/write per-category monthly limits
 ├── styles/            # main.css (design tokens), modal.css, modal-forms.css
 ├── utils/
 │   ├── getCategoryIcon.js   # Returns Lucide icon JSX for a given category name
@@ -462,14 +465,15 @@ budget-buddy/
 
 | Metric | Value |
 |--------|-------|
-| **Test Files** | 24 files |
-| **Total Tests** | 285 tests |
+| **Test Files** | 25 files |
+| **Total Tests** | 306 tests |
 | **Status** | ✅ All passing |
 
 **Test Categories**:
 - Application shell & routing (App, Navbar, Sidebar)
 - Authentication flows (Login, Signup, AuthFlow)
 - Dashboard & data (DashboardOverview, Expenses, Categories)
+- Budget goals (Goals page, useBudgetProgress)
 - Charts & visualization (PieChart, BarChart, LineChart)
 - UI components (Modal, Toast)
 - Utilities (database, firebaseConfig)
@@ -523,8 +527,8 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 │  Passing Tests:                   102 (100%)            │
 │  Failing Tests:                   0 (0%)                │
 │                                                         │
-│  Total Unit Tests:                285                   │
-│  Passing Tests:                   285 (100%)            │
+│  Total Unit Tests:                306                   │
+│  Passing Tests:                   306 (100%)            │
 │  Failing Tests:                   0 (0%)                │
 │                                                         │
 │  Status:                          COMPLETE              │
@@ -609,7 +613,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 1. Checkout code
 2. Setup Node.js 20
 3. Install dependencies (`npm ci`)
-4. Run unit tests (285 tests)
+4. Run unit tests (306 tests)
 5. Generate coverage reports
 6. Build production bundle
 7. Upload artifacts
@@ -648,7 +652,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 |--------|-------|
 | **CI Execution Time** | 3-5 minutes |
 | **E2E Execution Time** | ~20 minutes (parallel) |
-| **Total Tests** | 387 (285 unit + 102 E2E) |
+| **Total Tests** | 408 (306 unit + 102 E2E) |
 | **Success Rate** | 100% |
 | **Browser Coverage** | Chrome, Firefox, Edge |
 
@@ -718,7 +722,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 ✅ **Functional Web Application** (React + Firebase)  
 ✅ **CI/CD Workflows** (GitHub Actions)  
 ✅ **Test Coverage Reports** (100% coverage)  
-✅ **Unit Tests** (285 tests)  
+✅ **Unit Tests** (306 tests)  
 ✅ **E2E Tests** (102 tests)  
 ✅ **Code Quality Reports** (ESLint, Lighthouse)  
 ✅ **Final Project Report**  
@@ -758,7 +762,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 **Challenge**: Achieving 100% coverage with maintainable tests, reliable cross-browser E2E tests.  
 **Solution**: React Testing Library best practices, async testing with `waitFor`, Cypress with fixtures, matrix strategy for cross-browser testing, proper test isolation.  
 **Lesson**: Test quality over quantity. Focus on user behavior and critical paths. Proper setup prevents flaky tests.  
-**Result**: ✅ 285 unit + 102 E2E tests, all passing
+**Result**: ✅ 306 unit + 102 E2E tests, all passing
 
 ### 6. State Management & Context API
 **Challenge**: Managing global auth state and local component state without prop drilling or unnecessary re-renders.  
@@ -901,7 +905,7 @@ Complete documentation of all naming conventions used throughout the codebase. I
 
 Comprehensive acceptance tests, issues (user stories), acceptance criteria, and requirements traceability. Includes 29 feature issues organized into 7 categories, 38 acceptance criteria, 11 functional requirements, 10 non-functional requirements, and complete test mapping.
 
-**Key Metrics**: 100% requirements coverage, 100% test coverage, 387 tests passing
+**Key Metrics**: 100% requirements coverage, 100% test coverage, 408 tests passing
 
 ---
 
