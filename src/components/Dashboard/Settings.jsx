@@ -8,6 +8,7 @@ import '../../styles/main.css';
 
 const DATE_RANGE_OPTIONS = [
   { value: 'today',     label: 'Today' },
+  { value: 'thisWeek',  label: 'This Week' },
   { value: 'thisMonth', label: 'This Month' },
   { value: 'lastMonth', label: 'Last Month' },
   { value: 'thisYear',  label: 'This Year' },
