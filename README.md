@@ -299,16 +299,19 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 src/
 ├── components/
 │   ├── AI/            # AIChat — floating AI chat widget (Gemini)
-│   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword
+│   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
+│   │                  #   AuthLayout, AuthSubmitButton
 │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
 │   ├── Expense/       # ExpenseForm
 │   ├── Charts/        # PieChart, BarChart, LineChart
 │   ├── Layout/        # Navbar, Navigation, Sidebar
 │   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog,
-│                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace
+│                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace,
+│                      #   ChartCard, PageHeader, PasswordInput, UserAvatar
 ├── context/           # AuthContext, DateRangeContext
 ├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData,
-│                      #   useSidebar, useReportExport, useCategoryActions, useAuthForm
+│                      #   useSidebar, useReportExport, useCategoryActions, useAuthForm,
+│                      #   useExpenses, useToast
 ├── services/
 │   ├── expenseService.js    # Expense CRUD + real-time listener
 │   ├── categoryService.js   # Category CRUD + real-time listener

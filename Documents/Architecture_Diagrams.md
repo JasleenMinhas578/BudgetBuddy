@@ -297,6 +297,8 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useReportExport.js` | CSV export, PDF generation (jsPDF), AI summary fetch (`generateSummary`), and export dropdown state for the Reports page |
 | `useCategoryActions.js` | Add/delete category logic for the Categories page; wraps `categoryService.js` calls with toast feedback and pending-delete confirmation |
 | `useAuthForm.js` | Shared form state (`error`, `message`, `loading`) reused across Login, Signup, ForgotPassword, and ResetPassword |
+| `useExpenses.js` | Subscribes to the current user's Firestore expenses in real-time via `subscribeToExpenses`; returns `{ expenses, loading }`. Single data source for Expenses page and DashboardOverview. |
+| `useToast.js` | Lightweight toast state management; returns `{ toast, showToast, hideToast }`. Replaces ad-hoc toast state that previously lived inside individual page components. |
 
 ### 2.3.2 Component Organization
 
@@ -305,18 +307,21 @@ budget-buddy/
 ├── src/
 │   ├── components/
 │   │   ├── AI/            # AIChat.jsx, AIChat.css — floating Gemini chat widget
-│   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword
+│   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
+│   │                      #   AuthLayout, AuthSubmitButton
 │   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Reports, Settings
 │   │   ├── Expense/       # ExpenseForm
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar, Navigation
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
-│   │                      #   CuteEmptyFace
+│   │                      #   CuteEmptyFace, ChartCard, PageHeader,
+│   │                      #   PasswordInput, UserAvatar
 │   ├── context/           # AuthContext.js, DateRangeContext.js
 │   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
 │   │                      #   useReportData.js, useSidebar.js, useReportExport.js,
-│   │                      #   useCategoryActions.js, useAuthForm.js
+│   │                      #   useCategoryActions.js, useAuthForm.js,
+│   │                      #   useExpenses.js, useToast.js
 │   ├── services/          # expenseService.js, categoryService.js,
 │   │                      #   settingsService.js, aiService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,
