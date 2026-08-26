@@ -3,7 +3,20 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Other'];
 
-const DAILY_LIMIT = 20;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const RETRY_DELAYS = [5000, 15000, 30000];
+
+const fetchWithRetry = async (url, options) => {
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+    const res = await fetch(url, options);
+    if (res.status !== 429) return res;
+    if (attempt < RETRY_DELAYS.length) await sleep(RETRY_DELAYS[attempt]);
+  }
+  return fetch(url, options);
+};
+
+const DAILY_LIMIT = 50;
 const USAGE_KEY = 'bb_ai_usage';
 
 const checkAndIncrementUsage = () => {
@@ -113,10 +126,11 @@ Rules:
 - Interpret relative dates: "today" = ${today}, "yesterday" = one day before, etc.
 - If amount or title is missing for an expense, use CHAT intent and ask for the missing detail
 - Pick the best matching category from the available list
+- If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, and answer spending questions for any time period
 
 User message: "${userMessage}"`;
 
-  const res = await fetch(GEMINI_URL, {
+  const res = await fetchWithRetry(GEMINI_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -171,7 +185,7 @@ Write a 3-4 sentence paragraph that:
 
 Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no markdown.`;
 
-  const res = await fetch(GEMINI_URL, {
+  const res = await fetchWithRetry(GEMINI_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

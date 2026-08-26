@@ -59,6 +59,12 @@ export default function AIChat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const widgetRef = useRef(null);
+  const messagesRef = useRef([]);
+
+  // Keep ref in sync so sendMessage can read current messages without stale closure
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Restore messages from sessionStorage on mount
   useEffect(() => {
@@ -134,6 +140,11 @@ export default function AIChat() {
   const sendMessage = useCallback(async (text) => {
     const trimmed = text?.trim();
     if (!trimmed || loading) return;
+
+    // Snapshot pending state BEFORE this message so we only remind about pre-existing unconfirmed cards
+    const hadPendingBefore = messagesRef.current.some(
+      m => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
+    );
 
     setMessages((prev) => [...prev, { role: 'user', content: trimmed, type: 'text' }]);
     setInput('');
@@ -232,12 +243,14 @@ export default function AIChat() {
         ]);
       }
 
-      // After any response, remind about unconfirmed actions
-      setMessages((prev) => {
-        const reminder = getPendingReminder(prev);
-        if (!reminder) return prev;
-        return [...prev, { role: 'assistant', content: reminder, type: 'reminder' }];
-      });
+      // Only remind if there were ALREADY pending cards before this message
+      if (hadPendingBefore) {
+        setMessages((prev) => {
+          const reminder = getPendingReminder(prev);
+          if (!reminder) return prev;
+          return [...prev, { role: 'assistant', content: reminder, type: 'reminder' }];
+        });
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
