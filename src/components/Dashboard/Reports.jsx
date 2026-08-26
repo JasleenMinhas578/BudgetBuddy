@@ -518,20 +518,16 @@ export default function Reports() {
           </div>
           <div className="charts-section">
             <div className="chart-container">
-              <div className="chart-card">
-                <h3>Spending by Category</h3>
-                <div className="chart-wrapper">
-                  <PieChart data={categoryData} />
-                </div>
+              <h3>Spending by Category</h3>
+              <div className="chart-wrapper">
+                <PieChart data={categoryData} />
               </div>
             </div>
 
             <div className="chart-container">
-              <div className="chart-card">
-                <h3>Monthly Trend</h3>
-                <div className="chart-wrapper">
-                  <LineChart data={monthlyData} />
-                </div>
+              <h3>Monthly Trend</h3>
+              <div className="chart-wrapper">
+                <LineChart data={monthlyData} />
               </div>
             </div>
           </div>
