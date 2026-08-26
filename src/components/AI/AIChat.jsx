@@ -9,11 +9,11 @@ const SUGGESTED_GROUPS = [
     label: 'Spending questions',
     questions: [
       "What's my total spending this month?",
-      "Which category do I spend the most on?",
-      "What's my average daily spending?",
+      "Which category do I spend the most on this month?",
+      "What's my average daily spending this month?",
       "How much did I spend last month?",
-      "What are my top 3 expenses?",
-      "What's my highest single expense?",
+      "What are my top 3 expenses this month?",
+      "What's my highest single expense this month?",
     ],
   },
   {
@@ -102,41 +102,40 @@ export default function AIChat() {
                 )}
               </div>
             </div>
-            <div className="ai-chat-header-actions">
-              <button
-                className={`ai-chat-info-btn${showCapabilities ? ' active' : ''}`}
-                onClick={() => setShowCapabilities((v) => !v)}
-                aria-label="What can I ask?"
-                title="What can I ask?"
-              >
-                <LuInfo size={16} />
-              </button>
-              <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
-                <LuX size={18} aria-hidden="true" />
-              </button>
-            </div>
+            <button className="ai-chat-close" onClick={() => setIsOpen(false)} aria-label="Close chat">
+              <LuX size={18} aria-hidden="true" />
+            </button>
           </div>
 
-          {/* Capabilities panel — slides down from header */}
+          {/* Capabilities modal */}
           {showCapabilities && (
-            <div className="ai-capabilities-panel">
-              <p className="ai-capabilities-title">Things you can ask me</p>
-              {SUGGESTED_GROUPS.map((group) => (
-                <div key={group.label} className="ai-capabilities-group">
-                  <span className="ai-capabilities-group-label">{group.label}</span>
-                  <div className="ai-capabilities-chips">
-                    {group.questions.map((q) => (
-                      <button
-                        key={q}
-                        className="ai-suggestion-chip"
-                        onClick={() => { sendMessage(q); setShowCapabilities(false); }}
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
+            <div className="ai-capabilities-overlay" onClick={() => setShowCapabilities(false)}>
+              <div className="ai-capabilities-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="ai-capabilities-modal-header">
+                  <span className="ai-capabilities-modal-title">Things you can ask me</span>
+                  <button className="ai-capabilities-modal-close" onClick={() => setShowCapabilities(false)} aria-label="Close">
+                    <LuX size={16} />
+                  </button>
                 </div>
-              ))}
+                <div className="ai-capabilities-modal-body">
+                  {SUGGESTED_GROUPS.map((group) => (
+                    <div key={group.label} className="ai-capabilities-group">
+                      <span className="ai-capabilities-group-label">{group.label}</span>
+                      <div className="ai-capabilities-chips">
+                        {group.questions.map((q) => (
+                          <button
+                            key={q}
+                            className="ai-suggestion-chip"
+                            onClick={() => { sendMessage(q); setShowCapabilities(false); }}
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -201,6 +200,14 @@ export default function AIChat() {
               onKeyDown={handleKeyDown}
               disabled={loading}
             />
+            <button
+              className={`ai-chat-info-btn${showCapabilities ? ' active' : ''}`}
+              onClick={() => setShowCapabilities((v) => !v)}
+              aria-label="What can I ask?"
+              title="What can I ask?"
+            >
+              <LuInfo size={16} />
+            </button>
             <button
               className="ai-chat-send"
               onClick={() => sendMessage(input)}
