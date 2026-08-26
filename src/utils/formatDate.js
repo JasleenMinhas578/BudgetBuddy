@@ -17,5 +17,3 @@ export function safeFormatDate(dateStr, fmt) {
 }
 
 export const toAmount = (v) => (typeof v === 'number' ? v : 0);
-
-export const formatCurrency = (v) => `$${toAmount(v).toFixed(2)}`;

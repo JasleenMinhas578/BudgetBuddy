@@ -6,6 +6,8 @@ import { subscribeToCategories } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import '../../styles/main.css';
 
+const MAX_AMOUNT = 1_000_000;
+
 export default function ExpenseForm({
   onExpenseAdded,
   onExpenseEdited,
@@ -126,7 +128,6 @@ export default function ExpenseForm({
     }
     
     // Check if amount exceeds $1 million
-    const MAX_AMOUNT = 1000000;
     if (amountValue > MAX_AMOUNT) {
       return { isValid: false, message: 'Amount cannot exceed $1,000,000' };
     }
@@ -232,7 +233,6 @@ export default function ExpenseForm({
     setAmount(cleanValue);
     
     // Validate amount in real-time
-    const MAX_AMOUNT = 1000000;
     const amountValue = parseFloat(cleanValue);
 
     if (cleanValue && !isNaN(amountValue)) {

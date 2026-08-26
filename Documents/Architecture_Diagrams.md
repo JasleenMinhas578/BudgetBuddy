@@ -301,6 +301,7 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useToast.js` | Lightweight toast state management; returns `{ toast, showToast, hideToast }`. Replaces ad-hoc toast state that previously lived inside individual page components. |
 | `useBudgets.js` | Subscribes to the user's budget document in Firestore; exposes `budgets` (category spending targets) and `setCategoryBudget`. Used by Goals page and BudgetProgressPanel. |
 | `useBudgetProgress.js` | Computes spend-vs-budget metrics (per-category `spent`, `budget`, `remaining`, `pct`, `status`) from filtered expenses, categories, and budgets. Always reflects current-month spend regardless of the dashboard date filter. |
+| `useGlobalSearch.js` | Live search hook used by the Navbar; subscribes to expenses and categories, filters both against a query string (case-insensitive, amount-aware), and returns up to 4 grouped results per type. |
 
 ### 2.3.2 Component Organization
 
@@ -321,13 +322,14 @@ budget-buddy/
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
 │   │                      #   CuteEmptyFace, ChartCard, PageHeader,
-│   │                      #   PasswordInput, UserAvatar
+│   │                      #   PasswordInput, UserAvatar, SearchDropdown
 │   ├── context/           # AuthContext.js, DateRangeContext.js
 │   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
 │   │                      #   useReportData.js, useSidebar.js, useReportExport.js,
 │   │                      #   useCategoryActions.js, useAuthForm.js,
 │   │                      #   useExpenses.js, useToast.js,
-│   │                      #   useBudgets.js, useBudgetProgress.js
+│   │                      #   useBudgets.js, useBudgetProgress.js,
+│   │                      #   useGlobalSearch.js
 │   ├── services/          # expenseService.js, categoryService.js,
 │   │                      #   settingsService.js, aiService.js, budgetService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,

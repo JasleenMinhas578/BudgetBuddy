@@ -2,22 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useExpenses } from './useExpenses';
 import { subscribeToCategories } from '../services/categoryService';
-import {
-  LuShoppingCart, LuCar, LuTag, LuZap, LuHome,
-  LuGamepad2, LuHeart, LuBook, LuPlane, LuMoreHorizontal,
-} from 'react-icons/lu';
-
-const DEFAULT_CATEGORY_ICONS = {
-  Food: LuShoppingCart,
-  Transport: LuCar,
-  Entertainment: LuGamepad2,
-  Utilities: LuZap,
-  Rent: LuHome,
-  Health: LuHeart,
-  Education: LuBook,
-  Travel: LuPlane,
-  Other: LuMoreHorizontal,
-};
+import { CATEGORY_ICON_MAP, DEFAULT_CATEGORIES } from '../utils/getCategoryIcon';
+import { LuTag } from 'react-icons/lu';
 
 const MAX_RESULTS = 4;
 
@@ -59,7 +45,7 @@ export function useGlobalSearch(query) {
       }));
 
     const allCategoryNames = [
-      ...Object.keys(DEFAULT_CATEGORY_ICONS).map(name => ({ name, isDefault: true })),
+      ...DEFAULT_CATEGORIES.map(c => ({ name: c.name, isDefault: true })),
       ...categories.map(c => ({ name: c.name, isDefault: false })),
     ];
 
@@ -67,7 +53,7 @@ export function useGlobalSearch(query) {
       .filter(c => c.name?.toLowerCase().includes(q))
       .slice(0, MAX_RESULTS)
       .map(c => {
-        const Icon = DEFAULT_CATEGORY_ICONS[c.name] || LuTag;
+        const Icon = CATEGORY_ICON_MAP[c.name] || LuTag;
         const total = expenses
           .filter(e => e.category === c.name)
           .reduce((sum, e) => sum + (e.amount || 0), 0);

@@ -47,10 +47,17 @@ export default function ExpenseTable({
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef(null);
 
-  // Reset to page 1 whenever the data set or category filter changes
+  // When the expenses dataset changes (e.g. date range switch), clear any stale
+  // category filter first — the previously selected category may not exist in the new set.
+  useEffect(() => {
+    setCategoryFilter('');
+    setCurrentPage(1);
+  }, [expenses]);
+
+  // Also reset to page 1 when the user picks a new category filter.
   useEffect(() => {
     setCurrentPage(1);
-  }, [expenses, categoryFilter]);
+  }, [categoryFilter]);
 
   // Close dropdown on outside click
   useEffect(() => {

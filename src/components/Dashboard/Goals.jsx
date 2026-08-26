@@ -84,18 +84,18 @@ export default function Goals() {
     return () => unsub();
   }, [currentUser]);
 
-  const {
-    isLoading,
-    toast, setToast,
-    handleAddCategory,
-  } = useCategoryActions(currentUser, []);
-
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
     ...firestoreCategories
       .filter((c) => c && c.name && c.name !== 'undefined' && c.name !== 'null')
       .map((c) => ({ ...c, Icon: LuTag })),
   ], [firestoreCategories]);
+
+  const {
+    isLoading,
+    toast, setToast,
+    handleAddCategory,
+  } = useCategoryActions(currentUser, allCategories);
 
   // Always show current-month progress against goals
   const thisMonthExpenses = useMemo(() => {

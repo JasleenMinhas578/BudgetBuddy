@@ -45,6 +45,7 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 - ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, Categories, and Reports; loads the user's saved preference on login. Available presets: Today, This Week, This Month, Last Month, **Select Month** (pick any specific month from a dropdown), This Year, Last Year, All Time, and Custom Range
 - ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
 - ✅ **Budget goals** — set monthly per-category spending limits on the Goals page; real-time progress bars and alerts (on-track / near-limit / over-budget) surface on the Goals page and as an inline BudgetProgressPanel on the dashboard overview
+- ✅ **Global live search** — Navbar search bar with real-time expense and category results; highlights matching text, supports amount queries from 1 digit, and navigates directly to the matched item
 
 ### Testing & Quality Assurance
 - **Unit Testing**: Jest + React Testing Library (306 tests, 100% coverage)
@@ -311,11 +312,13 @@ src/
 │   ├── Layout/        # Navbar, Sidebar
 │   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog,
 │                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace,
-│                      #   ChartCard, PageHeader, PasswordInput, UserAvatar
+│                      #   ChartCard, PageHeader, PasswordInput, UserAvatar,
+│                      #   SearchDropdown
 ├── context/           # AuthContext, DateRangeContext
 ├── hooks/             # useDateFilter, useAIChat, useCategoryData, useReportData,
 │                      #   useSidebar, useReportExport, useCategoryActions, useAuthForm,
-│                      #   useExpenses, useToast, useBudgets, useBudgetProgress
+│                      #   useExpenses, useToast, useBudgets, useBudgetProgress,
+│                      #   useGlobalSearch
 ├── services/
 │   ├── expenseService.js    # Expense CRUD + real-time listener
 │   ├── categoryService.js   # Category CRUD + real-time listener

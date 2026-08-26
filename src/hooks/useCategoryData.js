@@ -1,8 +1,6 @@
 import { useMemo } from 'react';
 import { getCategoryColor } from '../utils/getCategoryColor';
-
-const validCategory = (c) =>
-  c && c !== 'undefined' && c !== 'null' && typeof c === 'string' && c.trim() !== '';
+import { validCategory } from '../utils/categoryUtils';
 
 export function useCategoryData(filteredExpenses, allCategories) {
   const categoryData = useMemo(() => {

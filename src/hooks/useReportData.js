@@ -2,9 +2,7 @@ import { useMemo } from 'react';
 import { parse, parseISO } from 'date-fns';
 import { getCategoryColor } from '../utils/getCategoryColor';
 import { safeFormatDate, toAmount } from '../utils/formatDate';
-
-const validCategory = (c) =>
-  c && c !== 'undefined' && c !== 'null' && typeof c === 'string' && c.trim() !== '';
+import { validCategory } from '../utils/categoryUtils';
 
 export function useReportData(filteredExpenses) {
   const totalAmount = useMemo(
@@ -53,18 +51,15 @@ export function useReportData(filteredExpenses) {
   }, [filteredExpenses]);
 
   const { topCategory, maxAmount } = useMemo(() => {
-    const map = {};
-    filteredExpenses.forEach((e) => {
-      if (!validCategory(e.category)) return;
-      map[e.category] = (map[e.category] || 0) + toAmount(e.amount);
-    });
+    const { labels, datasets } = categoryData;
+    const amounts = datasets[0].data;
     let topCategory = null;
     let maxAmount = 0;
-    for (const [cat, amt] of Object.entries(map)) {
-      if (amt > maxAmount) { topCategory = cat; maxAmount = amt; }
-    }
+    labels.forEach((label, i) => {
+      if (amounts[i] > maxAmount) { topCategory = label; maxAmount = amounts[i]; }
+    });
     return { topCategory, maxAmount };
-  }, [filteredExpenses]);
+  }, [categoryData]);
 
   const spendingInsights = useMemo(() => {
     if (filteredExpenses.length === 0) return [];

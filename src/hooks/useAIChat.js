@@ -4,8 +4,7 @@ import { db } from '../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
 import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
-import { updateCategoryBudget } from '../services/budgetService';
-import { subscribeToBudgets } from '../services/budgetService';
+import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
 

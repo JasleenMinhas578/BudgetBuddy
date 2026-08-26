@@ -1,4 +1,4 @@
-const GEMINI_MODEL = 'gemini-3.6-flash';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const AI_PROXY_URL = '/api/ai';
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Shopping', 'Other'];
@@ -40,8 +40,6 @@ const checkAndIncrementUsage = () => {
 };
 
 export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null) => {
-  checkAndIncrementUsage();
-
   const today = new Date().toISOString().split('T')[0];
 
   const allCategories = [
@@ -100,9 +98,9 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     .sort()
     .map(month => ({ month, total: spendingByMonth[month] }));
 
-  // Only last 50 individual records — enough for EDIT/DELETE context without bloating the prompt
+  // Only first 50 individual records (newest first, since Firestore orders by createdAt desc)
   const recentExpenses = filteredExpenses
-    .slice(-50)
+    .slice(0, 50)
     .map(e => ({ id: e.id, title: e.title, amount: e.amount, category: e.category, date: e.date }));
 
   const dateRangeSection = sessionDateRange
@@ -228,6 +226,9 @@ User message: "${userMessage}"`;
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
 
+  // Only count a successful response against the daily quota
+  checkAndIncrementUsage();
+
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
@@ -248,8 +249,6 @@ User message: "${userMessage}"`;
 };
 
 export const generateSummary = async (expenses, filterLabel) => {
-  checkAndIncrementUsage();
-
   const today = new Date().toISOString().split('T')[0];
   const trimmed = expenses
     .slice(-200)
@@ -286,6 +285,9 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
     if (res.status === 429) throw new Error('Too many requests right now — please wait a moment and try again.');
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
+
+  // Only count a successful response against the daily quota
+  checkAndIncrementUsage();
 
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
