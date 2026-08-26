@@ -32,7 +32,7 @@ function GoalInput({ categoryName, initialValue, onSave }) {
   const save = () => {
     if (!isDirty) return;
     const parsed = value === '' ? null : parseFloat(value);
-    if (value !== '' && (Number.isNaN(parsed) || parsed < 0)) return;
+    if (value !== '' && (Number.isNaN(parsed) || parsed < 0 || parsed > 1000000)) return;
     // $0 is treated the same as no goal — removes the budget entry
     onSave(categoryName, parsed === 0 ? null : parsed);
   };

@@ -22,7 +22,7 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
         onClick={(e) => e.stopPropagation()}
       >
         {title && <h3 className="cd-title">{title}</h3>}
-        <p className="cd-message">{message}</p>
+        <div className="cd-message">{message}</div>
         <div className="cd-actions">
           <button type="button" className="cd-btn-cancel" onClick={onCancel}>
             Cancel

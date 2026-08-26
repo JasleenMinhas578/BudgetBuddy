@@ -3,12 +3,16 @@ import {
   addDoc,
   getDocs,
   query,
+  where,
   doc,
+  setDoc,
   updateDoc,
   deleteDoc,
   onSnapshot,
   orderBy,
   serverTimestamp,
+  arrayUnion,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
@@ -63,6 +67,30 @@ export const deleteCategory = async (userId, categoryId) => {
     console.error('Error deleting category:', error);
     throw new Error(`Failed to delete category: ${error.message}`);
   }
+};
+
+export const subscribeToUserPreferences = (userId, callback) => {
+  const prefRef = doc(db, 'users', userId, 'preferences', 'general');
+  return onSnapshot(
+    prefRef,
+    (snap) => callback(snap.exists() ? snap.data() : {}),
+    () => callback({})
+  );
+};
+
+export const hideDefaultCategory = async (userId, categoryName) => {
+  const prefRef = doc(db, 'users', userId, 'preferences', 'general');
+  await setDoc(prefRef, { hiddenDefaultCategories: arrayUnion(categoryName) }, { merge: true });
+};
+
+export const deleteCategoryAndExpenses = async (userId, categoryId, categoryName) => {
+  const batch = writeBatch(db);
+  batch.delete(doc(db, 'users', userId, 'categories', categoryId));
+  const expSnap = await getDocs(
+    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
+  );
+  expSnap.forEach(d => batch.delete(d.ref));
+  await batch.commit();
 };
 
 export const subscribeToCategories = (userId, callback) => {

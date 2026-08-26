@@ -2297,9 +2297,9 @@
   
   .category-card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    padding-right: 2rem;
   }
   
   .category-icon-large {
@@ -2334,10 +2334,22 @@
   }
   
   .category-actions {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-left: auto;
+  }
+
+  .category-expand-hint {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 0.85rem;
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    opacity: 0.45;
+    pointer-events: none;
   }
 
   .category-goal-badge {
@@ -2351,73 +2363,113 @@
     background: rgba(56, 189, 172, 0.1);
     white-space: nowrap;
     flex-shrink: 0;
-    margin-right: 0.5rem;
+    margin-left: auto;
   }
 
   .btn-delete {
-    background: linear-gradient(135deg, var(--danger-10), rgba(229, 62, 62, 0.1));
-    border: 1px solid var(--danger-30);
-    color: var(--danger);
-    font-size: var(--font-size-base);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.3rem;
     border-radius: var(--radius-md);
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.8;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 8px var(--danger-10);
+    transition: all 0.2s ease;
+    opacity: 0.5;
+    flex-shrink: 0;
   }
-  
-  .btn-delete::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-shimmer-sm);
-    transition: var(--transition-slide);
-  }
-  
+
   .btn-delete:hover {
-    background: linear-gradient(135deg, var(--danger-20), rgba(229, 62, 62, 0.2));
-    border-color: var(--danger-50);
-    color: #fff;
+    background: rgba(229, 62, 62, 0.12);
+    border-color: var(--danger-30);
+    color: var(--danger);
     opacity: 1;
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 25px var(--danger-30);
   }
-  
-  .btn-delete:hover::before {
-    left: 100%;
-  }
-  
+
   .btn-delete:active {
-    transform: translateY(0) scale(0.95);
-    box-shadow: 0 2px 8px var(--danger-20);
+    transform: scale(0.92);
   }
-  
+
   .btn-delete:disabled {
-    opacity: 0.3;
+    opacity: 0.2;
     cursor: not-allowed;
-    transform: none;
-    background: rgba(100, 100, 100, 0.1);
-    border-color: rgba(100, 100, 100, 0.2);
-    color: rgba(100, 100, 100, 0.5);
   }
   
-  .btn-delete:disabled:hover {
-    transform: none;
-    box-shadow: 0 2px 8px var(--danger-10);
+  /* Kebab (three-dot) menu */
+  .category-menu-wrapper {
+    position: relative;
   }
-  
+
+  .btn-kebab {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: var(--radius-md);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5;
+    transition: opacity 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .btn-kebab:hover {
+    background: var(--glass-10);
+    color: var(--text-primary);
+    opacity: 1;
+  }
+
+  .category-kebab-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-15);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    min-width: 130px;
+    overflow: hidden;
+  }
+
+  .category-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+    text-align: left;
+  }
+
+  .category-menu-item:hover {
+    background: var(--glass-10);
+    color: var(--text-primary);
+  }
+
+  .category-menu-item--danger {
+    color: var(--danger);
+  }
+
+  .category-menu-item--danger:hover {
+    background: rgba(229, 62, 62, 0.1);
+    color: var(--danger);
+  }
+
   /* Category Menu */
   .category-menu {
     position: relative;

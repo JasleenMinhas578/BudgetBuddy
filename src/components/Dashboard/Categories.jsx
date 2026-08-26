@@ -1,9 +1,9 @@
 /* istanbul ignore file */
 import { useState, useEffect, useMemo } from 'react';
-import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
+import { LuTag, LuPlus, LuChevronDown, LuChevronUp, LuMoreVertical, LuPencil, LuTrash2 } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
-import { subscribeToCategories } from '../../services/categoryService';
+import { subscribeToCategories, subscribeToUserPreferences } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { useExpenses } from '../../hooks/useExpenses';
 import PageHeader from '../UI/PageHeader';
@@ -32,6 +32,9 @@ export default function Categories() {
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [openMenu, setOpenMenu] = useState(null);
+  const [hiddenDefaults, setHiddenDefaults] = useState([]);
+  const [editName, setEditName] = useState('');
   const { currentUser } = useAuth();
   const dateRangeCtx = useDateRangeContext();
   const {
@@ -44,6 +47,9 @@ export default function Categories() {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.category-card') && !e.target.closest('.btn-toggle-all')) {
         setExpandedCategories(new Set());
+      }
+      if (!e.target.closest('.category-menu-wrapper')) {
+        setOpenMenu(null);
       }
     };
     document.addEventListener('click', handleClickOutside);
@@ -63,12 +69,22 @@ export default function Categories() {
     return () => unsubscribeCategories();
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
+      setHiddenDefaults(prefs.hiddenDefaultCategories || []);
+    });
+    return () => unsub();
+  }, [currentUser]);
+
   const allCategories = useMemo(() => [
-    ...DEFAULT_CATEGORIES,
+    ...DEFAULT_CATEGORIES
+      .filter(cat => !hiddenDefaults.includes(cat.name))
+      .map(cat => ({ ...cat, isDefault: true })),
     ...categories
       .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
-      .map(cat => ({ ...cat, Icon: LuTag })),
-  ], [categories]);
+      .map(cat => ({ ...cat, Icon: LuTag, isDefault: false })),
+  ], [categories, hiddenDefaults]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
   const { budgets } = useBudgets();
@@ -109,7 +125,10 @@ export default function Categories() {
     isLoading,
     toast, setToast,
     pendingDeleteCategory, setPendingDeleteCategory,
+    pendingEditCategory, setPendingEditCategory,
     handleAddCategory,
+    handleEditCategory,
+    confirmEditCategory,
     handleDeleteCategory,
     confirmDeleteCategory,
   } = useCategoryActions(currentUser, allCategories);
@@ -245,28 +264,52 @@ export default function Categories() {
                       </span>
                     )}
                     <div className="category-actions">
-                      {!isDefaultCategory && (
+                      <div className="category-menu-wrapper">
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id, category.name); }}
-                          className="btn-delete"
-                          disabled={isLoading}
-                          title="Delete category"
+                          className="btn-kebab"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenu(openMenu === category.name ? null : category.name);
+                          }}
+                          aria-label="Category options"
                         >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="3,6 5,6 21,6"></polyline>
-                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
+                          <LuMoreVertical size={15} />
                         </button>
-                      )}
-                      {isExpandable && (
-                        <span className="btn-expand" aria-hidden="true">
-                          {isExpanded ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
-                        </span>
-                      )}
+                        {openMenu === category.name && (
+                          <div className="category-kebab-menu">
+                            <button
+                              className="category-menu-item"
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                setOpenMenu(null);
+                                setEditName(category.name);
+                                handleEditCategory({ ...category, isDefault: isDefaultCategory });
+                              }}
+                            >
+                              <LuPencil size={13} />
+                              Edit
+                            </button>
+                            <button
+                              className="category-menu-item category-menu-item--danger"
+                              onMouseDown={(e) => {
+                                e.stopPropagation();
+                                setOpenMenu(null);
+                                handleDeleteCategory(category.id, category.name, isDefaultCategory);
+                              }}
+                            >
+                              <LuTrash2 size={13} />
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  {isExpandable && (
+                    <span className="category-expand-hint" aria-hidden="true">
+                      {isExpanded ? <LuChevronUp size={14} /> : <LuChevronDown size={14} />}
+                    </span>
+                  )}
                   <div className="category-progress">
                     <div className="progress-bar">
                       <div className={barClass} style={barStyle}></div>
@@ -347,6 +390,7 @@ export default function Categories() {
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="Enter category name"
+              maxLength={25}
               required
             />
           </div>
@@ -361,10 +405,74 @@ export default function Categories() {
         </form>
       </Modal>
 
+      {pendingEditCategory && (
+        <Modal isOpen={true} onClose={() => setPendingEditCategory(null)} title="Edit Category">
+          <form
+            onSubmit={(e) => { e.preventDefault(); confirmEditCategory(editName); }}
+            className="category-form"
+          >
+            <div className="form-group">
+              <label htmlFor="editCategoryName">Category Name</label>
+              <input
+                id="editCategoryName"
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Enter new name"
+                maxLength={25}
+                autoFocus
+                required
+              />
+            </div>
+            <div className="form-actions">
+              <button type="button" onClick={() => setPendingEditCategory(null)} className="btn btn-secondary">
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary gradient-btn" disabled={isLoading}>
+                Save
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
       <ConfirmDialog
         isOpen={!!pendingDeleteCategory}
         title="Delete Category"
-        message={pendingDeleteCategory ? <>Are you sure you want to delete <strong>"{pendingDeleteCategory.name}"</strong>? This cannot be undone.</> : ''}
+        message={pendingDeleteCategory ? (() => {
+          const catExpenses = expenses.filter(e => e.category === pendingDeleteCategory.name);
+          return (
+            <div>
+              <p>
+                Are you sure you want to delete <strong>"{pendingDeleteCategory.name}"</strong>?
+                {pendingDeleteCategory.isDefault
+                  ? ' This default category will be hidden from your view.'
+                  : ' This action cannot be undone.'}
+              </p>
+              {catExpenses.length > 0 && (
+                <div className="cd-expense-warning-block">
+                  <p className="cd-expense-warning-title">
+                    <LuTrash2 size={14} />
+                    {pendingDeleteCategory.isDefault
+                      ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will become uncategorized:`
+                      : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will also be permanently deleted:`}
+                  </p>
+                  <ul className="cd-expense-list">
+                    {catExpenses.slice(0, 6).map(e => (
+                      <li key={e.id}>
+                        <span className="cd-exp-title">{e.title}</span>
+                        <span className="cd-exp-amount">${Number(e.amount).toFixed(2)}</span>
+                      </li>
+                    ))}
+                    {catExpenses.length > 6 && (
+                      <li className="cd-exp-more">…and {catExpenses.length - 6} more</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })() : ''}
         onConfirm={confirmDeleteCategory}
         onCancel={() => setPendingDeleteCategory(null)}
         variant="danger"

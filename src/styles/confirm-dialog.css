@@ -82,3 +82,64 @@
 .cd-btn-confirm--default {
   background: var(--gradient-primary);
 }
+
+.cd-expense-warning-block {
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--glass-10);
+  padding-top: 0.75rem;
+}
+
+.cd-expense-warning-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--danger);
+  margin-bottom: 0.5rem;
+}
+
+.cd-expense-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--glass-10);
+  border-radius: var(--radius-md);
+  background: var(--glass-5);
+}
+
+.cd-expense-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--glass-5);
+}
+
+.cd-expense-list li:last-child {
+  border-bottom: none;
+}
+
+.cd-exp-title {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.cd-exp-amount {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.cd-exp-more {
+  color: var(--text-muted);
+  font-style: italic;
+  justify-content: center;
+}
