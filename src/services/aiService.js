@@ -59,8 +59,36 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     ? expenses.filter(e => e.date >= sessionDateRange.from && e.date <= sessionDateRange.to)
     : expenses;
 
-  const expenseContext = filteredExpenses
-    .slice(-200)
+  // Aggregate over ALL filtered records — used for accurate QUERY answers
+  const spendingByCategory = {};
+  const spendingByMonth = {};
+  const spendingByCategoryMonth = {};
+  const countByCategory = {};
+  const countByMonth = {};
+  let grandTotal = 0;
+  let largestExpense = null;
+  filteredExpenses.forEach(e => {
+    const month = e.date ? e.date.slice(0, 7) : 'unknown';
+
+    spendingByCategory[e.category] = +(((spendingByCategory[e.category] || 0) + e.amount).toFixed(2));
+    spendingByMonth[month] = +(((spendingByMonth[month] || 0) + e.amount).toFixed(2));
+
+    if (!spendingByCategoryMonth[e.category]) spendingByCategoryMonth[e.category] = {};
+    spendingByCategoryMonth[e.category][month] = +(((spendingByCategoryMonth[e.category][month] || 0) + e.amount).toFixed(2));
+
+    countByCategory[e.category] = (countByCategory[e.category] || 0) + 1;
+    countByMonth[month] = (countByMonth[month] || 0) + 1;
+
+    grandTotal = +(grandTotal + e.amount).toFixed(2);
+
+    if (!largestExpense || e.amount > largestExpense.amount) {
+      largestExpense = { id: e.id, title: e.title, amount: e.amount, category: e.category, date: e.date };
+    }
+  });
+
+  // Only last 50 individual records — enough for EDIT/DELETE context without bloating the prompt
+  const recentExpenses = filteredExpenses
+    .slice(-50)
     .map(e => ({ id: e.id, title: e.title, amount: e.amount, category: e.category, date: e.date }));
 
   const dateRangeSection = sessionDateRange
@@ -71,8 +99,17 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
 
 ${dateRangeSection}
 
-USER'S EXPENSE HISTORY (${expenseContext.length} records${sessionDateRange ? ` — pre-filtered to ${sessionDateRange.label}` : ''}):
-${JSON.stringify(expenseContext)}
+SPENDING SUMMARY (all ${filteredExpenses.length} records${sessionDateRange ? ` — ${sessionDateRange.label}` : ''}):
+Total spent: $${grandTotal}
+By category: ${JSON.stringify(spendingByCategory)}
+By month: ${JSON.stringify(spendingByMonth)}
+By category and month: ${JSON.stringify(spendingByCategoryMonth)}
+Count by category: ${JSON.stringify(countByCategory)}
+Count by month: ${JSON.stringify(countByMonth)}
+Largest single expense: ${JSON.stringify(largestExpense)}
+
+RECENT EXPENSES — last ${recentExpenses.length} individual records (use these to find specific expenses for EDIT or DELETE):
+${JSON.stringify(recentExpenses)}
 
 AVAILABLE CATEGORIES: ${allCategories.join(', ')}
 CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): ${JSON.stringify(customCategories.map(c => ({ id: c.id, name: c.name })))}
@@ -120,8 +157,8 @@ Rules:
 - If the user wants to edit/update an expense but hasn't said what to change (no new amount, title, category, or date mentioned), use CHAT intent and ask: "What would you like to change — the amount, title, category, or date?"
 - If the user says "last expense" or "most recent expense", look at the expense history and identify the one with the latest date as the target
 - For SET_DATE_RANGE: parse the period into exact from/to dates. "label" is a short human-friendly name (e.g. "last month", "July 2026", "past 3 weeks"). message should confirm the range and invite the user to ask their spending questions.
-- For ASK_DATE_RANGE: message should ask the user which time period they want (offer examples: this month, last month, a specific range).
-- For QUERY: compute the answer from the expense history and put it in "message". Be specific with numbers.
+- For ASK_DATE_RANGE: ONLY use this when there is NO active session date range AND the user has not mentioned any time period. If a session date range is already set, NEVER use ASK_DATE_RANGE — always use QUERY with the session range instead. When you do ask, invite the user to name a period (e.g. this month, last month, a specific range). This applies to all spending questions — "biggest expense", "most spent on", "average spend", count questions, etc.
+- For QUERY: use the SPENDING SUMMARY (grand total and by-category totals) for accurate answers — it covers all records, not just the recent 50. Put the answer in "message" and be specific with numbers.
 - For ADD_EXPENSE: "amount" must be a number (not a string), "date" must be YYYY-MM-DD
 - Interpret relative dates: "today" = ${today}, "yesterday" = one day before, etc.
 - If amount or title is missing for an expense, use CHAT intent and ask for the missing detail
