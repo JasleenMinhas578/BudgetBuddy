@@ -1,5 +1,5 @@
-const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_MODEL = 'gemini-3.6-flash';
+const AI_PROXY_URL = '/api/ai';
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Other'];
 
@@ -40,9 +40,6 @@ const checkAndIncrementUsage = () => {
 };
 
 export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null) => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
-    throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
-  }
   checkAndIncrementUsage();
 
   const today = new Date().toISOString().split('T')[0];
@@ -186,10 +183,11 @@ Rules:
 
 User message: "${userMessage}"`;
 
-  const res = await fetchWithRetry(GEMINI_URL, {
+  const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' },
     }),
@@ -215,9 +213,6 @@ User message: "${userMessage}"`;
 };
 
 export const generateSummary = async (expenses, filterLabel) => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_KEY_HERE') {
-    throw new Error('Gemini API key not set. Add REACT_APP_GEMINI_API_KEY to your .env file and restart the dev server.');
-  }
   checkAndIncrementUsage();
 
   const today = new Date().toISOString().split('T')[0];
@@ -241,10 +236,11 @@ Write a 3-4 sentence paragraph that:
 
 Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no markdown.`;
 
-  const res = await fetchWithRetry(GEMINI_URL, {
+  const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.4, maxOutputTokens: 256 },
     }),
