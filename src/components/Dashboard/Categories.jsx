@@ -20,6 +20,15 @@ import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
+const DEFAULT_CATEGORIES = [
+  { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
+  { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
+  { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
+  { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
+  { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
+  { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
+];
+
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
@@ -136,17 +145,8 @@ export default function Categories() {
     }
   };
 
-  const defaultCategories = [
-    { id: 'food',          name: 'Food',          Icon: CATEGORY_ICON_MAP['Food']          },
-    { id: 'transport',     name: 'Transport',     Icon: CATEGORY_ICON_MAP['Transport']     },
-    { id: 'entertainment', name: 'Entertainment', Icon: CATEGORY_ICON_MAP['Entertainment'] },
-    { id: 'utilities',     name: 'Utilities',     Icon: CATEGORY_ICON_MAP['Utilities']     },
-    { id: 'rent',          name: 'Rent',          Icon: CATEGORY_ICON_MAP['Rent']          },
-    { id: 'other',         name: 'Other',         Icon: CATEGORY_ICON_MAP['Other']         },
-  ];
-
   const allCategories = useMemo(() => [
-    ...defaultCategories,
+    ...DEFAULT_CATEGORIES,
     ...categories
       .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
       .map(cat => ({ ...cat, Icon: LuTag })),
@@ -239,7 +239,7 @@ export default function Categories() {
             {allCategories.map((category) => {
               const categoryAmount = categoryData.datasets[0].data[categoryData.labels.indexOf(category.name)] || 0;
               const percentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
-              const isDefaultCategory = defaultCategories.some(dc => dc.name === category.name);
+              const isDefaultCategory = DEFAULT_CATEGORIES.some(dc => dc.name === category.name);
               
               const isExpanded = expandedCategories.has(category.name);
               const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
