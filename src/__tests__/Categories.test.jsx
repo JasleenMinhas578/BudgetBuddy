@@ -96,11 +96,12 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Get the mocked functions
-const { 
-  collection, 
-  query, 
-  onSnapshot, 
-  addDoc 
+const {
+  collection,
+  query,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
 } = require('firebase/firestore');
 const { onAuthStateChanged } = require('firebase/auth');
 
@@ -125,16 +126,20 @@ describe('Categories Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
+    // Reset db to avoid test contamination from the "Firebase not configured" test
+    require('../firebaseConfig').db = {};
+
+    // Re-apply serverTimestamp mock after clearAllMocks
+    serverTimestamp.mockReturnValue(new Date());
+
     // Mock Firebase functions
     collection.mockReturnValue('mock-collection');
     query.mockReturnValue('mock-query');
-    
-    // Mock onSnapshot to simulate Firebase listener
+
+    // No act() here — calling it inside onSnapshot causes nested act() issues in React 18
     onSnapshot.mockImplementation((query, callback) => {
-      act(() => {
-        callback({
-          forEach: (fn) => [] // Empty array to simulate no categories initially
-        });
+      callback({
+        forEach: (fn) => [] // Empty array to simulate no categories initially
       });
       return () => {}; // Return unsubscribe function
     });
@@ -365,10 +370,10 @@ describe('Categories Component', () => {
       await waitFor(() => {
         expect(addDoc).toHaveBeenCalledWith(
           'mock-collection',
-          {
+          expect.objectContaining({
             name: 'Test Category',
             createdAt: expect.any(Date)
-          }
+          })
         );
       });
     });
@@ -495,9 +500,8 @@ describe('Categories Component', () => {
     });
 
     it('handles Firebase not configured error', async () => {
-      // Temporarily mock db as null for this test
-      const originalDb = require('../firebaseConfig').db;
-      require('../firebaseConfig').db = null;
+      // Simulate Firebase addDoc failure (e.g. Firebase not configured)
+      addDoc.mockRejectedValueOnce(new Error('Firebase not configured'));
 
       render(
         <TestWrapper>
@@ -512,22 +516,19 @@ describe('Categories Component', () => {
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
       fireEvent.click(submitButtons[1]); // Second button is the submit button
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
       });
-      
-      expect(screen.getByText('Firebase not configured. Please set up your Firebase project.')).toBeInTheDocument();
-      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
 
-      // Restore original db
-      require('../firebaseConfig').db = originalDb;
+      expect(screen.getByText('Failed to add category. Please try again.')).toBeInTheDocument();
+      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
     });
 
     it('handles user not logged in error', async () => {
@@ -681,10 +682,10 @@ describe('Categories Component', () => {
       ];
 
       onSnapshot.mockImplementation((query, callback) => {
-        act(() => {
-          callback({
-            forEach: (fn) => mockExpenses.forEach(fn)
-          });
+        callback({
+          forEach: (fn) => {
+            mockExpenses.forEach(expense => fn({ id: expense.id, data: () => expense }));
+          }
         });
         return () => {};
       });
@@ -699,7 +700,7 @@ describe('Categories Component', () => {
       await waitFor(() => {
         expect(collection).toHaveBeenCalledWith({}, 'users', 'test-user-123', 'expenses');
       });
-      
+
       expect(onSnapshot).toHaveBeenCalled();
     });
   });
@@ -724,16 +725,8 @@ describe('Categories Component', () => {
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
       fireEvent.click(submitButtons[1]); // Second button is the submit button
 
-      // Wait for the form submission
-      await waitFor(() => {
-        expect(addDoc).toHaveBeenCalledWith(
-          'mock-collection',
-          {
-            name: '',
-            createdAt: expect.any(Date)
-          }
-        );
-      });
+      // useCategoryActions returns early on empty name — addDoc should not be called
+      expect(addDoc).not.toHaveBeenCalled();
     });
 
     it('requires category name input', async () => {

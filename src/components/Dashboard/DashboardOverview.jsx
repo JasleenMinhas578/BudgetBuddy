@@ -183,6 +183,7 @@ export default function DashboardOverview() {
 
         <ExpenseTable
           expenses={recentExpenses}
+          hiddenColumns={['category']}
           itemsPerPage={5}
           showPagination={false}
           emptyMessage="No expenses yet"

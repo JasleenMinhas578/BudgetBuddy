@@ -96,8 +96,8 @@ export default function ExpenseList() {
           <option value="amount">Amount</option>
         </select>
 
-        <button onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}>
-          {sortOrder === 'desc' ? '↓' : '↑'}
+        <button onClick={() => setSortOrder(o => o === 'asc' ? 'desc' : 'asc')}>
+          {sortOrder === 'asc' ? '↓' : '↑'}
         </button>
       </div>
 

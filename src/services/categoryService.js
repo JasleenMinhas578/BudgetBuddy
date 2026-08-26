@@ -14,12 +14,14 @@ import { db } from '../firebaseConfig';
 
 export const addCategory = async (userId, categoryData) => {
   try {
+    if (!db) throw new Error('Firebase not configured. Please set up your Firebase project.');
     if (!userId || !categoryData.name) throw new Error('Missing required category data');
+    const now = new Date();
     const categoryWithMetadata = {
       ...categoryData,
       userId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      createdAt: now,
+      updatedAt: now,
     };
     const docRef = await addDoc(collection(db, 'users', userId, 'categories'), categoryWithMetadata);
     return docRef.id;

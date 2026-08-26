@@ -165,7 +165,11 @@ export default function ExpenseTable({
                 )}
                 {!hide.has('date') && (
                   <td>
-                    <span className="date-cell">{formatDate(expense.date)}</span>
+                    <span className="date-cell">
+                      {hide.has('category') && expense.category
+                        ? `${expense.category} • ${formatDate(expense.date)}`
+                        : formatDate(expense.date)}
+                    </span>
                   </td>
                 )}
                 {showActions && (
