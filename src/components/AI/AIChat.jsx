@@ -266,80 +266,38 @@ export default function AIChat() {
     }
   }, [loading, expenses, customCategories, sessionDateRange]);
 
-  const handleConfirmExpense = async (expenseData, idx) => {
-    try {
-      await addExpense(currentUser.uid, expenseData);
-      setMessages((prev) =>
-        prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg))
-      );
-      // Refresh local expenses cache so subsequent AI queries are up to date
-      const updated = await getExpenses(currentUser.uid);
-      setExpenses(updated);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: `Failed to add expense: ${err.message}`, type: 'text', isError: true },
-      ]);
-    }
-  };
-
-  const handleDismissExpense = (idx) => {
+  const handleDismiss = (idx) => {
     setMessages((prev) =>
       prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg))
     );
   };
 
-  const handleConfirmCategory = async (categoryData, idx) => {
+  const handleConfirmAction = async (msg, idx) => {
+    const { type } = msg;
+    const needsExpenseRefresh = ['expense_confirm', 'delete_expense_confirm', 'edit_expense_confirm'];
+    const errorLabels = {
+      expense_confirm:         'add expense',
+      category_confirm:        'add category',
+      delete_expense_confirm:  'delete expense',
+      edit_expense_confirm:    'update expense',
+      delete_category_confirm: 'delete category',
+      edit_category_confirm:   'rename category',
+    };
     try {
-      await addCategory(currentUser.uid, { name: categoryData.name });
-      setMessages((prev) =>
-        prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg))
-      );
+      if (type === 'expense_confirm')         await addExpense(currentUser.uid, msg.expenseData);
+      else if (type === 'category_confirm')   await addCategory(currentUser.uid, { name: msg.categoryData.name });
+      else if (type === 'delete_expense_confirm') await deleteExpense(currentUser.uid, msg.deleteExpenseData.id);
+      else if (type === 'edit_expense_confirm')   await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);
+      else if (type === 'delete_category_confirm') await deleteCategory(currentUser.uid, msg.deleteCategoryData.id);
+      else if (type === 'edit_category_confirm')   await updateCategory(currentUser.uid, msg.editCategoryData.id, { name: msg.editCategoryData.newName });
+
+      setMessages((prev) => prev.map((m, i) => (i === idx ? { ...m, confirmed: true } : m)));
+      if (needsExpenseRefresh.includes(type)) setExpenses(await getExpenses(currentUser.uid));
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: `Failed to add category: ${err.message}`, type: 'text', isError: true },
+        { role: 'assistant', content: `Failed to ${errorLabels[type]}: ${err.message}`, type: 'text', isError: true },
       ]);
-    }
-  };
-
-  const handleConfirmDeleteExpense = async (data, idx) => {
-    try {
-      await deleteExpense(currentUser.uid, data.id);
-      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
-      const updated = await getExpenses(currentUser.uid);
-      setExpenses(updated);
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to delete expense: ${err.message}`, type: 'text', isError: true }]);
-    }
-  };
-
-  const handleConfirmEditExpense = async (data, idx) => {
-    try {
-      await updateExpense(currentUser.uid, data.id, data.updates);
-      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
-      const updated = await getExpenses(currentUser.uid);
-      setExpenses(updated);
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to update expense: ${err.message}`, type: 'text', isError: true }]);
-    }
-  };
-
-  const handleConfirmDeleteCategory = async (data, idx) => {
-    try {
-      await deleteCategory(currentUser.uid, data.id);
-      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to delete category: ${err.message}`, type: 'text', isError: true }]);
-    }
-  };
-
-  const handleConfirmEditCategory = async (data, idx) => {
-    try {
-      await updateCategory(currentUser.uid, data.id, { name: data.newName });
-      setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, confirmed: true } : msg)));
-    } catch (err) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: `Failed to rename category: ${err.message}`, type: 'text', isError: true }]);
     }
   };
 
@@ -480,18 +438,10 @@ export default function AIChat() {
                       </div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button
-                        className="btn-confirm"
-                        onClick={() => handleConfirmCategory(msg.categoryData, i)}
-                      >
+                      <button className="btn-confirm" onClick={() => handleConfirmAction(msg, i)}>
                         <LuCheck size={14} /> Add Category
                       </button>
-                      <button
-                        className="btn-dismiss"
-                        onClick={() => handleDismissExpense(i)}
-                      >
-                        Cancel
-                      </button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.type === 'delete_expense_confirm' && !msg.confirmed && !msg.dismissed ? (
@@ -504,8 +454,8 @@ export default function AIChat() {
                       <div className="ai-expense-row"><span>Date</span><strong>{msg.deleteExpenseData.date}</strong></div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmDeleteExpense(msg.deleteExpenseData, i)}>Delete Expense</button>
-                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmAction(msg, i)}>Delete Expense</button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.type === 'edit_expense_confirm' && !msg.confirmed && !msg.dismissed ? (
@@ -518,8 +468,8 @@ export default function AIChat() {
                       <div className="ai-expense-row"><span>Date</span><strong>{msg.editExpenseData.updates.date ?? msg.editExpenseData.date}</strong></div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button className="btn-confirm" onClick={() => handleConfirmEditExpense(msg.editExpenseData, i)}><LuCheck size={14} /> Save Changes</button>
-                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                      <button className="btn-confirm" onClick={() => handleConfirmAction(msg, i)}><LuCheck size={14} /> Save Changes</button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.type === 'delete_category_confirm' && !msg.confirmed && !msg.dismissed ? (
@@ -529,8 +479,8 @@ export default function AIChat() {
                       <div className="ai-expense-row"><span>Category</span><strong>{msg.deleteCategoryData.name}</strong></div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmDeleteCategory(msg.deleteCategoryData, i)}>Delete Category</button>
-                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                      <button className="btn-confirm btn-danger" onClick={() => handleConfirmAction(msg, i)}>Delete Category</button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.type === 'edit_category_confirm' && !msg.confirmed && !msg.dismissed ? (
@@ -541,44 +491,24 @@ export default function AIChat() {
                       <div className="ai-expense-row"><span>New Name</span><strong>{msg.editCategoryData.newName}</strong></div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button className="btn-confirm" onClick={() => handleConfirmEditCategory(msg.editCategoryData, i)}><LuCheck size={14} /> Rename</button>
-                      <button className="btn-dismiss" onClick={() => handleDismissExpense(i)}>Cancel</button>
+                      <button className="btn-confirm" onClick={() => handleConfirmAction(msg, i)}><LuCheck size={14} /> Rename</button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.type === 'expense_confirm' && !msg.confirmed && !msg.dismissed ? (
                   <div className="ai-expense-confirm">
                     <p>{msg.content}</p>
                     <div className="ai-expense-card">
-                      <div className="ai-expense-row">
-                        <span>Title</span>
-                        <strong>{msg.expenseData.title}</strong>
-                      </div>
-                      <div className="ai-expense-row">
-                        <span>Amount</span>
-                        <strong>${Number(msg.expenseData.amount).toFixed(2)}</strong>
-                      </div>
-                      <div className="ai-expense-row">
-                        <span>Category</span>
-                        <strong>{msg.expenseData.category}</strong>
-                      </div>
-                      <div className="ai-expense-row">
-                        <span>Date</span>
-                        <strong>{msg.expenseData.date}</strong>
-                      </div>
+                      <div className="ai-expense-row"><span>Title</span><strong>{msg.expenseData.title}</strong></div>
+                      <div className="ai-expense-row"><span>Amount</span><strong>${Number(msg.expenseData.amount).toFixed(2)}</strong></div>
+                      <div className="ai-expense-row"><span>Category</span><strong>{msg.expenseData.category}</strong></div>
+                      <div className="ai-expense-row"><span>Date</span><strong>{msg.expenseData.date}</strong></div>
                     </div>
                     <div className="ai-expense-actions">
-                      <button
-                        className="btn-confirm"
-                        onClick={() => handleConfirmExpense(msg.expenseData, i)}
-                      >
+                      <button className="btn-confirm" onClick={() => handleConfirmAction(msg, i)}>
                         <LuCheck size={14} /> Add Expense
                       </button>
-                      <button
-                        className="btn-dismiss"
-                        onClick={() => handleDismissExpense(i)}
-                      >
-                        Cancel
-                      </button>
+                      <button className="btn-dismiss" onClick={() => handleDismiss(i)}>Cancel</button>
                     </div>
                   </div>
                 ) : msg.confirmed ? (

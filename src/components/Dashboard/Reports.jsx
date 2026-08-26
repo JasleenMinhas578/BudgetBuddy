@@ -6,13 +6,13 @@ import {
   LuLightbulb,
   LuBarChart2,
 } from 'react-icons/lu';
-import { getCategoryColor } from '../../utils/getCategoryColor';
 import ExpenseTable from '../UI/ExpenseTable';
+import { useReportData } from '../../hooks/useReportData';
 import { subscribeToExpenses } from '../../services/database';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
-import { format, parseISO, parse } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
@@ -65,59 +65,7 @@ export default function Reports() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showExportOptions]);
 
-  const getCategoryData = () => {
-    const categoryMap = {};
-
-    filteredExpenses.forEach(expense => {
-      if (
-        !expense.category ||
-        expense.category === 'undefined' ||
-        expense.category === 'null' ||
-        typeof expense.category !== 'string' ||
-        expense.category.trim() === ''
-      ) return;
-      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
-      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + amount;
-    });
-
-    const labels = Object.keys(categoryMap).filter(l => categoryMap[l] > 0);
-    const data = labels.map(l => categoryMap[l]);
-
-    return {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: labels.map(l => getCategoryColor(l))
-      }]
-    };
-  };
-
-  const getMonthlyData = () => {
-    const monthlyMap = {};
-
-    filteredExpenses.forEach(expense => {
-      const month = safeFormatDate(expense.date, 'MMM yyyy');
-      if (!month) return;
-      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
-      monthlyMap[month] = (monthlyMap[month] || 0) + amount;
-    });
-
-    // parse() from date-fns correctly handles 'MMM yyyy'; new Date() does not.
-    const sortedMonths = Object.keys(monthlyMap).sort((a, b) =>
-      parse(a, 'MMM yyyy', new Date()) - parse(b, 'MMM yyyy', new Date())
-    );
-    
-    return {
-      labels: sortedMonths,
-      datasets: [{
-        label: 'Monthly Spending',
-        data: sortedMonths.map(month => monthlyMap[month]),
-        borderColor: '#4fd1c5',
-        backgroundColor: 'rgba(79, 209, 197, 0.1)',
-        tension: 0.4
-      }]
-    };
-  };
+  const { totalAmount, averageAmount, categoryData, monthlyData, topCategory, spendingInsights } = useReportData(filteredExpenses);
 
   const exportToCSV = () => {
     const headers = ['Date', 'Category', 'Title', 'Amount'];
@@ -306,37 +254,6 @@ export default function Reports() {
     }
   };
 
-  // Helper to get the top category and its amount
-  const getTopCategory = () => {
-    const categoryMap = {};
-    filteredExpenses.forEach(expense => {
-      if (
-        !expense.category ||
-        expense.category === 'undefined' ||
-        expense.category === 'null' ||
-        typeof expense.category !== 'string'
-      ) return;
-      const amount = typeof expense.amount === 'number' ? expense.amount : 0;
-      categoryMap[expense.category] = (categoryMap[expense.category] || 0) + amount;
-    });
-    let topCategory = null;
-    let maxAmount = 0;
-    for (const [cat, amt] of Object.entries(categoryMap)) {
-      if (amt > maxAmount) {
-        topCategory = cat;
-        maxAmount = amt;
-      }
-    }
-    return { topCategory, maxAmount };
-  };
-
-  const totalAmount = filteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
-  const averageAmount = filteredExpenses.length > 0 ? totalAmount / filteredExpenses.length : 0;
-  const categoryData = getCategoryData();
-  const monthlyData = getMonthlyData();
-  const { topCategory, maxAmount } = getTopCategory();
-
-
   const getFilterLabel = () => {
     switch (dateFilter) {
       case 'today': return 'Today';
@@ -374,24 +291,6 @@ export default function Reports() {
       setAiSummaryLoading(false);
     }
   };
-
-  const getSpendingInsights = () => {
-    if (filteredExpenses.length === 0) return [];
-    const insights = [];
-    const topCategoryPercentage = totalAmount > 0 ? (maxAmount / totalAmount) * 100 : 0;
-    if (topCategory && topCategoryPercentage > 30) {
-      insights.push(`You spend ${topCategoryPercentage.toFixed(1)}% of your money on ${topCategory}`);
-    }
-    if (averageAmount > 20) {
-      insights.push(`Your average transaction is $${averageAmount.toFixed(2)}, consider reviewing larger expenses`);
-    }
-    if (filteredExpenses.length > 10) {
-      insights.push(`You have ${filteredExpenses.length} transactions in this period`);
-    }
-    return insights;
-  };
-
-  const spendingInsights = getSpendingInsights();
 
   return (
     <div className="reports-container">
