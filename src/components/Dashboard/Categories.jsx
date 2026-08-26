@@ -26,37 +26,6 @@ import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
 
-// Controlled input that syncs when the Firestore value changes from outside,
-// but only pushes to Firestore on blur or Enter so we don't spam writes.
-function CategoryBudgetInput({ id, categoryName, initialValue, onSave }) {
-  const [value, setValue] = useState(initialValue !== null && initialValue !== undefined ? String(initialValue) : '');
-
-  useEffect(() => {
-    setValue(initialValue !== null && initialValue !== undefined ? String(initialValue) : '');
-  }, [initialValue]);
-
-  const save = () => {
-    const parsed = value === '' ? null : parseFloat(value);
-    if (value !== '' && (Number.isNaN(parsed) || parsed < 0)) return;
-    onSave(categoryName, parsed);
-  };
-
-  return (
-    <input
-      id={id}
-      type="number"
-      min="0"
-      step="1"
-      className="budget-input"
-      placeholder="Set budget"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={save}
-      onKeyDown={(e) => e.key === 'Enter' && save()}
-    />
-  );
-}
-
 export default function Categories() {
   const { expenses } = useExpenses();
   const [categories, setCategories] = useState([]);
@@ -102,23 +71,8 @@ export default function Categories() {
   ], [categories]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
-  const { budgets, setCategoryBudget, setMonthlyBudget } = useBudgets();
-  const { categoryProgress, overallProgress } = useBudgetProgress(filteredExpenses, allCategories, budgets);
-
-  // Local input state for monthly budget (controlled input, saved on blur/enter)
-  const [monthlyInput, setMonthlyInput] = useState('');
-  useEffect(() => {
-    setMonthlyInput(budgets.monthly !== null && budgets.monthly !== undefined ? String(budgets.monthly) : '');
-  }, [budgets.monthly]);
-
-  const handleMonthlyBudgetSave = () => {
-    const parsed = monthlyInput === '' ? null : parseFloat(monthlyInput);
-    if (monthlyInput !== '' && (Number.isNaN(parsed) || parsed < 0)) return;
-    setMonthlyBudget(parsed);
-  };
-
-  const catBudgetSum = Object.values(budgets.categories || {}).reduce((s, v) => s + (v || 0), 0);
-  const showCapWarning = budgets.monthly > 0 && catBudgetSum > budgets.monthly;
+  const { budgets } = useBudgets();
+  const { categoryProgress } = useBudgetProgress(filteredExpenses, allCategories, budgets);
 
   const monthlyTrendData = useMemo(() => {
     const months = [...new Set(
@@ -222,33 +176,6 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Monthly budget cap input */}
-      <div className="monthly-budget-row">
-        <label htmlFor="monthly-budget">Monthly budget cap ($)</label>
-        <input
-          id="monthly-budget"
-          type="number"
-          min="0"
-          step="1"
-          className="budget-input"
-          placeholder="e.g. 1500"
-          value={monthlyInput}
-          onChange={(e) => setMonthlyInput(e.target.value)}
-          onBlur={handleMonthlyBudgetSave}
-          onKeyDown={(e) => e.key === 'Enter' && handleMonthlyBudgetSave()}
-        />
-        {budgets.monthly > 0 && (
-          <span className={`budget-remaining${overallProgress.status === 'ok' ? '' : ` budget-remaining--${overallProgress.status}`}`}>
-            {overallProgress.remaining >= 0
-              ? `$${overallProgress.remaining.toFixed(2)} left`
-              : `$${Math.abs(overallProgress.remaining).toFixed(2)} over`}
-          </span>
-        )}
-        {showCapWarning && (
-          <span className="budget-cap-warning">⚠ Category budgets exceed monthly cap</span>
-        )}
-      </div>
-
       <div className="filter-controls">
         <div className="filter-section">
           <DateFilterBar
@@ -262,12 +189,6 @@ export default function Categories() {
           />
         </div>
       </div>
-
-      {dateFilter !== 'thisMonth' && dateFilter !== 'pickedMonth' && (
-        <p className="budget-filter-warning">
-          ⚠ Budget targets are monthly — switch to &ldquo;This Month&rdquo; for accurate progress.
-        </p>
-      )}
 
       <div className="categories-list-section">
         <div className="section-subheader">
@@ -318,6 +239,11 @@ export default function Categories() {
                       <h4>{category.name}</h4>
                       <p className="category-amount">${categoryAmount.toFixed(2)}</p>
                     </div>
+                    {hasBudget && (
+                      <span className="category-goal-badge" title={`Monthly goal: $${prog.budget.toFixed(0)}`}>
+                        Goal: ${prog.budget.toFixed(0)}/mo
+                      </span>
+                    )}
                     <div className="category-actions">
                       {!isDefaultCategory && (
                         <button
@@ -357,16 +283,6 @@ export default function Categories() {
                     ) : (
                       <span className="progress-text">{sharePercentage.toFixed(1)}% of total</span>
                     )}
-                  </div>
-                  {/* Budget input — stop click from toggling the card */}
-                  <div className="budget-input-row" onClick={(e) => e.stopPropagation()}>
-                    <label htmlFor={`budget-${category.name}`}>Budget $</label>
-                    <CategoryBudgetInput
-                      id={`budget-${category.name}`}
-                      categoryName={category.name}
-                      initialValue={budgets.categories?.[category.name] ?? null}
-                      onSave={setCategoryBudget}
-                    />
                   </div>
                   {isExpanded && (
                     <div className="category-expenses-panel" onClick={(e) => e.stopPropagation()}>

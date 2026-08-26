@@ -46,8 +46,9 @@
   font-weight: var(--font-weight-bold);
   color: #f8fafc;
   margin: 0;
+  padding: 1.25rem 3rem 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--glass-10);
   background: none;
-  border: none;
   box-shadow: none;
 }
 

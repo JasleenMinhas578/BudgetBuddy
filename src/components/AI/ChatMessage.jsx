@@ -8,6 +8,8 @@ const CONFIRMED_LABELS = {
   edit_expense_confirm:    'Expense updated!',
   delete_category_confirm: 'Category deleted!',
   edit_category_confirm:   'Category renamed!',
+  set_budget_confirm:      'Budget goal saved!',
+  remove_budget_confirm:   'Budget goal removed!',
 };
 
 function ExpenseCard({ rows, confirmLabel, isDanger, onConfirm, onDismiss }) {
@@ -158,6 +160,38 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
             { label: 'New Name',     value: msg.editCategoryData.newName },
           ]}
           confirmLabel="Rename"
+          onConfirm={() => onConfirm(msg, index)}
+          onDismiss={() => onDismiss(index)}
+        />
+      </div>
+    );
+  }
+
+  if (msg.type === 'set_budget_confirm' && active) {
+    return (
+      <div className="ai-expense-confirm">
+        <p>{msg.content}</p>
+        <ExpenseCard
+          rows={[
+            { label: 'Category', value: msg.budgetData.categoryName },
+            { label: 'Monthly Goal', value: `$${Number(msg.budgetData.amount).toFixed(2)}` },
+          ]}
+          confirmLabel="Set Goal"
+          onConfirm={() => onConfirm(msg, index)}
+          onDismiss={() => onDismiss(index)}
+        />
+      </div>
+    );
+  }
+
+  if (msg.type === 'remove_budget_confirm' && active) {
+    return (
+      <div className="ai-expense-confirm">
+        <p>{msg.content}</p>
+        <ExpenseCard
+          rows={[{ label: 'Category', value: msg.budgetData.categoryName }]}
+          confirmLabel="Remove Goal"
+          isDanger
           onConfirm={() => onConfirm(msg, index)}
           onDismiss={() => onDismiss(index)}
         />

@@ -35,9 +35,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at 20% 80%, var(--teal-10) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, var(--violet-10) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 107, 107, 0.05) 0%, transparent 50%);
+    background: var(--bg-dark, #0f0f1a);
   }
   
   .floating-shapes {
@@ -119,7 +117,7 @@
     width: 40px;
     height: 40px;
     border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -130,10 +128,7 @@
   .logo {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    background: linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--accent-teal);
     margin: 0;
   }
   
@@ -158,7 +153,7 @@
   }
   
   .nav-link.primary {
-    background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius);
@@ -202,10 +197,7 @@
   }
   
   .hero-title .accent {
-    background: linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--accent-teal);
   }
   
   .hero-subtitle {
@@ -259,7 +251,7 @@
   
   /* Primary Hero Button (Start Your Journey) */
   .btn-hero.btn-primary {
-    background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-violet) 100%);
+    background: var(--accent-teal);
     color: white;
     box-shadow: 0 8px 25px var(--teal-40);
   }
@@ -333,7 +325,7 @@
   
   .chart-bar {
     flex: 1;
-    background: linear-gradient(to top, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     border-radius: 4px 4px 0 0;
     animation: chartGrow 1.5s ease-out;
   }
@@ -787,7 +779,7 @@
     width: 60px;
     height: 60px;
     border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -801,10 +793,7 @@
     font-weight: var(--font-weight-bold);
     color: var(--text-primary);
     margin-bottom: 0.5rem;
-    background: linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--accent-teal);
   }
   
   .auth-subtitle {
@@ -959,7 +948,7 @@
     font-size: 1.1rem;
     font-weight: var(--font-weight-semibold);
     border-radius: var(--border-radius);
-    background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     border: none;
     color: white;
     cursor: pointer;
@@ -1062,7 +1051,7 @@
   }
   
   .nav-link.primary {
-    background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     color: white;
     padding: 0.875rem 1.75rem;
     border-radius: var(--border-radius);
@@ -1119,7 +1108,7 @@
   
   /* Primary Hero Button (Start Your Journey) */
   .btn-hero.btn-primary {
-    background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-violet) 100%);
+    background: var(--accent-teal);
     color: white;
     box-shadow: 0 8px 25px var(--teal-40);
   }
@@ -1147,7 +1136,7 @@
   .btn-large {
     padding: 1.25rem 2.5rem;
     font-size: 1.2rem;
-    background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-violet) 100%);
+    background: var(--accent-teal);
     color: white;
     box-shadow: 0 8px 25px var(--teal-40);
     transition: var(--transition-base);
@@ -1177,7 +1166,7 @@
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent-teal), var(--accent-violet));
+    background: var(--accent-teal);
     transition: width 0.3s ease;
   }
   

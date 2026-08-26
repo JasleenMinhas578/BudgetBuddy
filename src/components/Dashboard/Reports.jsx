@@ -50,7 +50,7 @@ export default function Reports() {
             <button
               onClick={handleGenerateSummary}
               disabled={aiSummaryLoading || filteredExpenses.length === 0}
-              className="btn btn-ai-summary"
+              className="btn btn-primary"
             >
               {aiSummaryLoading ? <LuLoader size={15} /> : <LuSparkles size={15} />}
               {aiSummaryLoading ? 'Generating…' : 'AI Summary'}

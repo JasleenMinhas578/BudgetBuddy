@@ -366,7 +366,7 @@
 
 /* AI Summary Button (in Reports header) */
 .btn-ai-summary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #6366f1;
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -404,7 +404,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.25rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(139, 92, 246, 0.16));
+  background: rgba(99, 102, 241, 0.22);
   border-bottom: 1px solid rgba(139, 92, 246, 0.22);
 }
 .ai-summary-title {
@@ -723,7 +723,7 @@
 }
 
 .pagination-page.active {
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
+  background: var(--accent-teal);
   border-color: var(--accent-teal);
   color: white;
   box-shadow: 0 4px 12px var(--teal-30);
@@ -801,10 +801,7 @@
 .error-code {
   font-size: 12rem;
   font-weight: var(--font-weight-black);
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--accent-teal);
   line-height: 1;
   margin-bottom: 1rem;
   text-shadow: 0 0 80px var(--teal-30);

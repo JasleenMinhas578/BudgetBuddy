@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 import { useState } from 'react';
-import { LuPlus, LuSearch, LuX } from 'react-icons/lu';
+import { useSearchParams } from 'react-router-dom';
+import { LuPlus } from 'react-icons/lu';
 import { deleteExpense, updateExpense } from '../../services/expenseService';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
@@ -28,7 +29,8 @@ export default function Expenses() {
   const [isEditExpenseFormOpen, setIsEditExpenseFormOpen] = useState(false);
   const [expenseToEdit, setExpenseToEdit] = useState(null);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('q') || '';
 
 
 
@@ -154,25 +156,6 @@ export default function Expenses() {
             onPickedMonthChange={setPickedMonth}
             availableMonths={availableMonths}
           />
-        </div>
-      </div>
-
-      {/* Search Filter */}
-      <div className="search-filter">
-        <div className="search-input-wrapper">
-          <LuSearch size={16} className="search-icon" />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search by title, category, or amount…"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button className="search-clear" onClick={() => setSearchQuery('')} aria-label="Clear search">
-              <LuX size={14} />
-            </button>
-          )}
         </div>
       </div>
 

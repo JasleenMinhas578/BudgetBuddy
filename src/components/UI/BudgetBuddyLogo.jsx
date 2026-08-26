@@ -8,7 +8,7 @@ export default function BudgetBuddyLogo({ size = 40 }) {
         width: size,
         height: size,
         borderRadius: radius,
-        background: 'linear-gradient(135deg, #4fd1c5, #9f7aea)',
+        background: '#4fd1c5',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

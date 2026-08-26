@@ -4,6 +4,8 @@ import { db } from '../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
 import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
+import { updateCategoryBudget } from '../services/budgetService';
+import { subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
 
@@ -11,6 +13,7 @@ const ACTION_TYPES = [
   'expense_confirm', 'category_confirm',
   'delete_expense_confirm', 'edit_expense_confirm',
   'delete_category_confirm', 'edit_category_confirm',
+  'set_budget_confirm', 'remove_budget_confirm',
 ];
 
 // Maps AI intent names → message type + data key
@@ -21,6 +24,8 @@ const INTENT_MAP = {
   EDIT_EXPENSE:    { type: 'edit_expense_confirm',    dataKey: 'editExpenseData' },
   DELETE_CATEGORY: { type: 'delete_category_confirm', dataKey: 'deleteCategoryData' },
   EDIT_CATEGORY:   { type: 'edit_category_confirm',   dataKey: 'editCategoryData' },
+  SET_BUDGET:      { type: 'set_budget_confirm',      dataKey: 'budgetData' },
+  REMOVE_BUDGET:   { type: 'remove_budget_confirm',   dataKey: 'budgetData' },
 };
 
 const ERROR_LABELS = {
@@ -30,6 +35,8 @@ const ERROR_LABELS = {
   edit_expense_confirm:    'update expense',
   delete_category_confirm: 'delete category',
   edit_category_confirm:   'rename category',
+  set_budget_confirm:      'set budget goal',
+  remove_budget_confirm:   'remove budget goal',
 };
 
 const getPendingReminder = (currentMessages) => {
@@ -44,6 +51,8 @@ const getPendingReminder = (currentMessages) => {
     if (m.type === 'edit_expense_confirm')    return `update expense "${m.editExpenseData?.title}"`;
     if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
     if (m.type === 'edit_category_confirm')   return `rename category "${m.editCategoryData?.name}"`;
+    if (m.type === 'set_budget_confirm')      return `set ${m.budgetData?.categoryName} budget to $${m.budgetData?.amount}`;
+    if (m.type === 'remove_budget_confirm')   return `remove ${m.budgetData?.categoryName} budget goal`;
     return '';
   }).filter(Boolean);
   return `Just a reminder — you haven't confirmed: ${labels.join(', ')}. Scroll up to confirm or cancel.`;
@@ -59,6 +68,7 @@ export function useAIChat() {
   const [expenses, setExpenses] = useState([]);
   const [customCategories, setCustomCategories] = useState([]);
   const [sessionDateRange, setSessionDateRange] = useState(null);
+  const [budgets, setBudgets] = useState({ monthly: null, categories: {} });
 
   // Ref so sendMessage can read current messages without stale closure
   const messagesRef = useRef([]);
@@ -77,14 +87,19 @@ export function useAIChat() {
     catch {}
   }, [messages]);
 
-  // Load expenses + live-subscribe to categories when chat opens
+  // Load expenses + live-subscribe to categories and budgets when chat opens
   useEffect(() => {
     if (!isOpen || !currentUser) return;
     getExpenses(currentUser.uid).then(setExpenses).catch(console.error);
     const q = query(collection(db, 'users', currentUser.uid, 'categories'));
-    return onSnapshot(q, (snap) =>
+    const unsubCats = onSnapshot(q, (snap) =>
       setCustomCategories(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
     );
+    let unsubBudgets = () => {};
+    try {
+      unsubBudgets = subscribeToBudgets(currentUser.uid, setBudgets);
+    } catch {}
+    return () => { unsubCats(); unsubBudgets(); };
   }, [isOpen, currentUser]);
 
   const sendMessage = useCallback(async (text) => {
@@ -100,7 +115,7 @@ export function useAIChat() {
     setLoading(true);
 
     try {
-      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange);
+      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets);
 
       const mapped = INTENT_MAP[result.intent];
       if (mapped && result[mapped.dataKey]) {
@@ -136,7 +151,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, expenses, customCategories, sessionDateRange]);
+  }, [loading, expenses, customCategories, sessionDateRange, budgets]);
 
   const handleDismiss = useCallback((idx) => {
     setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg)));
@@ -152,6 +167,8 @@ export function useAIChat() {
       else if (type === 'edit_expense_confirm')    await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);
       else if (type === 'delete_category_confirm') await deleteCategory(currentUser.uid, msg.deleteCategoryData.id);
       else if (type === 'edit_category_confirm')   await updateCategory(currentUser.uid, msg.editCategoryData.id, { name: msg.editCategoryData.newName });
+      else if (type === 'set_budget_confirm')      await updateCategoryBudget(currentUser.uid, msg.budgetData.categoryName, msg.budgetData.amount);
+      else if (type === 'remove_budget_confirm')   await updateCategoryBudget(currentUser.uid, msg.budgetData.categoryName, null);
 
       setMessages((prev) => prev.map((m, i) => (i === idx ? { ...m, confirmed: true } : m)));
       if (needsExpenseRefresh.includes(type)) setExpenses(await getExpenses(currentUser.uid));

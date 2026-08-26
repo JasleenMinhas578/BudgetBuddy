@@ -13,8 +13,12 @@ export function useBudgetProgress(filteredExpenses, allCategories, budgets) {
 
     const categoryProgress = allCategories.map((cat) => {
       const spent = spendMap[cat.name] || 0;
-      const budget = catBudgets[cat.name] ?? null;
-      const pct = budget > 0 ? Math.min((spent / budget) * 100, 999) : null;
+      const rawBudget = catBudgets[cat.name];
+      const budget = (rawBudget !== null && rawBudget !== undefined && rawBudget > 0) ? rawBudget : null;
+      // budget===0 with any spending is 100%+ over; budget===null means no goal set
+      const pct = budget !== null
+        ? (budget > 0 ? Math.min((spent / budget) * 100, 999) : (spent > 0 ? 999 : 0))
+        : null;
       return {
         name: cat.name,
         spent,

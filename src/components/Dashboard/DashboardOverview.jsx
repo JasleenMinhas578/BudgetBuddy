@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget } from 'react-icons/lu';
+import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget, LuTag } from 'react-icons/lu';
 import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -10,12 +10,12 @@ import { useBudgets } from '../../hooks/useBudgets';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { subscribeToCategories } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
-import { LuTag } from 'react-icons/lu';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import ExpenseTable from '../UI/ExpenseTable';
 import Modal from '../UI/Modal';
 import ExpenseForm from '../Expense/ExpenseForm';
+import BudgetProgressPanel from './BudgetProgressPanel';
 import '../../styles/main.css';
 
 
@@ -215,12 +215,19 @@ export default function DashboardOverview() {
             ) : (
               <p className="budget-limit-card__cta">
                 No budgets set yet.{' '}
-                <Link to="/dashboard/categories">Set a budget</Link> to track progress.
+                <Link to="/dashboard/goals">Set goals</Link> to track progress.
               </p>
             )}
           </div>
         </div>
       </div>
+
+      {/* Budget Goals Progress */}
+      <BudgetProgressPanel
+        expenses={expenses}
+        allCategories={allCategories}
+        budgets={budgets}
+      />
 
       {/* Recent Expenses Table */}
       <div className="recent-activity">

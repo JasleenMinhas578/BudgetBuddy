@@ -785,7 +785,7 @@ describe('DashboardOverview Component', () => {
       }, { timeout: 3000 });
 
       expect(screen.getByText(/No budgets set yet/)).toBeInTheDocument();
-      expect(screen.getByText('Set a budget')).toBeInTheDocument();
+      expect(screen.getByText('Set goals')).toBeInTheDocument();
     });
 
     it('shows closest category when a category budget is set', async () => {
@@ -826,8 +826,8 @@ describe('DashboardOverview Component', () => {
       }, { timeout: 3000 });
 
       await waitFor(() => {
-        // 80% of Food budget used
-        expect(screen.getByText('80%')).toBeInTheDocument();
+        // 80% of Food budget used — may appear in both the summary card and BudgetProgressPanel
+        expect(screen.getAllByText('80%').length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
 
@@ -864,12 +864,12 @@ describe('DashboardOverview Component', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('150%')).toBeInTheDocument();
+        expect(screen.getAllByText('150%').length).toBeGreaterThan(0);
       }, { timeout: 3000 });
 
-      // The percentage element should have the danger class
-      const pctEl = screen.getByText('150%');
-      expect(pctEl.className).toMatch(/danger/);
+      // The percentage element in the summary card should have the danger class
+      const pctEls = screen.getAllByText('150%');
+      expect(pctEls.some(el => el.className.match(/danger/))).toBe(true);
     });
   });
 });

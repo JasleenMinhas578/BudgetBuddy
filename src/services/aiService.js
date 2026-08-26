@@ -39,7 +39,7 @@ const checkAndIncrementUsage = () => {
   try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
 };
 
-export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null) => {
+export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null) => {
   checkAndIncrementUsage();
 
   const today = new Date().toISOString().split('T')[0];
@@ -109,6 +109,25 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     ? `ACTIVE SESSION DATE RANGE: ${sessionDateRange.label} (${sessionDateRange.from} to ${sessionDateRange.to}). Treat this as the default period for all spending questions unless the user explicitly names a different period.`
     : `NO SESSION DATE RANGE SET. If the user asks a spending QUERY that does not mention any time period (no "this month", "last week", "today", "January", specific dates, etc.), respond with intent "ASK_DATE_RANGE" to ask which period they want.`;
 
+  // Budget context for the prompt
+  const budgetSection = budgets
+    ? (() => {
+        const catBudgets = budgets.categories || {};
+        const budgetedCategories = Object.entries(catBudgets)
+          .filter(([, v]) => v !== null && v !== undefined)
+          .map(([name, limit]) => {
+            const spent = spendingByCategory[name] || 0;
+            const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+            const status = pct >= 100 ? 'OVER BUDGET' : pct >= 80 ? 'WARNING' : 'on track';
+            return `${name}: $${spent} spent of $${limit} limit (${pct}% — ${status})`;
+          });
+        const totalLimit = Object.values(catBudgets).filter(Boolean).reduce((s, v) => s + v, 0);
+        return `BUDGET GOALS (current month):
+${budgetedCategories.length > 0 ? budgetedCategories.join('\n') : 'None set'}
+Total monthly budget: ${totalLimit > 0 ? `$${totalLimit}` : 'not set'}`;
+      })()
+    : 'BUDGET GOALS: none set yet';
+
   const prompt = `You are BudgetBuddy AI, a helpful personal finance assistant. Today is ${today}.
 
 ${dateRangeSection}
@@ -130,6 +149,8 @@ ${JSON.stringify(recentExpenses)}
 AVAILABLE CATEGORIES: ${allCategories.join(', ')}
 CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): ${JSON.stringify(customCategories.map(c => ({ id: c.id, name: c.name })))}
 
+${budgetSection}
+
 TASK: Read the user message and respond with ONLY raw JSON — no markdown, no code fences, no explanation.
 
 Classify the user's intent as one of:
@@ -139,14 +160,16 @@ Classify the user's intent as one of:
 - "EDIT_EXPENSE"    → user wants to change/update/fix a specific expense (amount, title, category, or date)
 - "DELETE_CATEGORY" → user wants to delete/remove a custom category (only custom categories, not default ones)
 - "EDIT_CATEGORY"   → user wants to rename a custom category
-- "QUERY"           → user asks a question about their spending data AND a time period is known (either mentioned in the message or set as the session range)
+- "SET_BUDGET"      → user wants to set or update a budget goal for a category (e.g. "set food budget to $400", "my transport goal is $200")
+- "REMOVE_BUDGET"   → user wants to clear/remove a budget goal for a category (e.g. "remove food budget", "clear my transport goal", "delete food goal")
+- "QUERY"           → user asks a question about their spending data or budget status AND a time period is known
 - "ASK_DATE_RANGE"  → user asks a spending question but no time period is mentioned and no session range is set
 - "SET_DATE_RANGE"  → user's message IS a date range / time period (e.g. "last month", "January", "past 3 weeks", "2026-07-01 to 2026-07-31")
-- "CHAT"            → greeting, general question, or unclear intent (including when you cannot identify which expense/category the user means)
+- "CHAT"            → greeting, general question, or unclear intent
 
 Required JSON format:
 {
-  "intent": "ADD_EXPENSE" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
+  "intent": "ADD_EXPENSE" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
   "message": "friendly 1-3 sentence response",
   "expenseData": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
   "categoryData": { "name": "..." },
@@ -154,7 +177,8 @@ Required JSON format:
   "editExpenseData": { "id": "...", "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD", "updates": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" } },
   "deleteCategoryData": { "id": "...", "name": "..." },
   "editCategoryData": { "id": "...", "name": "...", "newName": "..." },
-  "dateRange": { "label": "human-friendly label", "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }
+  "dateRange": { "label": "human-friendly label", "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" },
+  "budgetData": { "categoryName": "...", "amount": 0 }
 }
 
 Rules:
@@ -165,6 +189,10 @@ Rules:
 - Include "deleteCategoryData" ONLY when intent is "DELETE_CATEGORY" — use the id from CUSTOM CATEGORIES list; if it's a default category, use CHAT intent and explain it can't be deleted
 - Include "editCategoryData" ONLY when intent is "EDIT_CATEGORY" — use the id from CUSTOM CATEGORIES list; if it's a default category, use CHAT intent and explain it can't be renamed
 - Include "dateRange" ONLY when intent is "SET_DATE_RANGE"
+- Include "budgetData" ONLY when intent is "SET_BUDGET" — "categoryName" must exactly match a name from AVAILABLE CATEGORIES, "amount" is the goal in dollars (a positive number)
+- For SET_BUDGET: match the category name using fuzzy matching from AVAILABLE CATEGORIES. If the amount is missing, use CHAT and ask what amount they want.
+- For REMOVE_BUDGET: include "budgetData" with "categoryName" and "amount": null. Match the category name using fuzzy matching.
+- For QUERY about budget/goals: use the BUDGET GOALS section to answer. Give specific numbers: which categories are over, which are on track, how much is left overall.
 - If the user says "add category X" prefer ADD_CATEGORY over ADD_EXPENSE even if X sounds like a purchase
 - Spelling mistakes are common — use fuzzy matching to find the closest expense title or category name from the lists above, even if the user's spelling is off (e.g. "masti categor" → "Masti", "coffe" → "Coffee"). Always pick the best match rather than giving up.
 - If you matched a misspelled name, mention what you found in "message" (e.g. "I found 'Masti' — confirming before I delete it.") so the user can verify on the confirm card.
@@ -179,7 +207,7 @@ Rules:
 - Interpret relative dates: "today" = ${today}, "yesterday" = one day before, etc.
 - If amount or title is missing for an expense, use CHAT intent and ask for the missing detail
 - Pick the best matching category from the available list
-- If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, and answer spending questions for any time period
+- If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, and answer spending questions and budget status for any time period
 
 User message: "${userMessage}"`;
 

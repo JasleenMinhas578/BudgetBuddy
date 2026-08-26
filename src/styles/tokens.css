@@ -82,17 +82,17 @@
     --surface-modal:    #1a2235;
 
     /* ── Gradients ────────────────────────────────────────── */
-    --gradient-primary:     linear-gradient(135deg, var(--accent-teal), var(--accent-violet));
-    --gradient-primary-h:   linear-gradient(90deg,  var(--accent-teal), var(--accent-violet));
-    --gradient-primary-pct: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-violet) 100%);
-    --gradient-card:        linear-gradient(135deg, var(--teal-20), var(--violet-20));
-    --gradient-card-light:  linear-gradient(135deg, var(--teal-10), var(--violet-10));
-    --gradient-card-h:      linear-gradient(90deg,  var(--teal-10), var(--violet-10));
-    --gradient-teal-fade:   linear-gradient(90deg,  var(--teal-10), transparent);
+    --gradient-primary:     var(--accent-teal);
+    --gradient-primary-h:   var(--accent-teal);
+    --gradient-primary-pct: var(--accent-teal);
+    --gradient-card:        var(--teal-20);
+    --gradient-card-light:  var(--teal-10);
+    --gradient-card-h:      var(--teal-10);
+    --gradient-teal-fade:   var(--teal-10);
     --gradient-shimmer:     linear-gradient(90deg, transparent, var(--glass-20), transparent);
     --gradient-shimmer-sm:  linear-gradient(90deg, transparent, var(--glass-10), transparent);
-    --gradient-danger:      linear-gradient(135deg, var(--danger), #e53e3e);
-    --gradient-landing:     linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    --gradient-danger:      var(--danger);
+    --gradient-landing:     #0f0f23;
 
     /* ── Button colours ───────────────────────────────────── */
     --btn-primary-bg:   var(--gradient-primary);
@@ -101,27 +101,27 @@
 
     /* ── AI chat palette ─────────────────────────────────── */
     --ai-indigo:      #6366f1;
-    --ai-violet:      #8b5cf6;
-    --ai-purple:      #a855f7;
-    --ai-indigo-dark: #4f46e5;
-    --ai-violet-light:#a78bfa;
+    --ai-violet:      #4fd1c5;
+    --ai-purple:      #38b2a3;
+    --ai-indigo-dark: #2c9e94;
+    --ai-violet-light:#81e6d9;
     --ai-online:      #4ade80;
-    --ai-gradient:    linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a855f7 100%);
-    --ai-gradient-2:  linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    --ai-welcome-bg:  linear-gradient(135deg, #ede9fe, #e0e7ff);
-    --ai-success-bg:  linear-gradient(135deg, #d1fae5, #a7f3d0);
-    --ai-glow-08:  rgba(99, 102, 241, 0.08);
-    --ai-glow-18:  rgba(99, 102, 241, 0.18);
-    --ai-glow-25:  rgba(99, 102, 241, 0.25);
-    --ai-glow-38:  rgba(99, 102, 241, 0.38);
-    --ai-glow-40:  rgba(99, 102, 241, 0.4);
-    --ai-glow-30:  rgba(99, 102, 241, 0.3);
-    --ai-glow-55:  rgba(99, 102, 241, 0.55);
-    --ai-glow-65:  rgba(99, 102, 241, 0.65);
-    --ai-violet-glow-0:  rgba(139, 92, 246, 0);
-    --ai-violet-glow-12: rgba(139, 92, 246, 0.12);
-    --ai-violet-glow-35: rgba(139, 92, 246, 0.35);
-    --ai-violet-glow-40: rgba(139, 92, 246, 0.4);
+    --ai-gradient:    linear-gradient(135deg, #4fd1c5, #38b2a3);
+    --ai-gradient-2:  linear-gradient(135deg, #4fd1c5 0%, #38b2a3 100%);
+    --ai-welcome-bg:  #e6fffa;
+    --ai-success-bg:  #d1fae5;
+    --ai-glow-08:  rgba(79, 209, 197, 0.08);
+    --ai-glow-18:  rgba(79, 209, 197, 0.18);
+    --ai-glow-25:  rgba(79, 209, 197, 0.25);
+    --ai-glow-38:  rgba(79, 209, 197, 0.38);
+    --ai-glow-40:  rgba(79, 209, 197, 0.4);
+    --ai-glow-30:  rgba(79, 209, 197, 0.3);
+    --ai-glow-55:  rgba(79, 209, 197, 0.55);
+    --ai-glow-65:  rgba(79, 209, 197, 0.65);
+    --ai-violet-glow-0:  rgba(79, 209, 197, 0);
+    --ai-violet-glow-12: rgba(79, 209, 197, 0.12);
+    --ai-violet-glow-35: rgba(79, 209, 197, 0.35);
+    --ai-violet-glow-40: rgba(79, 209, 197, 0.4);
     --glass-35: rgba(255, 255, 255, 0.35);
     --glass-90: rgba(255, 255, 255, 0.9);
     --overlay-07: rgba(0, 0, 0, 0.07);
@@ -153,8 +153,8 @@
 
     /* ── Hover variants ───────────────────────────────────── */
     --accent-teal-hover:      #3dd1c7;
-    --ai-violet-border:       #c4b5fd;
-    --gradient-primary-hover: linear-gradient(135deg, var(--accent-teal-hover) 0%, var(--ai-violet-light) 100%);
+    --ai-violet-border:       #81e6d9;
+    --gradient-primary-hover: var(--accent-teal-hover, #38b2a3);
 
     /* ── Semantic shadows ─────────────────────────────────── */
     --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.55);

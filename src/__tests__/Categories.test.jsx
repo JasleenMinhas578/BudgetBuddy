@@ -27,6 +27,9 @@ jest.mock('firebase/firestore', () => ({
   addDoc: jest.fn(),
   orderBy: jest.fn(() => 'mock-order-by'),
   serverTimestamp: jest.fn(() => new Date()),
+  doc: jest.fn(() => 'mock-doc-ref'),
+  setDoc: jest.fn(() => Promise.resolve()),
+  deleteField: jest.fn(),
 }));
 
 // Mock Firebase config
@@ -139,7 +142,9 @@ describe('Categories Component', () => {
     // No act() here — calling it inside onSnapshot causes nested act() issues in React 18
     onSnapshot.mockImplementation((query, callback) => {
       callback({
-        forEach: (fn) => [] // Empty array to simulate no categories initially
+        forEach: () => {},
+        exists: () => false,
+        data: () => ({}),
       });
       return () => {}; // Return unsubscribe function
     });

@@ -44,6 +44,9 @@ export default function Settings() {
     if (!trimmed) {
       return setNameMsg({ text: 'Display name cannot be empty.', type: 'error' });
     }
+    if (trimmed.length > 15) {
+      return setNameMsg({ text: 'Display name must be 15 characters or fewer.', type: 'error' });
+    }
     setNameLoading(true);
     setNameMsg({ text: '', type: '' });
     try {
@@ -93,7 +96,7 @@ export default function Settings() {
         <p className="settings-subtitle">Manage your profile and security preferences.</p>
       </div>
 
-      {/* Top row — 2 columns */}
+      {/* All 3 cards in one horizontal row */}
       <div className="settings-cards-grid">
         {/* Display Name */}
         <div className="settings-card">
@@ -114,7 +117,7 @@ export default function Settings() {
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 placeholder="Enter your display name"
-                maxLength={50}
+                maxLength={15}
               />
             </div>
 
@@ -126,6 +129,45 @@ export default function Settings() {
               {nameLoading ? 'Saving...' : 'Save Name'}
             </button>
           </form>
+        </div>
+
+        {/* Default Date Range */}
+        <div className="settings-card settings-card-green">
+          <div className="settings-card-header">
+            <span className="settings-card-icon"><LuCalendar size={22} /></span>
+            <div>
+              <h2 className="settings-card-title">Default Date Range</h2>
+              <p className="settings-card-desc">
+                The date range shown on every page when you log in. You can still change it per session.
+              </p>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="defaultRange">Date Range</label>
+            <select
+              id="defaultRange"
+              value={defaultRange}
+              onChange={e => setDefaultRange(e.target.value)}
+              className="settings-select"
+            >
+              {DATE_RANGE_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {rangeMsg.text && (
+            <p className={`settings-feedback ${rangeMsg.type}`}>{rangeMsg.text}</p>
+          )}
+
+          <button
+            className="btn btn-primary settings-btn"
+            onClick={handleSaveDefaultRange}
+            disabled={rangeLoading}
+          >
+            {rangeLoading ? 'Saving...' : 'Save Default'}
+          </button>
         </div>
 
         {/* Change Password */}
@@ -145,52 +187,13 @@ export default function Settings() {
           )}
 
           <button
-            className="btn btn-secondary settings-btn"
+            className="btn btn-primary settings-btn"
             onClick={handleSendResetEmail}
             disabled={emailLoading}
           >
             {emailLoading ? 'Sending...' : 'Send Reset Email'}
           </button>
         </div>
-      </div>
-
-      {/* Default Date Range — full width */}
-      <div className="settings-card settings-card-green">
-        <div className="settings-card-header">
-          <span className="settings-card-icon"><LuCalendar size={22} /></span>
-          <div>
-            <h2 className="settings-card-title">Default Date Range</h2>
-            <p className="settings-card-desc">
-              The date range shown on every page when you log in. You can still change it per session.
-            </p>
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="defaultRange">Date Range</label>
-          <select
-            id="defaultRange"
-            value={defaultRange}
-            onChange={e => setDefaultRange(e.target.value)}
-            className="settings-select"
-          >
-            {DATE_RANGE_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {rangeMsg.text && (
-          <p className={`settings-feedback ${rangeMsg.type}`}>{rangeMsg.text}</p>
-        )}
-
-        <button
-          className="btn btn-primary settings-btn"
-          onClick={handleSaveDefaultRange}
-          disabled={rangeLoading}
-        >
-          {rangeLoading ? 'Saving...' : 'Save Default'}
-        </button>
       </div>
     </div>
   );
