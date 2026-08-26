@@ -5,36 +5,14 @@ import {
   LuArrowLeft, LuLock, LuAlertTriangle, LuCheckCircle, LuMail,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthForm } from '../../hooks/useAuthForm';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
-/**
- * ForgotPassword Component
- * 
- * This component handles password reset requests by:
- * - Allowing users to enter their email address
- * - Sending a password reset email via Firebase
- * - Providing user feedback and error handling
- * - Navigation back to login page
- * 
- * Features:
- * - Email validation
- * - Firebase password reset email integration
- * - Responsive design with animations
- * - Success and error message display
- * - Loading state management
- */
 export default function ForgotPassword() {
-  // Form state management
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Get authentication functions from context
+  const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
   const { resetPassword } = useAuth();
-  
-  // Navigation hook for redirecting
   const navigate = useNavigate();
 
   /**

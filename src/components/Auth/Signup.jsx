@@ -4,41 +4,21 @@ import {
   LuArrowLeft, LuWallet, LuAlertTriangle, LuUserPlus, LuEye, LuEyeOff,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
-
-/**
- * Signup Component
- * 
- * This component handles user registration by providing a signup form with:
- * - Email and password input fields
- * - Password strength validation
- * - Form validation and error handling
- * - Loading states and user feedback
- * - Navigation to dashboard upon successful registration
- * 
- * Features:
- * - Real-time password strength checking
- * - Firebase authentication integration
- * - Responsive design with animations
- * - Comprehensive error message display
- * - Loading state management
- * - Password confirmation validation
- */
 export default function Signup() {
-  // Form state management
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signup, updateDisplayName } = useAuth();
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { error, setError, loading, setLoading } = useAuthForm();
+  const { signup, updateDisplayName } = useAuth();
+  const navigate = useNavigate();
   const isActivationKey = (key) => key === 'Enter' || key === ' ';
 
   /**

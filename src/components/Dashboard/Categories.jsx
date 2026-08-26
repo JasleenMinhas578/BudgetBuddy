@@ -3,11 +3,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
-import { addCategory, deleteCategory, subscribeToCategories } from '../../services/categoryService';
+import { subscribeToCategories } from '../../services/categoryService';
 import { subscribeToExpenses } from '../../services/expenseService';
 import { CATEGORY_ICON_MAP } from '../../utils/getCategoryIcon';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useCategoryData } from '../../hooks/useCategoryData';
+import { useCategoryActions } from '../../hooks/useCategoryActions';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -32,24 +33,16 @@ const DEFAULT_CATEGORIES = [
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [expenses, setExpenses] = useState([]);
-  const dateRangeCtx = useDateRangeContext();
-  const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
   const [newCategory, setNewCategory] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const { currentUser } = useAuth();
-
-  const toggleCategory = (name) => {
-    setExpandedCategories(prev => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  };
+  const dateRangeCtx = useDateRangeContext();
+  const {
+    filteredExpenses, dateFilter, setDateFilter,
+    customDateRange, setCustomDateRange,
+    pickedMonth, setPickedMonth, availableMonths,
+  } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -63,87 +56,20 @@ export default function Categories() {
 
   useEffect(() => {
     if (!currentUser) return;
-
     let unsubscribeExpenses = () => {};
     let unsubscribeCategories = () => {};
-
     try {
-      unsubscribeExpenses = subscribeToExpenses(currentUser.uid, (expensesData) => {
-        if (expensesData !== null) setExpenses(expensesData);
+      unsubscribeExpenses = subscribeToExpenses(currentUser.uid, (data) => {
+        if (data !== null) setExpenses(data);
       });
-
-      unsubscribeCategories = subscribeToCategories(currentUser.uid, (categoriesData) => {
-        if (categoriesData !== null) setCategories(categoriesData);
+      unsubscribeCategories = subscribeToCategories(currentUser.uid, (data) => {
+        if (data !== null) setCategories(data);
       });
     } catch (error) {
-      console.error("Error setting up listeners:", error);
-      setToast({
-        message: 'Error loading data. Please refresh the page.',
-        type: 'error'
-      });
+      console.error('Error setting up listeners:', error);
     }
-
-    return () => {
-      unsubscribeExpenses();
-      unsubscribeCategories();
-    };
+    return () => { unsubscribeExpenses(); unsubscribeCategories(); };
   }, [currentUser]);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    // Reset form when closing modal
-    setNewCategory('');
-  };
-
-
-  const handleAddCategory = async (e) => {
-    e.preventDefault();
-    if (!currentUser) { setToast({ message: 'Please log in to add categories.', type: 'error' }); return; }
-    const categoryName = newCategory.trim();
-    if (!categoryName) return;
-
-    const existingNames = allCategories.map(c => c.name.toLowerCase());
-    if (existingNames.includes(categoryName.toLowerCase())) {
-      setToast({ message: `Category "${categoryName}" already exists.`, type: 'error' });
-      return;
-    }
-
-    setIsModalOpen(false);
-    setNewCategory('');
-    setIsLoading(true);
-    try {
-      await addCategory(currentUser.uid, { name: categoryName });
-      setToast({ message: `Category "${categoryName}" added successfully!`, type: 'success' });
-    } catch (error) {
-      setToast({ message: 'Failed to add category. Please try again.', type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteCategory = (categoryId, categoryName) => {
-    if (!currentUser) {
-      setToast({ message: 'Please log in to delete categories.', type: 'error' });
-      return;
-    }
-    setPendingDeleteCategory({ id: categoryId, name: categoryName });
-  };
-
-  const confirmDeleteCategory = async () => {
-    if (!pendingDeleteCategory) return;
-    const { id, name } = pendingDeleteCategory;
-    setPendingDeleteCategory(null);
-    setIsLoading(true);
-    try {
-      await deleteCategory(currentUser.uid, id);
-      setToast({ message: `Category "${name}" deleted successfully!`, type: 'success' });
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      setToast({ message: 'Failed to delete category. Please try again.', type: 'error' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
@@ -153,6 +79,60 @@ export default function Categories() {
   ], [categories]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
+
+  const monthlyTrendData = useMemo(() => {
+    const months = [...new Set(
+      filteredExpenses.map(e => e.date?.slice(0, 7)).filter(Boolean)
+    )].sort();
+    const catTotals = {};
+    filteredExpenses.forEach(e => {
+      if (e.category) catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
+    });
+    const topCats = Object.entries(catTotals)
+      .sort(([, a], [, b]) => b - a).slice(0, 4).map(([name]) => name);
+    return {
+      labels: months.map(m => {
+        const [y, mo] = m.split('-');
+        return new Date(Number(y), Number(mo) - 1).toLocaleDateString('en', { month: 'short', year: 'numeric' });
+      }),
+      datasets: topCats.map(cat => ({
+        label: cat,
+        data: months.map(month =>
+          filteredExpenses
+            .filter(e => e.category === cat && e.date?.startsWith(month))
+            .reduce((sum, e) => sum + e.amount, 0)
+        ),
+        backgroundColor: getCategoryColor(cat),
+      })),
+    };
+  }, [filteredExpenses]);
+
+  const hasMultipleMonths = useMemo(() =>
+    new Set(filteredExpenses.map(e => e.date?.slice(0, 7)).filter(Boolean)).size >= 2
+  , [filteredExpenses]);
+
+  const {
+    isLoading,
+    toast, setToast,
+    pendingDeleteCategory, setPendingDeleteCategory,
+    handleAddCategory,
+    handleDeleteCategory,
+    confirmDeleteCategory,
+  } = useCategoryActions(currentUser, allCategories);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setNewCategory('');
+  };
+
+  const toggleCategory = (name) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  };
 
   const expandableCategoryNames = allCategories
     .filter(cat => filteredExpenses.some(e => e.category === cat.name))
@@ -165,7 +145,6 @@ export default function Categories() {
 
   return (
     <div className="categories-container">
-      {/* Toast Notification */}
       {toast && (
         <Toast
           message={toast.message}
@@ -174,10 +153,10 @@ export default function Categories() {
           onClose={() => setToast(null)}
         />
       )}
-      
+
       <div className="section-header">
         <div className="header-content">
-        <h2>Categories</h2>
+          <h2>Categories</h2>
           <p className="section-subtitle">Analyze your spending by category</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
@@ -185,8 +164,7 @@ export default function Categories() {
           Add Category
         </button>
       </div>
-      
-      {/* Summary Stats */}
+
       <div className="categories-summary">
         <div className="summary-stat">
           <span className="stat-label">Total Categories</span>
@@ -204,7 +182,6 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Date Filter Bar */}
       <div className="filter-controls">
         <div className="filter-section">
           <DateFilterBar
@@ -219,7 +196,6 @@ export default function Categories() {
         </div>
       </div>
 
-      {/* Categories List */}
       <div className="categories-list-section">
         <div className="section-subheader">
           <div>
@@ -233,14 +209,13 @@ export default function Categories() {
             </button>
           )}
         </div>
-        
+
         {allCategories.length > 0 ? (
           <div className="categories-grid">
             {allCategories.map((category) => {
               const categoryAmount = categoryData.datasets[0].data[categoryData.labels.indexOf(category.name)] || 0;
               const percentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
               const isDefaultCategory = DEFAULT_CATEGORIES.some(dc => dc.name === category.name);
-              
               const isExpanded = expandedCategories.has(category.name);
               const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
               const isExpandable = categoryExpenses.length > 0;
@@ -252,7 +227,7 @@ export default function Categories() {
                   onClick={isExpandable ? () => toggleCategory(category.name) : undefined}
                 >
                   <div className="category-card-header">
-                    <div className="category-icon-large" style={{ color: getCategoryColor(category.name) }}>
+                    <div className="category-icon-large" style={{ color: getCategoryColor(category.name), background: `${getCategoryColor(category.name)}26` }}>
                       <category.Icon size={22} />
                     </div>
                     <div className="category-info">
@@ -291,7 +266,6 @@ export default function Categories() {
                     </div>
                     <span className="progress-text">{percentage.toFixed(1)}%</span>
                   </div>
-
                   {isExpanded && (
                     <div className="category-expenses-panel" onClick={(e) => e.stopPropagation()}>
                       <ExpenseTable
@@ -319,7 +293,6 @@ export default function Categories() {
         )}
       </div>
 
-      {/* Charts Section */}
       <div className="categories-list-section">
         <div className="section-subheader">
           <div>
@@ -338,9 +311,12 @@ export default function Categories() {
           </div>
           <div className="chart-container">
             <div className="chart-card">
-              <h3>Amount per Category</h3>
+              <h3>Monthly Trend by Category</h3>
               <div className="chart-wrapper">
-                <BarChart data={categoryData} />
+                {hasMultipleMonths
+                  ? <BarChart data={monthlyTrendData} />
+                  : <p className="chart-empty-hint">Select a wider date range to see monthly trends</p>
+                }
               </div>
             </div>
           </div>
@@ -351,7 +327,13 @@ export default function Categories() {
         <div className="modal-header">
           <h2 className="modal-title">Add New Category</h2>
         </div>
-        <form onSubmit={handleAddCategory} className="category-form">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAddCategory(newCategory, handleCloseModal);
+          }}
+          className="category-form"
+        >
           <div className="form-group">
             <label htmlFor="categoryName">Category Name</label>
             <input
@@ -364,18 +346,10 @@ export default function Categories() {
             />
           </div>
           <div className="form-actions">
-            <button 
-              type="button" 
-              onClick={handleCloseModal} 
-              className="btn btn-secondary"
-            >
+            <button type="button" onClick={handleCloseModal} className="btn btn-secondary">
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="btn btn-primary gradient-btn"
-              disabled={isLoading}
-            >
+            <button type="submit" className="btn btn-primary gradient-btn" disabled={isLoading}>
               Add Category
             </button>
           </div>

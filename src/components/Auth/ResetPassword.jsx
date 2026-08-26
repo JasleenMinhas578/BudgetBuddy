@@ -5,42 +5,19 @@ import {
   LuArrowLeft, LuKey, LuAlertTriangle, LuShieldCheck, LuEye, LuEyeOff,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
-/**
- * ResetPassword Component
- * 
- * This component handles password reset confirmation by:
- * - Extracting the reset code from the URL (oobCode)
- * - Allowing users to enter and confirm a new password
- * - Validating password strength and confirmation match
- * - Updating the password in Firebase
- * - Redirecting to login page on success
- * 
- * Features:
- * - Password strength validation
- * - Password confirmation matching
- * - Firebase password reset confirmation
- * - Responsive design with animations
- * - Error message display
- * - Loading state management
- */
 export default function ResetPassword() {
-  // Form state management
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [oobCode, setOobCode] = useState(null);
-  
-  // Get authentication functions from context
+  const { error, setError, loading, setLoading } = useAuthForm();
   const { updatePassword } = useAuth();
-  
-  // Navigation hook and URL search params
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 

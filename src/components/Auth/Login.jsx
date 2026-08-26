@@ -4,39 +4,15 @@ import {
   LuArrowLeft, LuWallet, LuAlertTriangle, LuCheckCircle, LuLogIn,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthForm } from '../../hooks/useAuthForm';
 import { motion } from 'framer-motion';
 import '../../styles/main.css';
 
-/**
- * Login Component
- * 
- * This component handles user authentication by providing a login form.
- * It includes:
- * - Email and password input fields
- * - Form validation
- * - Error handling and display
- * - Loading states
- * - Navigation to dashboard upon successful login
- * 
- * Features:
- * - Real-time form validation
- * - Firebase authentication integration
- * - Responsive design with animations
- * - Error message display
- * - Loading state management
- */
 export default function Login() {
-  // Form state management
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Get authentication functions from context
+  const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
   const { login } = useAuth();
-  
-  // Navigation hook for redirecting after successful login
   const navigate = useNavigate();
   const location = useLocation();
 
