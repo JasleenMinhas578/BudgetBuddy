@@ -2802,6 +2802,11 @@
     margin-bottom: 0;
   }
 
+  /* Reports: hide the period subtitle from the DateFilterBar header — filter-display already shows it */
+  .filter-controls .date-filter-period {
+    display: none;
+  }
+
   .date-filter-header {
     margin-bottom: 0.875rem;
     padding-bottom: 0.875rem;
@@ -2873,7 +2878,13 @@
   .custom-date-range {
     margin-top: 1rem;
   }
-  
+
+  .custom-date-inputs {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+
   .date-inputs {
     display: flex;
     gap: 1rem;
@@ -2899,6 +2910,8 @@
     border-radius: var(--border-radius);
     color: var(--text-primary);
     font-size: var(--font-size-sm);
+    color-scheme: dark;
+    box-sizing: border-box;
   }
   
   .date-input input:focus {
@@ -4547,6 +4560,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    padding: 0 1.5rem 1.5rem;
   }
 
   .export-modal-date-section {

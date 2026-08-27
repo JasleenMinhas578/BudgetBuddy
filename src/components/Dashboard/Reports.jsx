@@ -91,6 +91,7 @@ export default function Reports() {
             onPickedMonthChange={setPickedMonth}
             availableMonths={availableMonths}
             buttons={FILTER_BUTTONS_REPORTS}
+            title="Select date range"
           />
         </div>
       </div>

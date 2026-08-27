@@ -451,6 +451,7 @@ export default function DashboardOverview() {
       <Modal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} title="Export Data">
         <div className="export-modal-body">
           <div className="export-modal-date-section">
+            <p className="export-modal-date-label">Select date range</p>
             <DateFilterBar
               dateFilter={dateFilter}
               onChange={setDateFilter}
