@@ -33,7 +33,7 @@ import '../../styles/main.css';
 export default function DashboardOverview() {
   const { formatAmount } = useCurrency();
   const { expenses, loading } = useExpenses();
-  const { budgets } = useBudgets();
+  const { budgets, setCategoryBudget } = useBudgets();
   const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [showChatHint, setShowChatHint] = useState(false);
@@ -285,6 +285,7 @@ export default function DashboardOverview() {
           allCategories={allCategories}
           budgets={budgets}
           forecastResult={forecastResult}
+          setCategoryBudget={setCategoryBudget}
         />
       )}
 

@@ -210,6 +210,70 @@
   .budget-panel-row-marker--warning { background: var(--warning); }
   .budget-panel-row-marker--danger  { background: var(--danger); }
 
+  /* No-goal row — category has spending but no budget set */
+  .budget-panel-row--no-goal {
+    grid-template-columns: 130px 1fr 80px auto;
+  }
+  .budget-panel-row-bar--dashed {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--glass-10) 0,
+      var(--glass-10) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+  .budget-panel-set-goal-btn {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--accent-teal);
+    border: 1px solid var(--accent-teal);
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .budget-panel-set-goal-btn:hover {
+    background: var(--accent-teal);
+    color: var(--bg-primary);
+  }
+  .budget-panel-set-goal-inline {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .budget-panel-set-goal-input {
+    width: 80px;
+    font-size: var(--font-size-xs);
+    padding: 2px 6px;
+    border: 1px solid var(--accent-teal);
+    border-radius: 4px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    outline: none;
+  }
+  .budget-panel-set-goal-input:focus {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-teal) 20%, transparent);
+  }
+  .budget-panel-set-goal-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 6px;
+    border: 1px solid var(--accent-teal);
+    border-radius: 4px;
+    background: var(--accent-teal);
+    color: var(--bg-primary);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .budget-panel-set-goal-confirm:hover {
+    opacity: 0.85;
+  }
+
 
   /* Dashboard Fixes - Missing Styles */
 

@@ -49,7 +49,6 @@ describe('Navbar component', () => {
     ['/dashboard', 'Dashboard'],
     ['/dashboard/expenses', 'Expenses'],
     ['/dashboard/categories', 'Categories'],
-    ['/dashboard/reports', 'Reports']
   ])('shows contextual icon and title for %s', (path, title) => {
     setup(path);
     expect(screen.getByText(title)).toBeInTheDocument();

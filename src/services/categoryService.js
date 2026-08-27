@@ -70,6 +70,25 @@ export const hideDefaultCategory = async (userId, categoryName) => {
   await setDoc(prefRef, { hiddenDefaultCategories: arrayUnion(categoryName) }, { merge: true });
 };
 
+// Reassigns all expenses with the given category name to "Other".
+// Used when hiding a default category so existing expenses don't keep a hidden label.
+export const reassignCategoryExpenses = async (userId, categoryName) => {
+  const expSnap = await getDocs(
+    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
+  );
+  const expDocs = expSnap.docs;
+  if (expDocs.length === 0) return;
+
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < expDocs.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    expDocs.slice(i, i + BATCH_SIZE).forEach(d =>
+      batch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
+    );
+    await batch.commit();
+  }
+};
+
 export const deleteCategoryAndExpenses = async (userId, categoryId, categoryName) => {
   const expSnap = await getDocs(
     query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
@@ -88,6 +107,33 @@ export const deleteCategoryAndExpenses = async (userId, categoryId, categoryName
   for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
     const batch = writeBatch(db);
     remaining.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+};
+
+// Deletes a category and reassigns all its expenses to "Other" instead of deleting them.
+export const reassignAndDeleteCategory = async (userId, categoryId, categoryName) => {
+  const expSnap = await getDocs(
+    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
+  );
+  const expDocs = expSnap.docs;
+  const BATCH_SIZE = 500;
+
+  // First batch: delete the category doc + reassign up to 499 expenses
+  const firstBatch = writeBatch(db);
+  firstBatch.delete(doc(db, 'users', userId, 'categories', categoryId));
+  expDocs.slice(0, BATCH_SIZE - 1).forEach(d =>
+    firstBatch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
+  );
+  await firstBatch.commit();
+
+  // Remaining expenses in subsequent batches of 500
+  const remaining = expDocs.slice(BATCH_SIZE - 1);
+  for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    remaining.slice(i, i + BATCH_SIZE).forEach(d =>
+      batch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
+    );
     await batch.commit();
   }
 };

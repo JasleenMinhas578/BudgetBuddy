@@ -233,9 +233,7 @@ export default function Categories() {
               const barClass = hasBudget
                 ? `progress-fill progress-fill--${prog.status}`
                 : 'progress-fill';
-              const barStyle = hasBudget
-                ? { width: `${barPct}%` }
-                : { width: `${barPct}%`, backgroundColor: getCategoryColor(category.name) };
+              const barStyle = { width: `${barPct}%` };
 
               return (
                 <div
@@ -474,8 +472,8 @@ export default function Categories() {
                   <p className="cd-expense-warning-title">
                     <LuTrash2 size={14} />
                     {pendingDeleteCategory.isDefault
-                      ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will become uncategorized:`
-                      : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will also be permanently deleted:`}
+                      ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will keep their label (category hidden, not deleted):`
+                      : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will be reassigned to "Other":`}
                   </p>
                   <ul className={`cd-expense-list${catExpenses.length > 10 ? ' cd-expense-list--scrollable' : ''}`}>
                     {catExpenses.map(e => (

@@ -79,11 +79,6 @@
     margin-bottom: 0;
   }
 
-  /* Reports: hide the period subtitle from the DateFilterBar header — filter-display already shows it */
-  .filter-controls .date-filter-period {
-    display: none;
-  }
-
   .date-filter-header {
     margin-bottom: 0.875rem;
     padding-bottom: 0.875rem;

@@ -12,7 +12,6 @@ import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Goals from './components/Dashboard/Goals';
 import Settings from './components/Dashboard/Settings';
-import Reports from './components/Dashboard/Reports';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
 import { DateRangeProvider } from './context/DateRangeContext';
@@ -49,7 +48,6 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="goals" element={<Goals />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="reports" element={<Reports />} />
           </Route>
 
           {/* 404 - Catch all route */}

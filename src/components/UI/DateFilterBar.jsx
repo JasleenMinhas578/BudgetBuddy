@@ -2,6 +2,7 @@ import { getDateFilterLabel as getActivePeriodLabel } from '../../utils/dateFilt
 import { format, parseISO } from 'date-fns';
 
 export const FILTER_BUTTONS_DEFAULT = [
+  { key: 'all',        label: 'All Time'     },
   { key: 'today',      label: 'Today'        },
   { key: 'thisWeek',   label: 'This Week'    },
   { key: 'thisMonth',  label: 'This Month'   },
@@ -9,7 +10,6 @@ export const FILTER_BUTTONS_DEFAULT = [
   { key: 'pickMonth',  label: 'Select Month' },
   { key: 'thisYear',   label: 'This Year'    },
   { key: 'lastYear',   label: 'Last Year'    },
-  { key: 'all',        label: 'All Time'     },
   { key: 'custom',     label: 'Custom Range' },
 ];
 

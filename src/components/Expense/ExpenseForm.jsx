@@ -4,7 +4,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { LuChevronDown, LuCheck, LuTag, LuLightbulb } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
-import { addCategory } from '../../services/categoryService';
+import { addCategory, subscribeToUserPreferences } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { suggestCategory } from '../../utils/categorySuggester';
 import { validCategory } from '../../utils/categoryUtils';
@@ -46,9 +46,18 @@ export default function ExpenseForm({
   const rawCategories = useCategories();
   const customCategories = rawCategories.map(cat => ({ ...cat, Icon: LuTag }));
 
-  // Merge default and custom categories, avoiding duplicates by name
+  const [hiddenDefaults, setHiddenDefaults] = useState([]);
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
+      setHiddenDefaults(prefs.hiddenDefaultCategories || []);
+    });
+    return () => { if (typeof unsub === 'function') unsub(); };
+  }, [currentUser]);
+
+  // Merge default and custom categories, excluding categories the user has hidden
   const allCategories = [
-    ...DEFAULT_CATEGORIES,
+    ...DEFAULT_CATEGORIES.filter(cat => !hiddenDefaults.includes(cat.name)),
     ...customCategories.filter(cat => validCategory(cat.name) && !DEFAULT_CATEGORIES.some(def => def.name === cat.name)),
   ];
 

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import {
   addCategory,
   updateCategory,
-  deleteCategoryAndExpenses,
+  reassignAndDeleteCategory,
+  reassignCategoryExpenses,
   hideDefaultCategory,
 } from '../services/categoryService';
 
@@ -101,13 +102,14 @@ export function useCategoryActions(currentUser, allCategories, showToast) {
     try {
       if (isDefault) {
         await hideDefaultCategory(currentUser.uid, name);
+        await reassignCategoryExpenses(currentUser.uid, name);
       } else {
-        await deleteCategoryAndExpenses(currentUser.uid, id, name);
+        await reassignAndDeleteCategory(currentUser.uid, id, name);
       }
       const expenseNote = expenseCount > 0
-        ? ` and ${expenseCount} expense${expenseCount !== 1 ? 's' : ''}`
+        ? `. ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} reassigned to "Other"`
         : '';
-      notify(`Category "${name}"${expenseNote} deleted.`, 'success');
+      notify(`Category "${name}" deleted${expenseNote}.`, 'success');
     } catch (error) {
       console.error('Error deleting category:', error);
       notify('Failed to delete category. Please try again.', 'error');

@@ -1,13 +1,24 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { LuTarget, LuChevronRight, LuCalendar } from 'react-icons/lu';
+import { LuTarget, LuChevronRight, LuCalendar, LuCheck } from 'react-icons/lu';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useCurrency } from '../../context/CurrencyContext';
 
-export default function BudgetProgressPanel({ expenses, allCategories, budgets, forecastResult }) {
+export default function BudgetProgressPanel({ expenses, allCategories, budgets, forecastResult, setCategoryBudget }) {
   const { formatAmount } = useCurrency();
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [goalInput, setGoalInput] = useState('');
+
+  function handleGoalSave(categoryName) {
+    const amount = parseFloat(goalInput);
+    if (!isNaN(amount) && amount > 0) {
+      setCategoryBudget(categoryName, amount);
+    }
+    setEditingGoal(null);
+    setGoalInput('');
+  }
   // Always compare against current month — regardless of the dashboard's date filter
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
@@ -29,8 +40,9 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
     : 'ok';
 
   const categoriesWithBudget = categoryProgress.filter((p) => p.budget !== null);
+  const categoriesWithoutBudget = categoryProgress.filter((p) => p.budget === null && p.spent > 0);
 
-  if (categoriesWithBudget.length === 0) return null;
+  if (categoriesWithBudget.length === 0 && categoriesWithoutBudget.length === 0) return null;
 
   return (
     <div className="budget-panel">
@@ -132,6 +144,59 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
           );
         })}
       </div>
+
+      {/* Categories with spending but no goal */}
+      {categoriesWithoutBudget.length > 0 && (
+        <div className="budget-panel-rows">
+          {categoriesWithoutBudget.map((prog) => (
+            <div key={prog.name} className="budget-panel-row budget-panel-row--no-goal">
+              <div className="budget-panel-row-label">
+                <span
+                  className="budget-panel-row-dot"
+                  style={{ background: getCategoryColor(prog.name) }}
+                />
+                <span className="budget-panel-row-name">{prog.name}</span>
+              </div>
+              <div className="budget-panel-row-bar budget-panel-row-bar--dashed" />
+              <span className="budget-panel-col budget-panel-col--spent">
+                {formatAmount(prog.spent)}
+              </span>
+              {editingGoal === prog.name ? (
+                <div className="budget-panel-set-goal-inline">
+                  <input
+                    className="budget-panel-set-goal-input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Amount"
+                    value={goalInput}
+                    autoFocus
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleGoalSave(prog.name);
+                      if (e.key === 'Escape') { setEditingGoal(null); setGoalInput(''); }
+                    }}
+                  />
+                  <button
+                    className="budget-panel-set-goal-confirm"
+                    onClick={() => handleGoalSave(prog.name)}
+                    aria-label="Save goal"
+                  >
+                    <LuCheck size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  className="budget-panel-set-goal-btn"
+                  onClick={() => { setEditingGoal(prog.name); setGoalInput(''); }}
+                >
+                  Set Goal
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

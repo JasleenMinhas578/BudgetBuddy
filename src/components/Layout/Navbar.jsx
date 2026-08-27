@@ -10,7 +10,6 @@ import {
   LuSearch,
   LuX,
   LuTarget,
-  LuBarChart2,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../UI/UserAvatar';
@@ -35,8 +34,7 @@ export default function Navbar({ setSidebarOpen, onLogoutClick }) {
     if (path.includes('/expenses'))        return { title: 'Expenses',   Icon: LuCreditCard      };
     if (path.includes('/categories'))      return { title: 'Categories', Icon: LuTag             };
     if (path.includes('/goals'))           return { title: 'Goals',      Icon: LuTarget          };
-    if (path.includes('/reports'))         return { title: 'Reports',    Icon: LuBarChart2       };
-    if (path.includes('/settings'))        return { title: 'Settings',   Icon: LuSettings        };
+if (path.includes('/settings'))        return { title: 'Settings',   Icon: LuSettings        };
     return                                        { title: 'Dashboard',  Icon: LuLayoutDashboard };
   };
 
