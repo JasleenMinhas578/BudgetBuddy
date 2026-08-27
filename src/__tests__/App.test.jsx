@@ -36,6 +36,21 @@ jest.mock('../components/Dashboard/Categories', () => () => <div>Categories Page
 jest.mock('../components/Dashboard/Reports', () => () => <div>Reports Page</div>);
 jest.mock('../components/Layout/PrivateRoute', () => ({ children }) => <div data-testid="private-route">{children}</div>);
 
+jest.mock('../components/Dashboard/Goals', () => () => <div>Goals Page</div>);
+jest.mock('../components/Dashboard/Settings', () => () => <div>Settings Page</div>);
+jest.mock('../pages/NotFound', () => () => <div>Not Found Page</div>);
+jest.mock('../components/AI/AIChat', () => () => null);
+
+jest.mock('../context/CurrencyContext', () => ({
+  CurrencyProvider: ({ children }) => children,
+  useCurrency: () => ({ formatAmount: (n) => `$${n}`, currency: 'USD', currencySymbol: '$' }),
+}));
+
+jest.mock('../context/DateRangeContext', () => ({
+  DateRangeProvider: ({ children }) => children,
+  useDateRangeContext: () => ({ dateFilter: 'thisMonth', setDateFilter: jest.fn() }),
+}));
+
 describe('App routing', () => {
   afterEach(() => {
     window.history.pushState({}, '', '/');
