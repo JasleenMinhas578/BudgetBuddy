@@ -24,7 +24,7 @@ const KEYWORD_MAP = {
   gas: 'Transport', gasoline: 'Transport', petrol: 'Transport',
   shell: 'Transport', esso: 'Transport', mobil: 'Transport', bp: 'Transport',
   carwash: 'Transport', rental: 'Transport', zipcar: 'Transport',
-  bike: 'Transport', scooter: 'Transport', subway: 'Transport',
+  bike: 'Transport', scooter: 'Transport',
   ttc: 'Transport', oc: 'Transport', translink: 'Transport',
 
   // ── Entertainment ─────────────────────────────────────────────

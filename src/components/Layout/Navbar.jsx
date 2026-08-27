@@ -5,12 +5,12 @@ import {
   LuLayoutDashboard,
   LuCreditCard,
   LuTag,
-  LuBarChart2,
   LuSettings,
   LuLogOut,
   LuSearch,
   LuX,
   LuTarget,
+  LuBarChart2,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../UI/UserAvatar';
