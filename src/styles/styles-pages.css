@@ -4546,19 +4546,22 @@
   .export-modal-body {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .export-modal-desc {
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    margin: 0;
+    gap: 0;
   }
 
   .export-modal-date-section {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-10);
+    margin-bottom: 1rem;
+  }
+
+  .export-modal-desc {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
   }
 
   .export-modal-date-label {
@@ -4569,36 +4572,23 @@
     color: var(--text-secondary);
   }
 
-  .export-modal-date-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+  /* Hide the DateFilterBar's own header (label + period text) inside the export modal */
+  .export-modal-date-section .date-filter-header {
+    display: none;
   }
 
-  .export-date-pill {
-    padding: 0.35rem 0.8rem;
-    border-radius: 99px;
-    border: 1px solid var(--glass-10);
-    background: transparent;
-    color: var(--text-secondary);
-    font-size: 0.78rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    -webkit-appearance: none;
-    appearance: none;
+  /* Tighten DateFilterBar when nested inside the export modal */
+  .export-modal-date-section .filter-section {
+    margin-bottom: 0;
   }
 
-  .export-date-pill:hover {
-    background: var(--glass-05);
-    color: var(--text-primary);
+  .export-modal-date-section .filter-btn {
+    outline: none;
   }
 
-  .export-date-pill.active {
-    background: var(--accent-teal);
-    border-color: var(--accent-teal);
-    color: #0d1f1e;
-    font-weight: var(--font-weight-semibold);
+  .export-modal-date-section .filter-btn:focus-visible {
+    outline: 2px solid var(--accent-teal);
+    outline-offset: 2px;
   }
 
   .export-modal-options {

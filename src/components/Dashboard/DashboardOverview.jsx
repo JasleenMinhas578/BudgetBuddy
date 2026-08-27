@@ -37,7 +37,6 @@ export default function DashboardOverview() {
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [chartsOpen, setChartsOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [exportDateFilter, setExportDateFilter] = useState('thisMonth');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -381,17 +380,24 @@ export default function DashboardOverview() {
 
       {/* Block 2 — Charts & Visualizations */}
       <div className="spending-insights-block" id="report-content">
-        <button
-          className="spending-insights-toggle"
-          onClick={() => setChartsOpen(o => !o)}
-          aria-expanded={chartsOpen}
-        >
-          <span className="spending-insights-toggle-left">
-            <LuBarChart2 size={18} />
-            <span>Charts &amp; Visualizations</span>
-          </span>
-          {chartsOpen ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
-        </button>
+        <div className="spending-insights-toggle" aria-expanded={chartsOpen}>
+          <button
+            className="spending-insights-expand"
+            onClick={() => setChartsOpen(o => !o)}
+          >
+            <span className="spending-insights-toggle-left">
+              <LuBarChart2 size={18} />
+              <span>Charts &amp; Visualizations</span>
+            </span>
+          </button>
+          <button
+            className="spending-insights-chevron"
+            onClick={() => setChartsOpen(o => !o)}
+            aria-label={chartsOpen ? 'Collapse' : 'Expand'}
+          >
+            {chartsOpen ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
+          </button>
+        </div>
 
         {chartsOpen && (
           <div className="spending-insights-content">
@@ -444,27 +450,43 @@ export default function DashboardOverview() {
 
       <Modal isOpen={exportModalOpen} onClose={() => setExportModalOpen(false)} title="Export Data">
         <div className="export-modal-body">
-          <p className="export-modal-desc">Choose a format to export your expense data for the selected date range.</p>
+          <div className="export-modal-date-section">
+            <DateFilterBar
+              dateFilter={dateFilter}
+              onChange={setDateFilter}
+              customDateRange={customDateRange}
+              onCustomDateRangeChange={setCustomDateRange}
+              pickedMonth={pickedMonth}
+              onPickedMonthChange={setPickedMonth}
+              availableMonths={availableMonths}
+            />
+          </div>
+
           <div className="export-modal-options">
             <button
               className="export-modal-option"
               onClick={() => { generatePDF(); setExportModalOpen(false); }}
               disabled={isGeneratingPDF || filteredExpenses.length === 0}
             >
-              <LuFileText size={24} />
-              <span className="export-modal-option-label">PDF Report</span>
-              <span className="export-modal-option-desc">Formatted report with charts and summary</span>
+              <LuFileText size={22} />
+              <div className="export-modal-option-text">
+                <span className="export-modal-option-label">PDF Report</span>
+                <span className="export-modal-option-desc">Formatted report with charts and summary</span>
+              </div>
             </button>
             <button
               className="export-modal-option"
               onClick={() => { exportToCSV(); setExportModalOpen(false); }}
               disabled={filteredExpenses.length === 0}
             >
-              <LuFileSpreadsheet size={24} />
-              <span className="export-modal-option-label">CSV Spreadsheet</span>
-              <span className="export-modal-option-desc">Raw data for Excel or Google Sheets</span>
+              <LuFileSpreadsheet size={22} />
+              <div className="export-modal-option-text">
+                <span className="export-modal-option-label">CSV Spreadsheet</span>
+                <span className="export-modal-option-desc">Raw data for Excel or Google Sheets</span>
+              </div>
             </button>
           </div>
+
           {filteredExpenses.length === 0 && (
             <p className="export-modal-empty">No expenses in the selected date range to export.</p>
           )}

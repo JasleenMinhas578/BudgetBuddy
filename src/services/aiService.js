@@ -282,7 +282,7 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
     body: JSON.stringify({
       model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 256 },
+      generationConfig: { temperature: 0.4, maxOutputTokens: 1052 },
     }),
   });
 

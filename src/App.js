@@ -12,7 +12,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Goals from './components/Dashboard/Goals';
-import Reports from './components/Dashboard/Reports';
 import Settings from './components/Dashboard/Settings';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
@@ -62,7 +61,6 @@ function App() {
             <Route path="expenses" element={<Expenses />} />
             <Route path="categories" element={<Categories />} />
             <Route path="goals" element={<Goals />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 

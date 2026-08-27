@@ -1,16 +1,16 @@
 import { forwardRef } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LuLayoutDashboard,
   LuCreditCard,
   LuTag,
-  LuBarChart2,
   LuSettings,
   LuLogOut,
   LuX,
   LuChevronLeft,
   LuChevronRight,
   LuTarget,
+  LuUpload,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
@@ -22,12 +22,12 @@ const navItems = [
   { path: '/dashboard/expenses',   label: 'Expenses',   Icon: LuCreditCard      },
   { path: '/dashboard/categories', label: 'Categories', Icon: LuTag             },
   { path: '/dashboard/goals',      label: 'Goals',      Icon: LuTarget          },
-  { path: '/dashboard/reports',    label: 'Reports',    Icon: LuBarChart2       },
   { path: '/dashboard/settings',   label: 'Settings',   Icon: LuSettings        },
 ];
 
 const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile, onLogoutClick }, ref) => {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div
@@ -81,6 +81,17 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
             <span className="nav-label">{label}</span>
           </NavLink>
         ))}
+        <button
+          className="sidebar-link sidebar-export-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate('/dashboard?export=open');
+            if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
+          }}
+        >
+          <span className="nav-icon"><LuUpload size={18} /></span>
+          <span className="nav-label">Export</span>
+        </button>
       </nav>
 
       <div className="sidebar-footer">
