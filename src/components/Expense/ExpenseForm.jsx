@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
-import { useClickOutside } from '../../hooks/useClickOutside';
+import { useState, useEffect } from 'react';
 import { useCategories } from '../../hooks/useCategories';
-import { LuChevronDown, LuCheck, LuTag, LuLightbulb } from 'react-icons/lu';
+import { LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
-import { addCategory, subscribeToUserPreferences } from '../../services/categoryService';
+import { subscribeToUserPreferences } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { suggestCategory } from '../../utils/categorySuggester';
 import { validCategory } from '../../utils/categoryUtils';
+import CategoryDropdown from '../UI/CategoryDropdown';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
@@ -36,11 +36,6 @@ export default function ExpenseForm({
   
   // Get current user from authentication context
   const { currentUser } = useAuth();
-
-  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
-  const catDropdownRef = useRef(null);
-
-  useClickOutside(catDropdownRef, () => setCatDropdownOpen(false));
 
   // State for custom categories
   const rawCategories = useCategories();
@@ -308,81 +303,17 @@ export default function ExpenseForm({
           />
         </div>
         
-        {/* Category selection — custom dropdown so Lucide icons can render */}
-        <div className="form-group">
-          <label>Category</label>
-          <div className="cat-dropdown" ref={catDropdownRef}>
-            <button
-              type="button"
-              className="cat-dropdown-trigger"
-              onClick={() => !loading && setCatDropdownOpen(o => !o)}
-              disabled={loading}
-            >
-              {(() => {
-                const sel = allCategories.find(c => c.name === category);
-                const SelIcon = sel?.Icon || LuTag;
-                return (
-                  <>
-                    <span className="cat-dropdown-icon"><SelIcon size={15} /></span>
-                    <span>{category}</span>
-                  </>
-                );
-              })()}
-              <LuChevronDown size={14} className={`cat-dropdown-chevron${catDropdownOpen ? ' open' : ''}`} />
-            </button>
-
-            {catDropdownOpen && (
-              <div className="cat-dropdown-menu">
-                {allCategories.map((cat) => (
-                  <button
-                    key={cat.id || cat.name}
-                    type="button"
-                    className={`cat-dropdown-item${category === cat.name ? ' active' : ''}`}
-                    onClick={() => { setCategory(cat.name); setCatDropdownOpen(false); }}
-                  >
-                    <span className="cat-dropdown-icon"><cat.Icon size={15} /></span>
-                    <span>{cat.name}</span>
-                    {category === cat.name && <LuCheck size={13} className="cat-dropdown-check" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Feature 8 — category suggestion chip */}
-          {suggestion && suggestion !== category && !suggestionDismissed && (
-            <div className="category-suggestion">
-              <LuLightbulb size={13} className="category-suggestion__icon" />
-              <span>Suggested: <strong>{suggestion}</strong></span>
-              <button
-                type="button"
-                className="category-suggestion-accept"
-                onClick={async () => {
-                  const exists = allCategories.some(c => c.name === suggestion);
-                  if (!exists && currentUser) {
-                    try {
-                      await addCategory(currentUser.uid, { name: suggestion });
-                    } catch {
-                      // Category creation failed — expense still saves with that name;
-                      // user can create it manually in Categories.
-                    }
-                  }
-                  setCategory(suggestion);
-                  setSuggestion(null);
-                }}
-              >
-                Use it
-              </button>
-              <button
-                type="button"
-                className="category-suggestion-dismiss"
-                onClick={() => setSuggestionDismissed(true)}
-                aria-label="Dismiss suggestion"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-        </div>
+        <CategoryDropdown
+          category={category}
+          setCategory={setCategory}
+          allCategories={allCategories}
+          loading={loading}
+          currentUser={currentUser}
+          suggestion={suggestion}
+          setSuggestion={setSuggestion}
+          suggestionDismissed={suggestionDismissed}
+          setSuggestionDismissed={setSuggestionDismissed}
+        />
 
         {/* Date picker */}
         <div className="form-group">

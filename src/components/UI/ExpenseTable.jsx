@@ -1,33 +1,11 @@
-import { useState, useEffect, useRef, Fragment } from 'react';
-import { useClickOutside } from '../../hooks/useClickOutside';
+import { useState, useEffect } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
-import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter, LuMessageSquare } from 'react-icons/lu';
-import { getCategoryIcon } from '../../utils/getCategoryIcon';
-import { formatDate } from '../../utils/formatDate';
 import Pagination from './Pagination';
 import CuteEmptyFace from './CuteEmptyFace';
+import SortIcon from './SortIcon';
+import CategoryFilterTh from './CategoryFilterTh';
+import ExpenseRow from './ExpenseRow';
 
-function SortIcon({ active, dir }) {
-  if (!active) return <LuArrowUpDown size={13} className="sort-icon-inactive" />;
-  return dir === 'asc'
-    ? <LuArrowUp size={13} className="sort-icon-active" />
-    : <LuArrowDown size={13} className="sort-icon-active" />;
-}
-
-/**
- * Reusable sortable expense table.
- *
- * Props:
- *   expenses        - full filtered array (component handles sorting + pagination)
- *   onEdit(expense) - optional; renders edit button when provided
- *   onDelete(id)    - optional; renders delete button when provided
- *   itemsPerPage    - default 15
- *   showPagination  - default true; pass false to hide the paginator (e.g. dashboard preview)
- *   emptyIcon       - node shown in the empty state
- *   emptyMessage    - primary empty-state text
- *   emptySubMessage - secondary empty-state text
- *   emptyAction     - node (e.g. a button) rendered below the empty-state text
- */
 export default function ExpenseTable({
   expenses,
   onEdit,
@@ -47,31 +25,16 @@ export default function ExpenseTable({
   const [sortDir, setSortDir] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [filterOpen, setFilterOpen] = useState(false);
-  const filterRef = useRef(null);
-  const [expandedNotes, setExpandedNotes] = useState(new Set());
 
-  const toggleNote = (id) => {
-    setExpandedNotes(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
-
-  // When the expenses dataset changes (e.g. date range switch), clear any stale
-  // category filter first — the previously selected category may not exist in the new set.
+  // Clear stale category filter when the expenses dataset changes (e.g. date range switch)
   useEffect(() => {
     setCategoryFilter('');
     setCurrentPage(1);
   }, [expenses]);
 
-  // Also reset to page 1 when the user picks a new category filter.
   useEffect(() => {
     setCurrentPage(1);
   }, [categoryFilter]);
-
-  useClickOutside(filterRef, () => setFilterOpen(false), filterOpen);
 
   const uniqueCategories = showCategoryFilter
     ? [...new Set(expenses.map(e => e.category).filter(Boolean))].sort()
@@ -147,42 +110,20 @@ export default function ExpenseTable({
           <thead>
             <tr>
               {!hide.has('category') && (
-                <th>
-                  <div className="th-category-wrapper" ref={showCategoryFilter ? filterRef : null}>
-                    <button className="th-sort-btn" onClick={() => handleSort('category')}>
-                      Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
-                    </button>
-                    {showCategoryFilter && (
-                      <button
-                        className={`th-filter-btn${categoryFilter ? ' th-filter-active' : ''}`}
-                        onClick={() => setFilterOpen(o => !o)}
-                        title={categoryFilter ? `Filtering: ${categoryFilter}` : 'Filter by category'}
-                      >
-                        <LuFilter size={12} />
+                showCategoryFilter
+                  ? <CategoryFilterTh
+                      categoryFilter={categoryFilter}
+                      setCategoryFilter={setCategoryFilter}
+                      uniqueCategories={uniqueCategories}
+                      sortKey={sortKey}
+                      sortDir={sortDir}
+                      onSort={handleSort}
+                    />
+                  : <th>
+                      <button className="th-sort-btn" onClick={() => handleSort('category')}>
+                        Category <SortIcon active={sortKey === 'category'} dir={sortDir} />
                       </button>
-                    )}
-                    {showCategoryFilter && filterOpen && (
-                      <div className="category-filter-dropdown">
-                        <button
-                          className={`category-filter-option${!categoryFilter ? ' active' : ''}`}
-                          onClick={() => { setCategoryFilter(''); setFilterOpen(false); }}
-                        >
-                          All Categories
-                        </button>
-                        {uniqueCategories.map(cat => (
-                          <button
-                            key={cat}
-                            className={`category-filter-option${categoryFilter === cat ? ' active' : ''}`}
-                            onClick={() => { setCategoryFilter(cat); setFilterOpen(false); }}
-                          >
-                            <span className="category-option-icon">{getCategoryIcon(cat)}</span>
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </th>
+                    </th>
               )}
               {!hide.has('title') && (
                 <th>
@@ -210,85 +151,16 @@ export default function ExpenseTable({
           </thead>
           <tbody>
             {page.map((expense) => (
-              <Fragment key={expense.id}>
-                <tr>
-                  {!hide.has('category') && (
-                    <td>
-                      <div className="category-cell">
-                        <span className="category-icon">{getCategoryIcon(expense.category)}</span>
-                        <span className="category-name">{expense.category}</span>
-                      </div>
-                    </td>
-                  )}
-                  {!hide.has('title') && (
-                    <td>
-                      <div className="title-cell">
-                        <span className="expense-title">{expense.title}</span>
-                        {expense.notes && (
-                          <button
-                            className={`note-toggle-btn${expandedNotes.has(expense.id) ? ' active' : ''}`}
-                            onClick={() => toggleNote(expense.id)}
-                            title={expandedNotes.has(expense.id) ? 'Hide note' : 'Show note'}
-                            type="button"
-                          >
-                            <LuMessageSquare size={13} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                  {!hide.has('amount') && (
-                    <td>
-                      <span className="amount-cell">
-                        {formatAmount(typeof expense.amount === 'number' ? expense.amount : 0)}
-                      </span>
-                    </td>
-                  )}
-                  {!hide.has('date') && (
-                    <td>
-                      <span className="date-cell">
-                        {hide.has('category') && expense.category
-                          ? `${expense.category} • ${formatDate(expense.date)}`
-                          : formatDate(expense.date)}
-                      </span>
-                    </td>
-                  )}
-                  {showActions && (
-                    <td>
-                      <div className="action-buttons">
-                        {onEdit && (
-                          <button
-                            onClick={() => onEdit(expense)}
-                            className="btn btn-secondary btn-sm edit-btn"
-                            title="Edit expense"
-                          >
-                            <LuPencil size={14} />
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button
-                            onClick={() => onDelete(expense.id)}
-                            className="btn btn-danger btn-sm delete-btn"
-                            title="Delete expense"
-                          >
-                            <LuTrash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-                {expense.notes && expandedNotes.has(expense.id) && (
-                  <tr className="note-row">
-                    <td colSpan={colCount} className="note-row-cell">
-                      <div className="note-row-inner">
-                        <LuMessageSquare size={12} />
-                        <span>{expense.notes}</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
+              <ExpenseRow
+                key={expense.id}
+                expense={expense}
+                hide={hide}
+                showActions={showActions}
+                colCount={colCount}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                formatAmount={formatAmount}
+              />
             ))}
           </tbody>
         </table>

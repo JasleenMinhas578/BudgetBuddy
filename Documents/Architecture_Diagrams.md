@@ -316,8 +316,14 @@ budget-buddy/
 │   │   ├── AI/            # AIChat.jsx, AIChat.css, ChatMessage.jsx — floating Gemini chat widget
 │   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                      #   AuthLayout, AuthSubmitButton
+│   │   ├── Categories/    # CategoryCard, CategoryBudgetControl, CategoryKebabMenu,
+│   │   │                  #   CategoryDeleteMessage — sub-components of the Categories page
 │   │   ├── Dashboard/     # DashboardOverview (+ inline export modal), Expenses,
 │   │                      #   Categories, Goals, Settings, BudgetProgressPanel
+│   │   ├── DashboardOverview/ # BudgetAlertStrip, ChartsBlock, SpendingInsightsBlock,
+│   │                      #   SummaryCards — sub-components of DashboardOverview
+│   │   ├── Goals/         # GoalCard, BudgetSummaryCard, GoalInput — sub-components
+│   │                      #   of the Goals page
 │   │   ├── Expense/       # ExpenseForm, ExpenseList
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar
@@ -325,7 +331,8 @@ budget-buddy/
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
 │   │                      #   CuteEmptyFace, ChartCard, PageHeader,
 │   │                      #   PasswordInput, UserAvatar, SearchDropdown,
-│   │                      #   AddCategoryModal
+│   │                      #   AddCategoryModal, CategoryDropdown,
+│   │                      #   CategoryFilterTh, ExpenseRow, SortIcon
 │   ├── context/           # AuthContext.js, DateRangeContext.js, CurrencyContext.jsx
 │   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
 │   │                      #   useReportData.js, useSidebar.js, useReportExport.js,

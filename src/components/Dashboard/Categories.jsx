@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
-import { LuTag, LuPlus, LuChevronDown, LuChevronUp, LuMoreVertical, LuPencil, LuTrash2 } from 'react-icons/lu';
+import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
-import ExpenseTable from '../UI/ExpenseTable';
 import { subscribeToUserPreferences } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { useExpenses } from '../../hooks/useExpenses';
@@ -26,9 +25,10 @@ import Toast from '../UI/Toast';
 import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../UI/ConfirmDialog';
 import DateFilterBar from '../UI/DateFilterBar';
+import CategoryCard from '../Categories/CategoryCard';
+import CategoryDeleteMessage from '../Categories/CategoryDeleteMessage';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
-
 
 export default function Categories() {
   const { formatAmount, currencySymbol, toDisplayAmount, toHomeAmount } = useCurrency();
@@ -53,6 +53,7 @@ export default function Categories() {
       navigate('/dashboard/categories', { replace: true });
     }
   }, [location.search, navigate]);
+
   const {
     filteredExpenses, dateFilter, setDateFilter,
     customDateRange, setCustomDateRange,
@@ -72,7 +73,6 @@ export default function Categories() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-
   useEffect(() => {
     if (!currentUser) return;
     let unsub = () => {};
@@ -88,39 +88,37 @@ export default function Categories() {
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES
-      .filter(cat => !hiddenDefaults.includes(cat.name))
-      .map(cat => ({ ...cat, isDefault: true })),
+      .filter((cat) => !hiddenDefaults.includes(cat.name))
+      .map((cat) => ({ ...cat, isDefault: true })),
     ...firestoreCategories
-      .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
-      .map(cat => ({ ...cat, Icon: LuTag, isDefault: false })),
+      .filter((cat) => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
+      .map((cat) => ({ ...cat, Icon: LuTag, isDefault: false })),
   ], [firestoreCategories, hiddenDefaults]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
   const { budgets, setCategoryBudget } = useBudgets();
-  const [goalInputOpen, setGoalInputOpen] = useState(null);
-  const [goalInputValue, setGoalInputValue] = useState('');
   const { categoryProgress } = useBudgetProgress(filteredExpenses, allCategories, budgets);
 
   const monthlyTrendData = useMemo(() => {
     const months = [...new Set(
-      filteredExpenses.map(e => e.date?.slice(0, 7)).filter(Boolean)
+      filteredExpenses.map((e) => e.date?.slice(0, 7)).filter(Boolean)
     )].sort();
     const catTotals = {};
-    filteredExpenses.forEach(e => {
+    filteredExpenses.forEach((e) => {
       if (e.category) catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
     });
     const topCats = Object.entries(catTotals)
       .sort(([, a], [, b]) => b - a).slice(0, 4).map(([name]) => name);
     return {
-      labels: months.map(m => {
+      labels: months.map((m) => {
         const [y, mo] = m.split('-');
         return new Date(Number(y), Number(mo) - 1).toLocaleDateString('en', { month: 'short', year: 'numeric' });
       }),
-      datasets: topCats.map(cat => ({
+      datasets: topCats.map((cat) => ({
         label: cat,
-        data: months.map(month =>
+        data: months.map((month) =>
           filteredExpenses
-            .filter(e => e.category === cat && e.date?.startsWith(month))
+            .filter((e) => e.category === cat && e.date?.startsWith(month))
             .reduce((sum, e) => sum + e.amount, 0)
         ),
         backgroundColor: getCategoryColor(cat),
@@ -129,7 +127,7 @@ export default function Categories() {
   }, [filteredExpenses]);
 
   const hasMultipleMonths = useMemo(() =>
-    new Set(filteredExpenses.map(e => e.date?.slice(0, 7)).filter(Boolean)).size >= 2
+    new Set(filteredExpenses.map((e) => e.date?.slice(0, 7)).filter(Boolean)).size >= 2
   , [filteredExpenses]);
 
   const {
@@ -144,7 +142,7 @@ export default function Categories() {
   } = useCategoryActions(currentUser, allCategories, showToast);
 
   const toggleCategory = (name) => {
-    setExpandedCategories(prev => {
+    setExpandedCategories((prev) => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
       else next.add(name);
@@ -153,10 +151,10 @@ export default function Categories() {
   };
 
   const expandableCategoryNames = allCategories
-    .filter(cat => filteredExpenses.some(e => e.category === cat.name))
-    .map(cat => cat.name);
+    .filter((cat) => filteredExpenses.some((e) => e.category === cat.name))
+    .map((cat) => cat.name);
   const allExpanded = expandableCategoryNames.length > 0 &&
-    expandableCategoryNames.every(name => expandedCategories.has(name));
+    expandableCategoryNames.every((name) => expandedCategories.has(name));
   const toggleAll = () => {
     setExpandedCategories(allExpanded ? new Set() : new Set(expandableCategoryNames));
   };
@@ -164,12 +162,7 @@ export default function Categories() {
   return (
     <div className="categories-container">
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          isVisible
-          onClose={hideToast}
-        />
+        <Toast message={toast.message} type={toast.type} isVisible onClose={hideToast} />
       )}
 
       <PageHeader
@@ -195,7 +188,7 @@ export default function Categories() {
         <div className="summary-stat">
           <span className="stat-label">Active Categories</span>
           <span className="stat-value">
-            {categoryData.datasets[0].data.filter(val => val > 0).length}
+            {categoryData.datasets[0].data.filter((val) => val > 0).length}
           </span>
         </div>
       </div>
@@ -231,168 +224,54 @@ export default function Categories() {
         {allCategories.length > 0 ? (
           <div className="categories-grid">
             {allCategories.map((category) => {
+              const isDefaultCategory = DEFAULT_CATEGORIES.some((dc) => dc.name === category.name);
               const categoryAmount = categoryData.datasets[0].data[categoryData.labels.indexOf(category.name)] || 0;
               const sharePercentage = totalSpent > 0 ? (categoryAmount / totalSpent) * 100 : 0;
-              const isDefaultCategory = DEFAULT_CATEGORIES.some(dc => dc.name === category.name);
               const isExpanded = expandedCategories.has(category.name);
-              const categoryExpenses = filteredExpenses.filter(e => e.category === category.name);
-              const isExpandable = categoryExpenses.length > 0;
-
-              const prog = categoryProgress.find(p => p.name === category.name);
+              const isExpandable = filteredExpenses.some((e) => e.category === category.name);
+              const prog = categoryProgress.find((p) => p.name === category.name);
               const hasBudget = prog?.budget !== null && prog?.budget !== undefined;
-              // bar shows budget progress when a budget is set; otherwise share-of-total
               const barPct = hasBudget ? Math.min(prog.pct, 100) : sharePercentage;
               const barClass = hasBudget
                 ? `progress-fill progress-fill--${prog.status}`
                 : 'progress-fill';
-              const barStyle = { width: `${barPct}%` };
 
               return (
-                <div
+                <CategoryCard
                   key={category.id ?? category.name}
-                  className={`category-card${isExpandable ? ' category-card--clickable' : ''}${isExpanded ? ' category-card--expanded' : ''}`}
-                  onClick={isExpandable ? () => toggleCategory(category.name) : undefined}
-                >
-                  <div className="category-card-header">
-                    <div className="category-icon-large" style={{ color: getCategoryColor(category.name), background: `${getCategoryColor(category.name)}26` }}>
-                      <category.Icon size={22} />
-                    </div>
-                    <div className="category-info">
-                      <h4>{category.name}</h4>
-                      <p className="category-amount">{formatAmount(categoryAmount)}</p>
-                      {goalInputOpen === category.name ? (
-                        <form
-                          className="category-goal-form"
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const val = parseFloat(goalInputValue);
-                            if (!isNaN(val) && val > 0) {
-                              setCategoryBudget(category.name, toHomeAmount(val));
-                            }
-                            setGoalInputOpen(null);
-                            setGoalInputValue('');
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <input
-                            className="category-goal-input"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            placeholder={`${currencySymbol}/mo`}
-                            value={goalInputValue}
-                            autoFocus
-                            onChange={(e) => setGoalInputValue(e.target.value)}
-                            onBlur={() => { setGoalInputOpen(null); setGoalInputValue(''); }}
-                            onKeyDown={(e) => { if (e.key === 'Escape') { setGoalInputOpen(null); setGoalInputValue(''); } }}
-                          />
-                          <button type="submit" className="category-goal-save" onMouseDown={(e) => e.preventDefault()}>✓</button>
-                        </form>
-                      ) : hasBudget ? (
-                        <span
-                          className="category-goal-badge"
-                          title="Click to edit monthly budget"
-                          style={{ cursor: 'pointer' }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setGoalInputOpen(category.name);
-                            const inDisplay = prog.budget != null ? toDisplayAmount(prog.budget) : null;
-                            setGoalInputValue(inDisplay != null ? String(parseFloat(inDisplay.toFixed(2))) : '');
-                          }}
-                        >
-                          Budget: {formatAmount(prog.budget)}/mo
-                        </span>
-                      ) : (
-                        <button
-                          className="category-set-goal-btn"
-                          title="Set a monthly budget for this category"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setGoalInputOpen(category.name);
-                            setGoalInputValue('');
-                          }}
-                        >
-                          + Set Budget
-                        </button>
-                      )}
-                    </div>
-                    <div className="category-actions">
-                      <div className="category-menu-wrapper">
-                        <button
-                          className="btn-kebab"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenu(openMenu === category.name ? null : category.name);
-                          }}
-                          aria-label="Category options"
-                        >
-                          <LuMoreVertical size={15} />
-                        </button>
-                        {openMenu === category.name && (
-                          <div className="category-kebab-menu">
-                            <button
-                              className="category-menu-item"
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                setOpenMenu(null);
-                                setEditName(category.name);
-                                handleEditCategory({ ...category, isDefault: isDefaultCategory });
-                              }}
-                            >
-                              <LuPencil size={13} />
-                              Edit
-                            </button>
-                            <button
-                              className="category-menu-item category-menu-item--danger"
-                              onMouseDown={(e) => {
-                                e.stopPropagation();
-                                setOpenMenu(null);
-                                handleDeleteCategory(category.id, category.name, isDefaultCategory, expenses.filter(e => e.category === category.name).length);
-                              }}
-                            >
-                              <LuTrash2 size={13} />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {isExpandable && (
-                    <span className="category-expand-hint" aria-hidden="true">
-                      {isExpanded ? <LuChevronUp size={14} /> : <LuChevronDown size={14} />}
-                    </span>
-                  )}
-                  <div className="category-progress">
-                    <div className="progress-bar">
-                      <div className={barClass} style={barStyle}></div>
-                    </div>
-                    {hasBudget ? (
-                      <div className="budget-row">
-                        <span className={`budget-remaining${prog.status === 'ok' ? '' : ` budget-remaining--${prog.status}`}`}>
-                          {prog.remaining >= 0
-                            ? `${formatAmount(prog.remaining)} left of ${formatAmount(prog.budget)}`
-                            : `${formatAmount(Math.abs(prog.remaining))} over budget`}
-                        </span>
-                        <span className="progress-text">{Math.min(prog.pct, 999).toFixed(0)}%</span>
-                      </div>
-                    ) : (
-                      <span className="progress-text">{sharePercentage.toFixed(1)}% of total</span>
-                    )}
-                  </div>
-                  {isExpanded && (
-                    <div className="category-expenses-panel" onClick={(e) => e.stopPropagation()}>
-                      <ExpenseTable
-                        expenses={categoryExpenses}
-                        hiddenColumns={['category']}
-                        itemsPerPage={5}
-                        emptyMessage="No expenses in this category"
-                        emptySubMessage="Try a different date range"
-                      />
-                    </div>
-                  )}
-                </div>
+                  category={category}
+                  isExpanded={isExpanded}
+                  isExpandable={isExpandable}
+                  categoryAmount={categoryAmount}
+                  sharePercentage={sharePercentage}
+                  prog={prog}
+                  hasBudget={hasBudget}
+                  barPct={barPct}
+                  barClass={barClass}
+                  isMenuOpen={openMenu === category.name}
+                  formatAmount={formatAmount}
+                  currencySymbol={currencySymbol}
+                  toDisplayAmount={toDisplayAmount}
+                  toHomeAmount={toHomeAmount}
+                  setCategoryBudget={setCategoryBudget}
+                  filteredExpenses={filteredExpenses}
+                  onToggle={() => toggleCategory(category.name)}
+                  onMenuToggle={() => setOpenMenu(openMenu === category.name ? null : category.name)}
+                  onEdit={() => {
+                    setOpenMenu(null);
+                    setEditName(category.name);
+                    handleEditCategory({ ...category, isDefault: isDefaultCategory });
+                  }}
+                  onDelete={() => {
+                    setOpenMenu(null);
+                    handleDeleteCategory(
+                      category.id,
+                      category.name,
+                      isDefaultCategory,
+                      expenses.filter((e) => e.category === category.name).length
+                    );
+                  }}
+                />
               );
             })}
           </div>
@@ -469,38 +348,13 @@ export default function Categories() {
       <ConfirmDialog
         isOpen={!!pendingDeleteCategory}
         title="Delete Category"
-        message={pendingDeleteCategory ? (() => {
-          const catExpenses = expenses.filter(e => e.category === pendingDeleteCategory.name);
-          return (
-            <div>
-              <p>
-                Are you sure you want to delete <strong>"{pendingDeleteCategory.name}"</strong>?
-                {pendingDeleteCategory.isDefault
-                  ? ' This default category will be hidden from your view.'
-                  : ' This action cannot be undone.'}
-              </p>
-              {catExpenses.length > 0 && (
-                <div className="cd-expense-warning-block">
-                  <p className="cd-expense-warning-title">
-                    <LuTrash2 size={14} />
-                    {pendingDeleteCategory.isDefault
-                      ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will keep their label (category hidden, not deleted):`
-                      : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will be reassigned to "Other":`}
-                  </p>
-                  <ul className={`cd-expense-list${catExpenses.length > 10 ? ' cd-expense-list--scrollable' : ''}`}>
-                    {catExpenses.map(e => (
-                      <li key={e.id}>
-                        <span className="cd-exp-title">{e.title}</span>
-                        <span className="cd-exp-date">{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
-                        <span className="cd-exp-amount">{formatAmount(Number(e.amount))}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          );
-        })() : ''}
+        message={
+          <CategoryDeleteMessage
+            pendingDeleteCategory={pendingDeleteCategory}
+            expenses={expenses}
+            formatAmount={formatAmount}
+          />
+        }
         onConfirm={confirmDeleteCategory}
         onCancel={() => setPendingDeleteCategory(null)}
         variant="danger"

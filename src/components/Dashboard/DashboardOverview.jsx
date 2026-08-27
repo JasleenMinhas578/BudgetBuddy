@@ -1,11 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import {
-  LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget, LuTag, LuAlertTriangle,
-  LuChevronDown, LuChevronUp, LuSparkles, LuFileText, LuFileSpreadsheet,
-  LuLoader, LuX, LuZap, LuLightbulb, LuBarChart2,
-} from 'react-icons/lu';
+import { LuTag, LuPlus, LuFileText, LuFileSpreadsheet } from 'react-icons/lu';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import { useExpenses } from '../../hooks/useExpenses';
@@ -21,11 +17,12 @@ import ExpenseTable from '../UI/ExpenseTable';
 import Modal from '../UI/Modal';
 import ExpenseForm from '../Expense/ExpenseForm';
 import BudgetProgressPanel from './BudgetProgressPanel';
-import ChartCard from '../UI/ChartCard';
-import PieChart from '../Charts/PieChart';
-import LineChart from '../Charts/LineChart';
 import { getMonthEndForecast } from '../../utils/forecastUtils';
 import { useCurrency } from '../../context/CurrencyContext';
+import BudgetAlertStrip from '../DashboardOverview/BudgetAlertStrip';
+import SummaryCards from '../DashboardOverview/SummaryCards';
+import SpendingInsightsBlock from '../DashboardOverview/SpendingInsightsBlock';
+import ChartsBlock from '../DashboardOverview/ChartsBlock';
 import '../../styles/main.css';
 
 
@@ -35,13 +32,10 @@ export default function DashboardOverview() {
   const { budgets, setCategoryBudget } = useBudgets();
   const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [insightsOpen, setInsightsOpen] = useState(false);
-  const [chartsOpen, setChartsOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Open export modal when sidebar Export nav item is clicked (?export=open)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('export') === 'open') {
@@ -62,11 +56,9 @@ export default function DashboardOverview() {
 
   const { categoryProgress, closestToLimit } = useBudgetProgress(filteredExpenses, allCategories, budgets);
 
-  // Feature 4 — budget alert categories
   const dangerCategories = categoryProgress.filter(c => c.status === 'danger');
   const warnCategories = categoryProgress.filter(c => c.status === 'warning');
 
-  // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
   const averageExpense = filteredExpenses.length > 0 ? totalSpent / filteredExpenses.length : 0;
 
@@ -85,16 +77,12 @@ export default function DashboardOverview() {
     generatePDF,
   } = useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount: reportTotal, averageAmount: reportAvg, categoryData, topCategory });
 
-  // Feature 1 — month-end spending forecast (only meaningful for thisMonth filter)
   const forecastResult = dateFilter === 'thisMonth' ? getMonthEndForecast(filteredExpenses) : null;
 
-
-  // Only show "Welcome!" after data has loaded to avoid flashing for returning users
   const isFirstTimeUser = !loading && expenses.length === 0;
 
   return (
     <div className="dashboard-overview">
-      {/* Welcome Section */}
       <div className="welcome-section">
         <div className="welcome-content">
           <h1>{isFirstTimeUser ? 'Welcome!' : 'Welcome back!'}</h1>
@@ -110,7 +98,6 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Date Filter */}
       <div className="filter-controls">
         <DateFilterBar
           dateFilter={dateFilter}
@@ -123,101 +110,21 @@ export default function DashboardOverview() {
         />
       </div>
 
-      {/* Feature 4 — Budget over-limit banner */}
-      {(dangerCategories.length > 0 || warnCategories.length > 0) && (
-        <div className="budget-alert-strip">
-          {dangerCategories.length > 0 && (
-            <div className="budget-alert budget-alert--danger">
-              <LuAlertTriangle size={15} className="budget-alert__icon" />
-              <span className="budget-alert__label">Over budget:</span>
-              <div className="budget-alert__chips">
-                {dangerCategories.map(c => (
-                  <Link key={c.name} to="/dashboard/goals" className="budget-alert__chip">
-                    {c.name} · {formatAmount(c.spent - c.budget)} over
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-          {warnCategories.length > 0 && (
-            <div className="budget-alert budget-alert--warn">
-              <LuAlertTriangle size={15} className="budget-alert__icon" />
-              <span className="budget-alert__label">Near limit:</span>
-              <div className="budget-alert__chips">
-                {warnCategories.map(c => (
-                  <Link key={c.name} to="/dashboard/goals" className="budget-alert__chip">
-                    {c.name} · {Math.round(c.pct)}%
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <BudgetAlertStrip
+        dangerCategories={dangerCategories}
+        warnCategories={warnCategories}
+        formatAmount={formatAmount}
+      />
 
-      {/* Summary Cards - Key financial metrics */}
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="card-icon">
-            <LuDollarSign size={26} />
-          </div>
-          <div className="card-content">
-            <h3>Total Spent</h3>
-            <p className="card-amount">{formatAmount(totalSpent)}</p>
-            <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
+      <SummaryCards
+        totalSpent={totalSpent}
+        averageExpense={averageExpense}
+        transactionCount={filteredExpenses.length}
+        topCategory={topCategory}
+        closestToLimit={closestToLimit}
+        formatAmount={formatAmount}
+      />
 
-        <div className="summary-card">
-          <div className="card-icon">
-            <LuTrendingUp size={26} />
-          </div>
-          <div className="card-content">
-            <h3>Average</h3>
-            <p className="card-amount">{formatAmount(averageExpense)}</p>
-            <p className="card-subtitle">Per transaction</p>
-          </div>
-        </div>
-
-        <div className="summary-card">
-          <div className="card-icon">
-            <LuAward size={26} />
-          </div>
-          <div className="card-content">
-            <h3>Top Category</h3>
-            <p className="card-amount">{topCategory ?? 'None'}</p>
-            <p className="card-subtitle">Most spent category</p>
-          </div>
-        </div>
-
-        <div className="summary-card">
-          <div className="card-icon">
-            <LuTarget size={26} />
-          </div>
-          <div className="card-content">
-            <h3>Closest to Limit</h3>
-            {closestToLimit ? (
-              <>
-                <p className="budget-limit-card__name">{closestToLimit.name}</p>
-                <p className={`budget-limit-card__pct budget-limit-card__pct--${closestToLimit.status}`}>
-                  {Math.min(closestToLimit.pct, 999).toFixed(0)}%
-                </p>
-                <p className="budget-limit-card__detail">
-                  {formatAmount(closestToLimit.spent)} of {formatAmount(closestToLimit.budget)}
-                </p>
-              </>
-            ) : (
-              <p className="budget-limit-card__cta">
-                No budgets set yet.{' '}
-                <Link to="/dashboard/goals">Set goals</Link> to track progress.
-              </p>
-            )}
-          </div>
-        </div>
-
-      </div>
-
-      {/* Budget Goals Progress — only relevant for month-scoped filters */}
       {['today', 'thisWeek', 'thisMonth', 'pickMonth'].includes(dateFilter) && (
         <BudgetProgressPanel
           expenses={expenses}
@@ -228,7 +135,6 @@ export default function DashboardOverview() {
         />
       )}
 
-      {/* Recent Expenses Table */}
       <div className="recent-activity">
         <div className="activity-header">
           <h3>Recent Expenses</h3>
@@ -256,123 +162,23 @@ export default function DashboardOverview() {
         />
       </div>
 
-      {/* Block 1 — Spending Insights (AI summary + text insights) */}
-      <div className="spending-insights-block">
-        <div className="spending-insights-toggle" aria-expanded={insightsOpen}>
-          <button
-            className="spending-insights-expand"
-            onClick={() => setInsightsOpen(o => !o)}
-          >
-            <span className="spending-insights-toggle-left">
-              <LuLightbulb size={18} />
-              <span>Spending Insights</span>
-            </span>
-          </button>
-          <div className="spending-insights-toggle-right" ref={exportDropdownRef}>
-            <button
-              onClick={handleGenerateSummary}
-              disabled={aiSummaryLoading || filteredExpenses.length === 0}
-              className="btn btn-primary btn-sm"
-            >
-              {aiSummaryLoading ? <LuLoader size={14} /> : <LuSparkles size={14} />}
-              {aiSummaryLoading ? 'Generating…' : 'AI Summary'}
-            </button>
-            <button
-              className="spending-insights-chevron"
-              onClick={() => setInsightsOpen(o => !o)}
-              aria-label={insightsOpen ? 'Collapse' : 'Expand'}
-            >
-              {insightsOpen ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
-            </button>
-          </div>
-        </div>
+      <SpendingInsightsBlock
+        exportDropdownRef={exportDropdownRef}
+        handleGenerateSummary={handleGenerateSummary}
+        aiSummaryLoading={aiSummaryLoading}
+        aiSummary={aiSummary}
+        setAiSummary={setAiSummary}
+        aiSummaryError={aiSummaryError}
+        setAiSummaryError={setAiSummaryError}
+        spendingInsights={spendingInsights}
+        hasExpenses={filteredExpenses.length > 0}
+      />
 
-        {insightsOpen && (
-          <div className="spending-insights-content">
-            {(aiSummary || aiSummaryError) && (
-              <div className="ai-summary-card">
-                <div className="ai-summary-header">
-                  <div className="ai-summary-title">
-                    <LuSparkles size={16} />
-                    <h3>AI Spending Summary</h3>
-                  </div>
-                  <button
-                    className="ai-summary-close"
-                    onClick={() => { setAiSummary(null); setAiSummaryError(null); }}
-                    aria-label="Close summary"
-                  >
-                    <LuX size={14} />
-                  </button>
-                </div>
-                <div className="ai-summary-body">
-                  {aiSummaryError ? (
-                    <p className="ai-summary-error">{aiSummaryError}</p>
-                  ) : (
-                    <p className="ai-summary-text">{aiSummary}</p>
-                  )}
-                </div>
-                {!aiSummaryError && (
-                  <div className="ai-summary-footer">
-                    <span className="ai-summary-powered"><LuZap size={12} /> Powered by Gemini</span>
-                    <button
-                      className="ai-summary-regenerate"
-                      onClick={handleGenerateSummary}
-                      disabled={aiSummaryLoading}
-                    >
-                      ↻ Regenerate
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {spendingInsights.length > 0 && (
-              <div className="insights-list">
-                {spendingInsights.map((insight, index) => (
-                  <div key={index} className="insight-item">
-                    <p>{insight}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Block 2 — Charts & Visualizations */}
-      <div className="spending-insights-block" id="report-content">
-        <div className="spending-insights-toggle" aria-expanded={chartsOpen}>
-          <button
-            className="spending-insights-expand"
-            onClick={() => setChartsOpen(o => !o)}
-          >
-            <span className="spending-insights-toggle-left">
-              <LuBarChart2 size={18} />
-              <span>Charts &amp; Visualizations</span>
-            </span>
-          </button>
-          <button
-            className="spending-insights-chevron"
-            onClick={() => setChartsOpen(o => !o)}
-            aria-label={chartsOpen ? 'Collapse' : 'Expand'}
-          >
-            {chartsOpen ? <LuChevronUp size={16} /> : <LuChevronDown size={16} />}
-          </button>
-        </div>
-
-        {chartsOpen && (
-          <div className="spending-insights-content">
-            <div className="charts-section">
-              <ChartCard title="Spending by Category" isEmpty={filteredExpenses.length === 0}>
-                <PieChart data={categoryData} />
-              </ChartCard>
-              <ChartCard title="Monthly Trend" isEmpty={filteredExpenses.length === 0}>
-                <LineChart data={monthlyData} />
-              </ChartCard>
-            </div>
-          </div>
-        )}
-      </div>
+      <ChartsBlock
+        isEmpty={filteredExpenses.length === 0}
+        categoryData={categoryData}
+        monthlyData={monthlyData}
+      />
 
       <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)} title="Add New Expense">
         <ExpenseForm
@@ -428,4 +234,4 @@ export default function DashboardOverview() {
       </Modal>
     </div>
   );
-} 
+}

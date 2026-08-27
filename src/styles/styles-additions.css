@@ -1200,6 +1200,37 @@
 }
 
 /* ── Date filter bar (Expenses & Categories pages) ───────────────────────── */
+.date-filter-header {
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid var(--glass-10);
+}
+.date-filter-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.2rem;
+}
+.date-filter-period {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+}
+.date-filter-period strong {
+  background: var(--accent-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+.date-filter-period span {
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: 0.95rem;
+}
 .date-filter-bar {
   margin: 1rem 0 1.25rem;
   display: flex;

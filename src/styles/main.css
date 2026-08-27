@@ -8,11 +8,10 @@
  * styles-components.css    — Shared: buttons, modals, forms, tables, auth, nav, hero
  * styles-dashboard.css     — Dashboard layout, sidebar, navbar, overview cards, charts
  * styles-categories.css    — Categories grid, kebab menu, progress bar, budget labels
- * styles-reports.css       — Reports page, filter controls, chart cards, insights
  * styles-forms.css         — Toast, responsive, expense form, category form modal
  * styles-goals.css         — Goals page
  * styles-dashboard-extras.css — Budget panel, dashboard features, export modal
- * styles-additions.css     — Date filter bar, pagination, 404, keyframes
+ * styles-additions.css     — Date filter bar, filter controls, chart cards, insights, pagination, 404, keyframes
  * styles-settings.css      — Settings page, sidebar footer
  * styles-ai-chat.css       — Floating AI chat widget and panel
  */
@@ -22,7 +21,6 @@
 @import './styles-components.css';
 @import './styles-dashboard.css';
 @import './styles-categories.css';
-@import './styles-reports.css';
 @import './styles-forms.css';
 @import './styles-goals.css';
 @import './styles-dashboard-extras.css';
