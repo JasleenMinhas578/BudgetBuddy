@@ -4,8 +4,10 @@ import { useCategories } from '../../hooks/useCategories';
 import { LuChevronDown, LuCheck, LuTag, LuLightbulb } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
+import { addCategory } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { suggestCategory } from '../../utils/categorySuggester';
+import { validCategory } from '../../utils/categoryUtils';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
@@ -47,7 +49,7 @@ export default function ExpenseForm({
   // Merge default and custom categories, avoiding duplicates by name
   const allCategories = [
     ...DEFAULT_CATEGORIES,
-    ...customCategories.filter(cat => !DEFAULT_CATEGORIES.some(def => def.name === cat.name)),
+    ...customCategories.filter(cat => validCategory(cat.name) && !DEFAULT_CATEGORIES.some(def => def.name === cat.name)),
   ];
 
   /**
@@ -287,7 +289,7 @@ export default function ExpenseForm({
               const val = e.target.value;
               setTitle(val);
               if (!suggestionDismissed) {
-                setSuggestion(suggestCategory(val));
+                setSuggestion(suggestCategory(val, allCategories));
               }
             }}
             placeholder="Expense title"
@@ -345,7 +347,19 @@ export default function ExpenseForm({
               <button
                 type="button"
                 className="category-suggestion-accept"
-                onClick={() => { setCategory(suggestion); setSuggestion(null); }}
+                onClick={async () => {
+                  const exists = allCategories.some(c => c.name === suggestion);
+                  if (!exists && currentUser) {
+                    try {
+                      await addCategory(currentUser.uid, { name: suggestion });
+                    } catch {
+                      // Category creation failed — expense still saves with that name;
+                      // user can create it manually in Categories.
+                    }
+                  }
+                  setCategory(suggestion);
+                  setSuggestion(null);
+                }}
               >
                 Use it
               </button>
