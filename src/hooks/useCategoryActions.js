@@ -12,11 +12,7 @@ export function useCategoryActions(currentUser, allCategories, showToast) {
   const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
   const [pendingEditCategory, setPendingEditCategory] = useState(null);
 
-  // When showToast is not provided (backwards compat), manage local toast state
-  const [localToast, setLocalToast] = useState(null);
-  const toast = showToast ? undefined : localToast;
-  const setToast = showToast ? undefined : setLocalToast;
-  const notify = showToast ?? ((msg, type) => setLocalToast({ message: msg, type }));
+  const notify = showToast;
 
   const handleAddCategory = async (categoryName, onSuccess) => {
     if (!currentUser) {
@@ -120,8 +116,6 @@ export function useCategoryActions(currentUser, allCategories, showToast) {
 
   return {
     isLoading,
-    // Only present when showToast not provided (legacy callers)
-    toast, setToast,
     pendingDeleteCategory, setPendingDeleteCategory,
     pendingEditCategory, setPendingEditCategory,
     handleAddCategory,

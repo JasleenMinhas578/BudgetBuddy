@@ -13,18 +13,6 @@ export const FILTER_BUTTONS_DEFAULT = [
   { key: 'custom',     label: 'Custom Range' },
 ];
 
-export const FILTER_BUTTONS_REPORTS = [
-  { key: 'all',        label: 'All Time'     },
-  { key: 'today',      label: 'Today'        },
-  { key: 'thisWeek',   label: 'This Week'    },
-  { key: 'thisMonth',  label: 'This Month'   },
-  { key: 'lastMonth',  label: 'Last Month'   },
-  { key: 'pickMonth',  label: 'Select Month' },
-  { key: 'thisYear',   label: 'This Year'    },
-  { key: 'lastYear',   label: 'Last Year'    },
-  { key: 'custom',     label: 'Custom Range' },
-];
-
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',

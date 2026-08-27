@@ -59,9 +59,6 @@ export default function DashboardOverview() {
   const dangerCategories = categoryProgress.filter(c => c.status === 'danger');
   const warnCategories = categoryProgress.filter(c => c.status === 'warning');
 
-  const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const averageExpense = filteredExpenses.length > 0 ? totalSpent / filteredExpenses.length : 0;
-
   const recentExpenses = filteredExpenses.slice(0, 5);
 
   const { categoryData, monthlyData, spendingInsights, totalAmount: reportTotal, averageAmount: reportAvg, topCategory } = useReportData(filteredExpenses);
@@ -117,8 +114,8 @@ export default function DashboardOverview() {
       />
 
       <SummaryCards
-        totalSpent={totalSpent}
-        averageExpense={averageExpense}
+        totalSpent={reportTotal}
+        averageExpense={reportAvg}
         transactionCount={filteredExpenses.length}
         topCategory={topCategory}
         closestToLimit={closestToLimit}

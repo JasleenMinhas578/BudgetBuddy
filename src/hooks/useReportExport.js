@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useClickOutside } from './useClickOutside';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import { generateSummary } from '../services/aiService';
@@ -13,13 +12,10 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
   const displaySymbol = CURRENCIES?.find(c => c.code === currency)?.symbol ?? '$';
   const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [showExportOptions, setShowExportOptions] = useState(false);
   const [aiSummary, setAiSummary] = useState(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState(null);
   const exportDropdownRef = useRef(null);
-
-  useClickOutside(exportDropdownRef, () => setShowExportOptions(false), showExportOptions);
 
   useEffect(() => {
     setAiSummary(null);
@@ -290,12 +286,10 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
 
   return {
     isGeneratingPDF,
-    showExportOptions, setShowExportOptions,
     aiSummary, setAiSummary,
     aiSummaryLoading,
     aiSummaryError, setAiSummaryError,
     exportDropdownRef,
-    getFilterLabel,
     handleGenerateSummary,
     exportToCSV,
     generatePDF,

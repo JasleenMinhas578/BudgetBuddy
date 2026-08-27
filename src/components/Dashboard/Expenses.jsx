@@ -91,11 +91,6 @@ export default function Expenses() {
 
   const totalAmount = searchFilteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
 
-  const handleExpenseAdded = () => {
-    setIsExpenseFormOpen(false);
-    // Optionally, refresh expenses here if needed
-  };
-
   const closeAddExpenseModal = () => {
     setIsExpenseFormOpen(false);
   };
@@ -180,7 +175,7 @@ export default function Expenses() {
       {/* Expense Form Modal */}
       <Modal isOpen={isExpenseFormOpen} onClose={closeAddExpenseModal} title="Add New Expense">
         <ExpenseForm
-          onExpenseAdded={handleExpenseAdded}
+          onExpenseAdded={closeAddExpenseModal}
           onCancel={closeAddExpenseModal}
         />
       </Modal>

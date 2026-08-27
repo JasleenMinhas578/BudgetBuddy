@@ -29,8 +29,6 @@ export default function ForgotPassword() {
         await resetPassword(email, actionCodeSettings);
       } catch (urlError) {
         if (urlError.code === 'auth/unauthorized-continue-uri' || urlError.code === 'auth/invalid-continue-uri') {
-          console.warn('Custom URL not authorized, trying with Firebase default...');
-          console.warn('Please add your domain to Firebase Console → Authentication → Settings → Authorized domains');
           await resetPassword(email);
         } else {
           throw urlError;

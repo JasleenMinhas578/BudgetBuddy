@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { subscribeToBudgets, updateCategoryBudget, updateMonthlyBudget } from '../services/budgetService';
+
+import { subscribeToBudgets, updateCategoryBudget } from '../services/budgetService';
 import { useAuth } from '../context/AuthContext';
 
 export function useBudgets() {
@@ -30,8 +31,5 @@ export function useBudgets() {
   const setCategoryBudget = useCallback((name, amount) =>
     updateCategoryBudget(currentUser?.uid, name, amount), [currentUser]);
 
-  const setMonthlyBudget = useCallback((amount) =>
-    updateMonthlyBudget(currentUser?.uid, amount), [currentUser]);
-
-  return { budgets, setCategoryBudget, setMonthlyBudget };
+  return { budgets, setCategoryBudget };
 }

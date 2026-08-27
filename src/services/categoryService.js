@@ -89,28 +89,6 @@ export const reassignCategoryExpenses = async (userId, categoryName) => {
   }
 };
 
-export const deleteCategoryAndExpenses = async (userId, categoryId, categoryName) => {
-  const expSnap = await getDocs(
-    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
-  );
-  const expDocs = expSnap.docs;
-  const BATCH_SIZE = 499;
-
-  // First batch: category doc + up to 498 expense docs
-  const firstBatch = writeBatch(db);
-  firstBatch.delete(doc(db, 'users', userId, 'categories', categoryId));
-  expDocs.slice(0, BATCH_SIZE - 1).forEach(d => firstBatch.delete(d.ref));
-  await firstBatch.commit();
-
-  // Any remaining expense docs in subsequent batches of 499
-  const remaining = expDocs.slice(BATCH_SIZE - 1);
-  for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
-    remaining.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
-    await batch.commit();
-  }
-};
-
 // Deletes a category and reassigns all its expenses to "Other" instead of deleting them.
 export const reassignAndDeleteCategory = async (userId, categoryId, categoryName) => {
   const expSnap = await getDocs(

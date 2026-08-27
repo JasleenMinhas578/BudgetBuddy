@@ -114,5 +114,5 @@ export function useReportData(filteredExpenses) {
     return insights.slice(0, 5);
   }, [filteredExpenses, totalAmount, maxAmount, topCategory, averageAmount, formatAmount]);
 
-  return { totalAmount, averageAmount, categoryData, monthlyData, topCategory, maxAmount, spendingInsights };
+  return { totalAmount, averageAmount, categoryData, monthlyData, topCategory, spendingInsights };
 }

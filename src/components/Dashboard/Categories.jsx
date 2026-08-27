@@ -11,6 +11,7 @@ import ChartCard from '../UI/ChartCard';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import { useCategoryData } from '../../hooks/useCategoryData';
 import { useCategoryActions } from '../../hooks/useCategoryActions';
+import { validCategory } from '../../utils/categoryUtils';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useAuth } from '../../context/AuthContext';
@@ -91,7 +92,7 @@ export default function Categories() {
       .filter((cat) => !hiddenDefaults.includes(cat.name))
       .map((cat) => ({ ...cat, isDefault: true })),
     ...firestoreCategories
-      .filter((cat) => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
+      .filter((cat) => cat && validCategory(cat.name))
       .map((cat) => ({ ...cat, Icon: LuTag, isDefault: false })),
   ], [firestoreCategories, hiddenDefaults]);
 
