@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import { LuBot, LuWallet, LuX, LuSend, LuInfo } from 'react-icons/lu';
 import { useAIChat } from '../../hooks/useAIChat';
 import ChatMessage from './ChatMessage';
@@ -66,17 +67,8 @@ export default function AIChat() {
     if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
   }, [isOpen]);
 
-  // Close on outside click only when conversation hasn't started
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClickOutside = (e) => {
-      if (messages.length === 0 && widgetRef.current && !widgetRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen, messages.length, setIsOpen]);
+  // Close on outside click only when chat is open and no messages yet
+  useClickOutside(widgetRef, () => setIsOpen(false), isOpen && messages.length === 0);
 
   return (
     <div className="ai-chat-widget" ref={widgetRef}>

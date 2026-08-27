@@ -1,9 +1,10 @@
 /* istanbul ignore file */
 import { useState, useEffect, useMemo } from 'react';
+import { useCategories } from '../../hooks/useCategories';
 import { LuTag, LuPlus, LuChevronDown, LuChevronUp, LuMoreVertical, LuPencil, LuTrash2 } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
 import ExpenseTable from '../UI/ExpenseTable';
-import { subscribeToCategories, subscribeToUserPreferences } from '../../services/categoryService';
+import { subscribeToUserPreferences } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { useExpenses } from '../../hooks/useExpenses';
 import PageHeader from '../UI/PageHeader';
@@ -19,7 +20,9 @@ import { useDateRangeContext } from '../../context/DateRangeContext';
 import PieChart from '../Charts/PieChart';
 import BarChart from '../Charts/BarChart';
 import Modal from '../UI/Modal';
+import AddCategoryModal from '../UI/AddCategoryModal';
 import Toast from '../UI/Toast';
+import { useToast } from '../../hooks/useToast';
 import ConfirmDialog from '../UI/ConfirmDialog';
 import DateFilterBar from '../UI/DateFilterBar';
 import '../../styles/main.css';
@@ -28,8 +31,8 @@ import '../../styles/modal-forms.css';
 
 export default function Categories() {
   const { expenses } = useExpenses();
-  const [categories, setCategories] = useState([]);
-  const [newCategory, setNewCategory] = useState('');
+  const firestoreCategories = useCategories();
+  const { toast, showToast, hideToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [openMenu, setOpenMenu] = useState(null);
@@ -56,18 +59,6 @@ export default function Categories() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsubscribeCategories = () => {};
-    try {
-      unsubscribeCategories = subscribeToCategories(currentUser.uid, (data) => {
-        if (data !== null) setCategories(data);
-      });
-    } catch (error) {
-      console.error('Error setting up category listener:', error);
-    }
-    return () => unsubscribeCategories();
-  }, [currentUser]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -81,10 +72,10 @@ export default function Categories() {
     ...DEFAULT_CATEGORIES
       .filter(cat => !hiddenDefaults.includes(cat.name))
       .map(cat => ({ ...cat, isDefault: true })),
-    ...categories
+    ...firestoreCategories
       .filter(cat => cat && cat.name && cat.name !== 'undefined' && cat.name !== 'null')
       .map(cat => ({ ...cat, Icon: LuTag, isDefault: false })),
-  ], [categories, hiddenDefaults]);
+  ], [firestoreCategories, hiddenDefaults]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
   const { budgets } = useBudgets();
@@ -123,7 +114,6 @@ export default function Categories() {
 
   const {
     isLoading,
-    toast, setToast,
     pendingDeleteCategory, setPendingDeleteCategory,
     pendingEditCategory, setPendingEditCategory,
     handleAddCategory,
@@ -131,12 +121,7 @@ export default function Categories() {
     confirmEditCategory,
     handleDeleteCategory,
     confirmDeleteCategory,
-  } = useCategoryActions(currentUser, allCategories);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setNewCategory('');
-  };
+  } = useCategoryActions(currentUser, allCategories, showToast);
 
   const toggleCategory = (name) => {
     setExpandedCategories(prev => {
@@ -162,8 +147,8 @@ export default function Categories() {
         <Toast
           message={toast.message}
           type={toast.type}
-          isVisible={true}
-          onClose={() => setToast(null)}
+          isVisible
+          onClose={hideToast}
         />
       )}
 
@@ -374,36 +359,12 @@ export default function Categories() {
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Add New Category">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAddCategory(newCategory, handleCloseModal);
-          }}
-          className="category-form"
-        >
-          <div className="form-group">
-            <label htmlFor="categoryName">Category Name</label>
-            <input
-              id="categoryName"
-              type="text"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Enter category name"
-              maxLength={25}
-              required
-            />
-          </div>
-          <div className="form-actions">
-            <button type="button" onClick={handleCloseModal} className="btn btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary gradient-btn" disabled={isLoading}>
-              Add Category
-            </button>
-          </div>
-        </form>
-      </Modal>
+      <AddCategoryModal
+        isOpen={isModalOpen}
+        isLoading={isLoading}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={handleAddCategory}
+      />
 
       {pendingEditCategory && (
         <Modal isOpen={true} onClose={() => setPendingEditCategory(null)} title="Edit Category">

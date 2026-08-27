@@ -9,7 +9,6 @@ import {
   updateExpense,
   deleteExpense,
   subscribeToExpenses,
-  subscribeToExpensesByCategory,
 } from '../services/expenseService';
 import {
   addCategory,
@@ -62,13 +61,11 @@ describe('database service', () => {
     serverTimestamp.mockReturnValue('timestamp');
     addDoc.mockResolvedValue({ id: 'doc-id' });
     getDocs.mockResolvedValue({
-      forEach: (cb) => {
-        cb({ id: '1', data: () => ({ amount: 10 }) });
-      }
+      docs: [{ id: '1', data: () => ({ amount: 10 }) }]
     });
     onSnapshot.mockImplementation((q, onNext) => {
       onNext({
-        forEach: (cb) => cb({ id: '1', data: () => ({ amount: 15 }) })
+        docs: [{ id: '1', data: () => ({ amount: 15 }) }]
       });
       return jest.fn();
     });
@@ -227,29 +224,6 @@ describe('database service', () => {
       );
     });
 
-    it('subscribes to expenses by category', () => {
-      const callback = jest.fn();
-      subscribeToExpensesByCategory('user-1', 'Food', callback);
-      expect(onSnapshot).toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith([{ id: '1', amount: 15 }]);
-    });
-
-    it('invokes error callback when category expense listener fails', () => {
-      const listenError = new Error('cat-expenses');
-      onSnapshot.mockImplementationOnce((q, onNext, onError) => {
-        onError(listenError);
-        return jest.fn();
-      });
-      const callback = jest.fn();
-      subscribeToExpensesByCategory('user-1', 'Food', callback);
-      expect(callback).toHaveBeenCalledWith([], listenError);
-    });
-
-    it('throws when subscribeToExpensesByCategory missing params', () => {
-      expect(() => subscribeToExpensesByCategory(null, 'Food', jest.fn())).toThrow(
-        'Invalid parameters for category expense subscription'
-      );
-    });
   });
 });
 

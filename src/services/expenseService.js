@@ -3,7 +3,6 @@ import {
   addDoc,
   getDocs,
   query,
-  where,
   doc,
   updateDoc,
   deleteDoc,
@@ -12,6 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { snapshotToArray } from '../utils/firebaseUtils';
 
 export const addExpense = async (userId, expenseData) => {
   try {
@@ -36,9 +36,7 @@ export const getExpenses = async (userId) => {
   try {
     const q = query(collection(db, 'users', userId, 'expenses'), orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
-    const expenses = [];
-    querySnapshot.forEach((doc) => expenses.push({ id: doc.id, ...doc.data() }));
-    return expenses;
+    return snapshotToArray(querySnapshot);
   } catch (error) {
     console.error('Error getting expenses:', error);
     throw error;
@@ -75,9 +73,7 @@ export const subscribeToExpenses = (userId, callback) => {
     return onSnapshot(
       q,
       (snapshot) => {
-        const expenses = [];
-        snapshot.forEach((doc) => expenses.push({ id: doc.id, ...doc.data() }));
-        callback(expenses);
+        callback(snapshotToArray(snapshot));
       },
       (error) => { console.error('Error listening to expenses:', error); callback([], error); }
     );

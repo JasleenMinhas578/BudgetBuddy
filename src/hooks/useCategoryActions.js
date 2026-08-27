@@ -6,35 +6,40 @@ import {
   hideDefaultCategory,
 } from '../services/categoryService';
 
-export function useCategoryActions(currentUser, allCategories) {
+export function useCategoryActions(currentUser, allCategories, showToast) {
   const [isLoading, setIsLoading] = useState(false);
-  const [toast, setToast] = useState(null);
   const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
   const [pendingEditCategory, setPendingEditCategory] = useState(null);
 
+  // When showToast is not provided (backwards compat), manage local toast state
+  const [localToast, setLocalToast] = useState(null);
+  const toast = showToast ? undefined : localToast;
+  const setToast = showToast ? undefined : setLocalToast;
+  const notify = showToast ?? ((msg, type) => setLocalToast({ message: msg, type }));
+
   const handleAddCategory = async (categoryName, onSuccess) => {
     if (!currentUser) {
-      setToast({ message: 'Please log in to add categories.', type: 'error' });
+      notify('Please log in to add categories.', 'error');
       return;
     }
     const trimmed = categoryName.trim();
     if (!trimmed) return;
     if (trimmed.length > 25) {
-      setToast({ message: 'Category name must be 25 characters or fewer.', type: 'error' });
+      notify('Category name must be 25 characters or fewer.', 'error');
       return;
     }
     const existingNames = allCategories.map(c => c.name.toLowerCase());
     if (existingNames.includes(trimmed.toLowerCase())) {
-      setToast({ message: `Category "${trimmed}" already exists.`, type: 'error' });
+      notify(`Category "${trimmed}" already exists.`, 'error');
       return;
     }
     onSuccess?.();
     setIsLoading(true);
     try {
       await addCategory(currentUser.uid, { name: trimmed });
-      setToast({ message: `Category "${trimmed}" added successfully!`, type: 'success' });
+      notify(`Category "${trimmed}" added successfully!`, 'success');
     } catch {
-      setToast({ message: 'Failed to add category. Please try again.', type: 'error' });
+      notify('Failed to add category. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +47,7 @@ export function useCategoryActions(currentUser, allCategories) {
 
   const handleEditCategory = (category) => {
     if (!currentUser) {
-      setToast({ message: 'Please log in to edit categories.', type: 'error' });
+      notify('Please log in to edit categories.', 'error');
       return;
     }
     setPendingEditCategory(category);
@@ -53,28 +58,28 @@ export function useCategoryActions(currentUser, allCategories) {
     if (!trimmed || !pendingEditCategory) return;
     const { id, name, isDefault } = pendingEditCategory;
     if (isDefault) {
-      setToast({ message: 'Default categories cannot be renamed.', type: 'error' });
+      notify('Default categories cannot be renamed.', 'error');
       setPendingEditCategory(null);
       return;
     }
     if (trimmed.length > 25) {
-      setToast({ message: 'Category name must be 25 characters or fewer.', type: 'error' });
+      notify('Category name must be 25 characters or fewer.', 'error');
       return;
     }
     const existingNames = allCategories
       .filter(c => c.name !== name)
       .map(c => c.name.toLowerCase());
     if (existingNames.includes(trimmed.toLowerCase())) {
-      setToast({ message: `"${trimmed}" already exists.`, type: 'error' });
+      notify(`"${trimmed}" already exists.`, 'error');
       return;
     }
     setPendingEditCategory(null);
     setIsLoading(true);
     try {
       await updateCategory(currentUser.uid, id, { name: trimmed });
-      setToast({ message: `Category renamed to "${trimmed}"!`, type: 'success' });
+      notify(`Category renamed to "${trimmed}"!`, 'success');
     } catch {
-      setToast({ message: 'Failed to rename category. Please try again.', type: 'error' });
+      notify('Failed to rename category. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +87,7 @@ export function useCategoryActions(currentUser, allCategories) {
 
   const handleDeleteCategory = (categoryId, categoryName, isDefault = false, expenseCount = 0) => {
     if (!currentUser) {
-      setToast({ message: 'Please log in to delete categories.', type: 'error' });
+      notify('Please log in to delete categories.', 'error');
       return;
     }
     setPendingDeleteCategory({ id: categoryId, name: categoryName, isDefault, expenseCount });
@@ -102,10 +107,10 @@ export function useCategoryActions(currentUser, allCategories) {
       const expenseNote = expenseCount > 0
         ? ` and ${expenseCount} expense${expenseCount !== 1 ? 's' : ''}`
         : '';
-      setToast({ message: `Category "${name}"${expenseNote} deleted.`, type: 'success' });
+      notify(`Category "${name}"${expenseNote} deleted.`, 'success');
     } catch (error) {
       console.error('Error deleting category:', error);
-      setToast({ message: 'Failed to delete category. Please try again.', type: 'error' });
+      notify('Failed to delete category. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -113,6 +118,7 @@ export function useCategoryActions(currentUser, allCategories) {
 
   return {
     isLoading,
+    // Only present when showToast not provided (legacy callers)
     toast, setToast,
     pendingDeleteCategory, setPendingDeleteCategory,
     pendingEditCategory, setPendingEditCategory,

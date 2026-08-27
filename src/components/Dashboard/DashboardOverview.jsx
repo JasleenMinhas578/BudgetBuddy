@@ -1,14 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useCategories } from '../../hooks/useCategories';
 import { Link } from 'react-router-dom';
 import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget, LuTag } from 'react-icons/lu';
 import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import { useExpenses } from '../../hooks/useExpenses';
-import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
-import { subscribeToCategories } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
@@ -21,9 +20,8 @@ import '../../styles/main.css';
 
 export default function DashboardOverview() {
   const { expenses, loading } = useExpenses();
-  const { currentUser } = useAuth();
   const { budgets } = useBudgets();
-  const [firestoreCategories, setFirestoreCategories] = useState([]);
+  const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [showChatHint, setShowChatHint] = useState(false);
 
@@ -37,16 +35,6 @@ export default function DashboardOverview() {
     try { localStorage.setItem('chatHintSeen', '1'); } catch {}
     setShowChatHint(false);
   };
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsub = () => {};
-    try {
-      unsub = subscribeToCategories(currentUser.uid, (data) => {
-        if (data !== null) setFirestoreCategories(data);
-      });
-    } catch {}
-    return () => unsub();
-  }, [currentUser]);
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,

@@ -1,29 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useMemo } from 'react';
 import { useExpenses } from './useExpenses';
-import { subscribeToCategories } from '../services/categoryService';
+import { useCategories } from './useCategories';
 import { CATEGORY_ICON_MAP, DEFAULT_CATEGORIES } from '../utils/getCategoryIcon';
 import { LuTag } from 'react-icons/lu';
 
 const MAX_RESULTS = 4;
 
 export function useGlobalSearch(query) {
-  const { currentUser } = useAuth();
   const { expenses } = useExpenses();
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsub = () => {};
-    try {
-      unsub = subscribeToCategories(currentUser.uid, (data) => {
-        if (data) setCategories(data);
-      });
-    } catch (e) {
-      console.error('useGlobalSearch: category subscribe failed', e);
-    }
-    return () => unsub();
-  }, [currentUser]);
+  const categories = useCategories();
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

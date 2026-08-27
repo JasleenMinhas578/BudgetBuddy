@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { useClickOutside } from '../../hooks/useClickOutside';
+import { useCategories } from '../../hooks/useCategories';
 import { LuChevronDown, LuCheck, LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
-import { subscribeToCategories } from '../../services/categoryService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import '../../styles/main.css';
 
@@ -31,40 +32,16 @@ export default function ExpenseForm({
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const catDropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) {
-        setCatDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  useClickOutside(catDropdownRef, () => setCatDropdownOpen(false));
 
   // State for custom categories
-  const [customCategories, setCustomCategories] = useState([]);
-
-  // Fetch custom categories from Firestore via the service layer
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = subscribeToCategories(currentUser.uid, (cats) => {
-        setCustomCategories(cats.map(cat => ({ ...cat, Icon: LuTag })));
-      });
-    } catch (error) {
-      console.error("Error setting up categories listener:", error);
-    }
-    return () => {
-      try { unsubscribe(); } catch (error) { console.error("Error during cleanup:", error); }
-    };
-  }, [currentUser]);
+  const rawCategories = useCategories();
+  const customCategories = rawCategories.map(cat => ({ ...cat, Icon: LuTag }));
 
   // Merge default and custom categories, avoiding duplicates by name
   const allCategories = [
     ...DEFAULT_CATEGORIES,
-    ...customCategories.filter(cat => !DEFAULT_CATEGORIES.some(def => def.name === cat.name))
+    ...customCategories.filter(cat => !DEFAULT_CATEGORIES.some(def => def.name === cat.name)),
   ];
 
   /**

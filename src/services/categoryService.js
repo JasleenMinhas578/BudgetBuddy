@@ -15,6 +15,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
+import { snapshotToArray } from '../utils/firebaseUtils';
 
 export const addCategory = async (userId, categoryData) => {
   try {
@@ -39,9 +40,7 @@ export const getCategories = async (userId) => {
   try {
     const q = query(collection(db, 'users', userId, 'categories'));
     const querySnapshot = await getDocs(q);
-    const categories = [];
-    querySnapshot.forEach((doc) => categories.push({ id: doc.id, ...doc.data() }));
-    return categories;
+    return snapshotToArray(querySnapshot);
   } catch (error) {
     console.error('Error getting categories:', error);
     throw error;
@@ -102,9 +101,7 @@ export const subscribeToCategories = (userId, callback) => {
     return onSnapshot(
       q,
       (snapshot) => {
-        const categories = [];
-        snapshot.forEach((doc) => categories.push({ id: doc.id, ...doc.data() }));
-        callback(categories);
+        callback(snapshotToArray(snapshot));
       },
       (error) => { console.error('Error listening to categories:', error); callback([], error); }
     );

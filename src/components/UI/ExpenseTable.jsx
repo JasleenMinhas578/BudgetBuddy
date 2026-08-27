@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useClickOutside } from '../../hooks/useClickOutside';
 import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter } from 'react-icons/lu';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { formatDate } from '../../utils/formatDate';
@@ -59,17 +60,7 @@ export default function ExpenseTable({
     setCurrentPage(1);
   }, [categoryFilter]);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!filterOpen) return;
-    const handler = (e) => {
-      if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setFilterOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [filterOpen]);
+  useClickOutside(filterRef, () => setFilterOpen(false), filterOpen);
 
   const uniqueCategories = showCategoryFilter
     ? [...new Set(expenses.map(e => e.category).filter(Boolean))].sort()

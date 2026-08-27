@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
+import { useClickOutside } from './useClickOutside';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import { generateSummary } from '../services/aiService';
 import { safeFormatDate } from '../utils/formatDate';
+import { getDateFilterFlatLabel } from '../utils/dateFilterLabel';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -12,37 +14,14 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
   const [aiSummaryError, setAiSummaryError] = useState(null);
   const exportDropdownRef = useRef(null);
 
-  useEffect(() => {
-    if (!showExportOptions) return;
-    const handleClickOutside = (e) => {
-      if (exportDropdownRef.current && !exportDropdownRef.current.contains(e.target)) {
-        setShowExportOptions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showExportOptions]);
+  useClickOutside(exportDropdownRef, () => setShowExportOptions(false), showExportOptions);
 
   useEffect(() => {
     setAiSummary(null);
     setAiSummaryError(null);
   }, [dateFilter, customDateRange]);
 
-  const getFilterLabel = () => {
-    switch (dateFilter) {
-      case 'today': return 'Today';
-      case 'thisMonth': return 'This Month';
-      case 'lastMonth': return 'Last Month';
-      case 'thisYear': return 'This Year';
-      case 'lastYear': return 'Last Year';
-      case 'custom': {
-        const start = safeFormatDate(customDateRange.startDate, 'MMM dd, yyyy') || customDateRange.startDate || '';
-        const end = safeFormatDate(customDateRange.endDate, 'MMM dd, yyyy') || customDateRange.endDate || '';
-        return `Custom Range (${start} - ${end})`;
-      }
-      default: return 'All Time';
-    }
-  };
+  const getFilterLabel = () => getDateFilterFlatLabel(dateFilter, { customDateRange });
 
   const handleGenerateSummary = async () => {
     setAiSummaryLoading(true);

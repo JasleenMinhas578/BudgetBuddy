@@ -1,16 +1,18 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useCategories } from '../../hooks/useCategories';
 import { LuTag, LuTarget, LuTrendingUp, LuAlertTriangle, LuCheckCircle, LuPlus, LuGripVertical } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useExpenses } from '../../hooks/useExpenses';
-import { subscribeToCategories } from '../../services/categoryService';
 import { useCategoryActions } from '../../hooks/useCategoryActions';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import PageHeader from '../UI/PageHeader';
 import Modal from '../UI/Modal';
+import AddCategoryModal from '../UI/AddCategoryModal';
 import Toast from '../UI/Toast';
+import { useToast } from '../../hooks/useToast';
 import ChartCard from '../UI/ChartCard';
 import BarChart from '../Charts/BarChart';
 import ExpenseForm from '../Expense/ExpenseForm';
@@ -66,23 +68,12 @@ export default function Goals() {
   const { currentUser } = useAuth();
   const { expenses } = useExpenses();
   const { budgets, setCategoryBudget } = useBudgets();
-  const [firestoreCategories, setFirestoreCategories] = useState([]);
+  const firestoreCategories = useCategories();
+  const { toast, showToast, hideToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [pendingRemoveCategory, setPendingRemoveCategory] = useState(null);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsub = () => {};
-    try {
-      unsub = subscribeToCategories(currentUser.uid, (data) => {
-        if (data !== null) setFirestoreCategories(data);
-      });
-    } catch {}
-    return () => unsub();
-  }, [currentUser]);
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
@@ -93,9 +84,8 @@ export default function Goals() {
 
   const {
     isLoading,
-    toast, setToast,
     handleAddCategory,
-  } = useCategoryActions(currentUser, allCategories);
+  } = useCategoryActions(currentUser, allCategories, showToast);
 
   // Always show current-month progress against goals
   const thisMonthExpenses = useMemo(() => {
@@ -211,10 +201,6 @@ export default function Goals() {
     };
   }, [categoryProgress]);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setNewCategory('');
-  };
 
   return (
     <div className="goals-container">
@@ -223,7 +209,7 @@ export default function Goals() {
           message={toast.message}
           type={toast.type}
           isVisible
-          onClose={() => setToast(null)}
+          onClose={hideToast}
         />
       )}
 
@@ -497,35 +483,12 @@ export default function Goals() {
         variant="danger"
       />
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Add New Category">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleAddCategory(newCategory, handleCloseModal);
-          }}
-          className="category-form"
-        >
-          <div className="form-group">
-            <label htmlFor="goalsCategoryName">Category Name</label>
-            <input
-              id="goalsCategoryName"
-              type="text"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Enter category name"
-              required
-            />
-          </div>
-          <div className="form-actions">
-            <button type="button" onClick={handleCloseModal} className="btn btn-secondary">
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary gradient-btn" disabled={isLoading}>
-              Add Category
-            </button>
-          </div>
-        </form>
-      </Modal>
+      <AddCategoryModal
+        isOpen={isModalOpen}
+        isLoading={isLoading}
+        onClose={() => setIsModalOpen(false)}
+        onAdd={handleAddCategory}
+      />
     </div>
   );
 }
