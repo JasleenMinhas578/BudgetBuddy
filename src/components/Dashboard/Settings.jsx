@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LuUser, LuLock, LuCalendar } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import { saveUserSettings, getUserSettings } from '../../services/settingsService';
-import { useEffect } from 'react';
 import '../../styles/main.css';
 
 const DATE_RANGE_OPTIONS = [

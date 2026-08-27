@@ -86,28 +86,3 @@ export const subscribeToExpenses = (userId, callback) => {
     throw new Error(`Failed to subscribe to expenses: ${error.message}`);
   }
 };
-
-export const subscribeToExpensesByCategory = (userId, category, callback) => {
-  try {
-    if (!userId || !category || typeof callback !== 'function') {
-      throw new Error('Invalid parameters for category expense subscription');
-    }
-    const q = query(
-      collection(db, 'users', userId, 'expenses'),
-      where('category', '==', category),
-      orderBy('createdAt', 'desc')
-    );
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        const expenses = [];
-        snapshot.forEach((doc) => expenses.push({ id: doc.id, ...doc.data() }));
-        callback(expenses);
-      },
-      (error) => { console.error('Error listening to category expenses:', error); callback([], error); }
-    );
-  } catch (error) {
-    console.error('Error setting up category expense subscription:', error);
-    throw new Error(`Failed to subscribe to category expenses: ${error.message}`);
-  }
-};
