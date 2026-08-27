@@ -4,7 +4,6 @@ import { LuBot, LuWallet, LuX, LuSend, LuInfo } from 'react-icons/lu';
 import { useAIChat } from '../../hooks/useAIChat';
 import { useCurrency } from '../../context/CurrencyContext';
 import ChatMessage from './ChatMessage';
-import './AIChat.css';
 
 const BASE_SUGGESTED_GROUPS = [
   {

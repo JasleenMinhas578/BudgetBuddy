@@ -3,15 +3,41 @@
  *
  * Do not add rules here; add them to the appropriate partial below.
  *
- * tokens.css          — :root design tokens (colours, fonts, spacing, shadows)
- * styles-landing.css  — Landing page, auth, base reset + shared components
- * styles-pages.css    — Dashboard layout, expenses, categories, reports (authoritative)
- * styles-additions.css — Categories grid, date filter bar, toast, pagination, 404, keyframes
- * styles-settings.css  — Settings page, sidebar footer, AI chat welcome
+ * tokens.css               — :root design tokens (colours, fonts, spacing, shadows)
+ * styles-landing.css       — Landing page, auth, base reset + shared components
+ * styles-components.css    — Shared: buttons, modals, forms, tables, auth, nav, hero
+ * styles-dashboard.css     — Dashboard layout, sidebar, navbar, overview cards, charts
+ * styles-categories.css    — Categories grid, kebab menu, progress bar, budget labels
+ * styles-reports.css       — Reports page, filter controls, chart cards, insights
+ * styles-forms.css         — Toast, responsive, expense form, category form modal
+ * styles-goals.css         — Goals page
+ * styles-dashboard-extras.css — Budget panel, dashboard features, export modal
+ * styles-additions.css     — Date filter bar, pagination, 404, keyframes
+ * styles-settings.css      — Settings page, sidebar footer
+ * styles-ai-chat.css       — Floating AI chat widget and panel
  */
 
 @import './tokens.css';
 @import './styles-landing.css';
-@import './styles-pages.css';
+@import './styles-components.css';
+@import './styles-dashboard.css';
+@import './styles-categories.css';
+@import './styles-reports.css';
+@import './styles-forms.css';
+@import './styles-goals.css';
+@import './styles-dashboard-extras.css';
 @import './styles-additions.css';
 @import './styles-settings.css';
+@import './styles-ai-chat.css';
+
+/* Base reset (merged from index.css) */
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
