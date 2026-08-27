@@ -300,7 +300,10 @@ api/
 └── ai.js              # Vercel serverless Gemini proxy (key stays server-side)
 src/
 ├── components/
-│   ├── AI/            # AIChat, ChatMessage — floating AI chat widget (Gemini)
+│   ├── AI/            # AIChat, ChatMessage, ExpenseCard, EditableExpenseCard,
+│   │                  #   MessageText — floating AI chat widget (Gemini)
+│   ├── BudgetProgressPanel/ # BudgetRow, BudgetRowNoGoal — sub-components of
+│   │                  #   the BudgetProgressPanel dashboard widget
 │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                  #   AuthLayout, AuthSubmitButton
 │   ├── Categories/    # CategoryCard, CategoryBudgetControl, CategoryKebabMenu,
@@ -314,6 +317,8 @@ src/
 │   ├── Expense/       # ExpenseForm, ExpenseList
 │   ├── Charts/        # PieChart, BarChart, LineChart
 │   ├── Layout/        # Navbar, Sidebar
+│   ├── Settings/      # CurrencyCard, DateRangeCard, DisplayNameCard, PasswordCard
+│   │                  #   — sub-components of the Settings page
 │   └── UI/            # Modal, Toast, Pagination, DateFilterBar, ConfirmDialog,
 │                      #   BudgetBuddyLogo, ExpenseTable, CuteEmptyFace,
 │                      #   ChartCard, PageHeader, PasswordInput, UserAvatar,

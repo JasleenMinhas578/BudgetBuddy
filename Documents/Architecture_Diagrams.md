@@ -313,7 +313,11 @@ budget-buddy/
 │   └── ai.js          # Gemini API proxy — key stays server-side in GEMINI_API_KEY env var
 ├── src/
 │   ├── components/
-│   │   ├── AI/            # AIChat.jsx, AIChat.css, ChatMessage.jsx — floating Gemini chat widget
+│   │   ├── AI/            # AIChat.jsx, AIChat.css, ChatMessage.jsx,
+│   │   │                  #   ExpenseCard.jsx, EditableExpenseCard.jsx,
+│   │   │                  #   MessageText.jsx — floating Gemini chat widget
+│   │   ├── BudgetProgressPanel/ # BudgetRow, BudgetRowNoGoal — sub-components of
+│   │   │                  #   the BudgetProgressPanel dashboard widget
 │   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                      #   AuthLayout, AuthSubmitButton
 │   │   ├── Categories/    # CategoryCard, CategoryBudgetControl, CategoryKebabMenu,
@@ -327,6 +331,8 @@ budget-buddy/
 │   │   ├── Expense/       # ExpenseForm, ExpenseList
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar
+│   │   ├── Settings/      # CurrencyCard, DateRangeCard, DisplayNameCard, PasswordCard
+│   │   │                  #   — sub-components of the Settings page
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
 │   │                      #   CuteEmptyFace, ChartCard, PageHeader,
