@@ -31,7 +31,7 @@
   .budget-panel-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .budget-panel-title {
@@ -45,6 +45,13 @@
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-semibold);
     margin: 0;
+  }
+
+  .budget-panel-total-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+    display: block;
   }
 
   .budget-panel-link {

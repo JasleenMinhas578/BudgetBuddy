@@ -49,7 +49,14 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
       <div className="budget-panel-header">
         <div className="budget-panel-title">
           <LuTarget size={16} />
-          <h3>This Month's Goals</h3>
+          <div>
+            <h3>This Month's Goals</h3>
+            {totalBudgeted > 0 && (
+              <span className="budget-panel-total-label">
+                Total budget: {formatAmount(totalBudgeted)}/mo
+              </span>
+            )}
+          </div>
         </div>
         <Link to="/dashboard/goals" className="budget-panel-link">
           Manage goals <LuChevronRight size={14} />

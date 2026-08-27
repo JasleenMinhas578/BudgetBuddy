@@ -11,6 +11,7 @@ import {
   LuChevronRight,
   LuTarget,
   LuUpload,
+  LuPlus,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
@@ -19,13 +20,12 @@ import '../../styles/main.css';
 
 const navItems = [
   { path: '/dashboard',            label: 'Dashboard',  Icon: LuLayoutDashboard },
-  { path: '/dashboard/expenses',   label: 'Expenses',   Icon: LuCreditCard      },
-  { path: '/dashboard/categories', label: 'Categories', Icon: LuTag             },
+  { path: '/dashboard/expenses',   label: 'Expenses',   Icon: LuCreditCard,      addAction: 'expense'  },
+  { path: '/dashboard/categories', label: 'Categories', Icon: LuTag,             addAction: 'category' },
   { path: '/dashboard/goals',      label: 'Goals',      Icon: LuTarget          },
-{ path: '/dashboard/settings',   label: 'Settings',   Icon: LuSettings        },
 ];
 
-const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile, onLogoutClick }, ref) => {
+const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouseDown, isDragging, isMobile, onLogoutClick, onAddExpense }, ref) => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -66,20 +66,39 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map(({ path, label, Icon }) => (
-          <NavLink
-            key={path}
-            to={path}
-            end={path === '/dashboard'}
-            className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
-            }}
-          >
-            <span className="nav-icon"><Icon size={18} /></span>
-            <span className="nav-label">{label}</span>
-          </NavLink>
+        {navItems.map(({ path, label, Icon, addAction }) => (
+          <div key={path} className="sidebar-nav-row">
+            <NavLink
+              to={path}
+              end={path === '/dashboard'}
+              className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
+              }}
+            >
+              <span className="nav-icon"><Icon size={18} /></span>
+              <span className="nav-label">{label}</span>
+            </NavLink>
+            {addAction && (
+              <button
+                className="sidebar-nav-add-btn"
+                aria-label={`Add ${label.toLowerCase().slice(0, -1)}`}
+                title={`Add ${label.toLowerCase().slice(0, -1)}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (addAction === 'expense') {
+                    onAddExpense?.();
+                  } else if (addAction === 'category') {
+                    navigate('/dashboard/categories?add=true');
+                  }
+                  if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
+                }}
+              >
+                <LuPlus size={13} />
+              </button>
+            )}
+          </div>
         ))}
         <button
           className="sidebar-link sidebar-export-btn"
@@ -92,6 +111,17 @@ const Sidebar = forwardRef(({ sidebarOpen, setSidebarOpen, onTouchStart, onMouse
           <span className="nav-icon"><LuUpload size={18} /></span>
           <span className="nav-label">Export</span>
         </button>
+        <NavLink
+          to="/dashboard/settings"
+          className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isMobile) setTimeout(() => setSidebarOpen(false), 150);
+          }}
+        >
+          <span className="nav-icon"><LuSettings size={18} /></span>
+          <span className="nav-label">Settings</span>
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">

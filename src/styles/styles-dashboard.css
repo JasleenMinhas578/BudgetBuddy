@@ -267,6 +267,48 @@
   .nav-label {
     font-size: 0.95rem;
   }
+
+  .sidebar-nav-row {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .sidebar-nav-row .sidebar-link {
+    flex: 1;
+  }
+
+  .sidebar-nav-add-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--glass-15);
+    background: var(--glass-05);
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s, color 0.15s, border-color 0.15s;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  .sidebar-nav-row:hover .sidebar-nav-add-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar-nav-add-btn:hover {
+    background: var(--accent-teal);
+    border-color: var(--accent-teal);
+    color: var(--bg-primary);
+  }
   
   .sidebar-footer {
     padding: 1.5rem;
@@ -687,6 +729,8 @@
     margin-bottom: 0.25rem;
     white-space: nowrap;
     max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .card-subtitle {

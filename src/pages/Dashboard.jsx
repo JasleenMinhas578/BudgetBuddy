@@ -50,6 +50,7 @@ export default function Dashboard() {
         isDragging={isDragging}
         isMobile={isMobile()}
         onLogoutClick={() => setLogoutDialogOpen(true)}
+        onAddExpense={() => setIsAddExpenseOpen(true)}
       />
 
       <div className="dashboard-main">

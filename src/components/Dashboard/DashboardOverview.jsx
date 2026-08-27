@@ -6,7 +6,6 @@ import {
   LuChevronDown, LuChevronUp, LuSparkles, LuFileText, LuFileSpreadsheet,
   LuLoader, LuX, LuZap, LuLightbulb, LuBarChart2,
 } from 'react-icons/lu';
-import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
 import { useExpenses } from '../../hooks/useExpenses';
@@ -36,18 +35,11 @@ export default function DashboardOverview() {
   const { budgets, setCategoryBudget } = useBudgets();
   const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [showChatHint, setShowChatHint] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [chartsOpen, setChartsOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem('chatHintSeen')) setShowChatHint(true);
-    } catch {}
-  }, []);
 
   // Open export modal when sidebar Export nav item is clicked (?export=open)
   useEffect(() => {
@@ -57,11 +49,6 @@ export default function DashboardOverview() {
       navigate('/dashboard', { replace: true });
     }
   }, [location.search, navigate]);
-
-  const dismissChatHint = () => {
-    try { localStorage.setItem('chatHintSeen', '1'); } catch {}
-    setShowChatHint(false);
-  };
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
@@ -101,37 +88,6 @@ export default function DashboardOverview() {
   // Feature 1 — month-end spending forecast (only meaningful for thisMonth filter)
   const forecastResult = dateFilter === 'thisMonth' ? getMonthEndForecast(filteredExpenses) : null;
 
-  const prevPeriodTotal = useMemo(() => {
-    if (!expenses.length) return null;
-    const now = new Date();
-    let prevStart, prevEnd;
-    if (dateFilter === 'thisMonth') {
-      const prev = subMonths(now, 1);
-      prevStart = format(startOfMonth(prev), 'yyyy-MM-dd');
-      prevEnd   = format(endOfMonth(prev),   'yyyy-MM-dd');
-    } else if (dateFilter === 'thisWeek') {
-      const prev = subWeeks(now, 1);
-      prevStart = format(startOfWeek(prev, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-      prevEnd   = format(endOfWeek(prev,   { weekStartsOn: 1 }), 'yyyy-MM-dd');
-    } else if (dateFilter === 'thisYear') {
-      const prev = subYears(now, 1);
-      prevStart = format(startOfYear(prev), 'yyyy-MM-dd');
-      prevEnd   = format(endOfYear(prev),   'yyyy-MM-dd');
-    } else if (dateFilter === 'today') {
-      const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
-      prevStart = yesterday;
-      prevEnd   = yesterday;
-    } else {
-      return null;
-    }
-    return expenses
-      .filter(e => e.date >= prevStart && e.date <= prevEnd)
-      .reduce((sum, e) => sum + e.amount, 0);
-  }, [expenses, dateFilter]);
-
-  const trendDelta = prevPeriodTotal !== null && prevPeriodTotal > 0 && totalSpent > 0
-    ? ((totalSpent - prevPeriodTotal) / prevPeriodTotal) * 100
-    : null;
 
   // Only show "Welcome!" after data has loaded to avoid flashing for returning users
   const isFirstTimeUser = !loading && expenses.length === 0;
@@ -153,18 +109,6 @@ export default function DashboardOverview() {
           <BudgetBuddyLogo size={80} />
         </div>
       </div>
-
-      {/* AI Chat hint — shown until the user dismisses it */}
-      {showChatHint && (
-        <div className="ai-hint-card">
-          <span className="ai-hint-icon">✨</span>
-          <div className="ai-hint-text">
-            <strong>BudgetBuddy has an AI assistant</strong>
-            <span>Try asking: <em>"Where did I overspend this month?"</em></span>
-          </div>
-          <button className="ai-hint-dismiss" onClick={dismissChatHint} aria-label="Dismiss">✕</button>
-        </div>
-      )}
 
       {/* Date Filter */}
       <div className="filter-controls">
@@ -220,12 +164,7 @@ export default function DashboardOverview() {
           <div className="card-content">
             <h3>Total Spent</h3>
             <p className="card-amount">{formatAmount(totalSpent)}</p>
-            {trendDelta !== null
-              ? <p className={`card-delta ${trendDelta >= 0 ? 'card-delta--up' : 'card-delta--down'}`}>
-                  {trendDelta >= 0 ? '↑' : '↓'} {Math.abs(trendDelta).toFixed(0)}% vs last period
-                </p>
-              : <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
-            }
+            <p className="card-subtitle">{filteredExpenses.length} transaction{filteredExpenses.length !== 1 ? 's' : ''}</p>
           </div>
         </div>
 
@@ -288,6 +227,34 @@ export default function DashboardOverview() {
           setCategoryBudget={setCategoryBudget}
         />
       )}
+
+      {/* Recent Expenses Table */}
+      <div className="recent-activity">
+        <div className="activity-header">
+          <h3>Recent Expenses</h3>
+          <div className="activity-header-actions">
+            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
+              <LuPlus size={15} />
+              Add Expense
+            </button>
+            <Link to="/dashboard/expenses" className="btn btn-secondary view-all-link">View All</Link>
+          </div>
+        </div>
+
+        <ExpenseTable
+          expenses={recentExpenses}
+          showCategoryFilter={true}
+          itemsPerPage={5}
+          showPagination={false}
+          emptyMessage="No expenses yet"
+          emptySubMessage="Start tracking your expenses to see them here"
+          emptyAction={
+            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
+              Add First Expense
+            </button>
+          }
+        />
+      </div>
 
       {/* Block 1 — Spending Insights (AI summary + text insights) */}
       <div className="spending-insights-block">
@@ -405,34 +372,6 @@ export default function DashboardOverview() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Recent Expenses Table */}
-      <div className="recent-activity">
-        <div className="activity-header">
-          <h3>Recent Expenses</h3>
-          <div className="activity-header-actions">
-            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
-              <LuPlus size={15} />
-              Add Expense
-            </button>
-            <Link to="/dashboard/expenses" className="btn btn-secondary view-all-link">View All</Link>
-          </div>
-        </div>
-
-        <ExpenseTable
-          expenses={recentExpenses}
-          showCategoryFilter={true}
-          itemsPerPage={5}
-          showPagination={false}
-          emptyMessage="No expenses yet"
-          emptySubMessage="Start tracking your expenses to see them here"
-          emptyAction={
-            <button onClick={() => setIsAddExpenseOpen(true)} className="btn btn-primary">
-              Add First Expense
-            </button>
-          }
-        />
       </div>
 
       <Modal isOpen={isAddExpenseOpen} onClose={() => setIsAddExpenseOpen(false)} title="Add New Expense">

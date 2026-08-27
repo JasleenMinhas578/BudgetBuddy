@@ -1,74 +1,12 @@
-  /* Reports Specific Styles */
-  .reports-container {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-  
-  .export-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-  }
-  
-  .export-option {
-    background: var(--glass-10);
-    border: 1px solid var(--glass-20);
-    color: var(--text-primary);
-    padding: 0.75rem 1rem;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    transition: var(--transition-base);
-  }
+/* Shared filter controls, date filter bar, chart cards, and insight items */
 
-  .export-option:hover:not(:disabled) {
-    background: var(--glass-15);
-    border-color: var(--glass-30);
-  }
-
-  .export-option:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  /* Filter Controls */
+  /* Filter Controls — used by Categories and Expenses pages */
   .filter-controls {
     background: var(--bg-light);
     border: 1px solid var(--glass-10);
     border-radius: var(--border-radius);
     padding: 1.25rem 1.5rem;
     backdrop-filter: blur(10px);
-  }
-
-  .filter-row {
-    display: flex;
-    align-items: stretch;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-row .filter-controls {
-    flex: 1;
-    min-width: 0;
-    margin-bottom: 0;
-  }
-
-  .dashboard-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex-shrink: 0;
-    position: relative;
-    justify-content: center;
-  }
-
-  .dashboard-actions .export-btn-wrapper {
-    position: relative;
-  }
-
-  .dashboard-actions .btn-sm {
-    width: 100%;
   }
 
   .filter-section {
@@ -79,6 +17,7 @@
     margin-bottom: 0;
   }
 
+  /* Date Filter Bar header — used by DateFilterBar component */
   .date-filter-header {
     margin-bottom: 0.875rem;
     padding-bottom: 0.875rem;
@@ -147,25 +86,17 @@
     box-shadow: 0 2px 12px rgba(79, 209, 197, 0.25);
   }
 
-  .custom-date-range {
-    margin-top: 1rem;
-  }
-
+  /* Custom date range inputs — used by DateFilterBar */
   .custom-date-inputs {
     display: flex;
     gap: 1rem;
     margin-top: 0.75rem;
   }
 
-  .date-inputs {
-    display: flex;
-    gap: 1rem;
-  }
-  
   .date-input {
     flex: 1;
   }
-  
+
   .date-input label {
     display: block;
     font-size: var(--font-size-sm);
@@ -173,7 +104,7 @@
     color: var(--text-primary);
     margin-bottom: 0.5rem;
   }
-  
+
   .date-input input {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -220,70 +151,23 @@
     cursor: pointer;
     box-sizing: border-box;
   }
-  
-  /* Report Content */
-  .report-content {
-    background: var(--bg-light);
-    border: 1px solid var(--glass-10);
-    border-radius: var(--border-radius);
-    padding: 2rem;
-    backdrop-filter: blur(10px);
-  }
-  
-  .filter-display {
+
+  /* Section subheaders — used by Categories and DashboardOverview */
+  .section-subheader {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--glass-10);
+    margin-bottom: 1.5rem;
   }
-  
-  .filter-badge {
-    background: var(--gradient-card);
-    border: 1px solid var(--teal-30);
-    color: var(--accent-teal);
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-  }
-  
-  .filter-stats {
-    display: flex;
-    gap: 2rem;
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-  }
-  
-  /* Insights Section */
-  .insights-section {
-    margin-bottom: 2rem;
-  }
-  
-  .insights-section h3 {
+
+  .section-subheader h3 {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
-    margin-bottom: 1rem;
+    margin: 0;
   }
-  
-  .insights-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .insight-item {
-    background: var(--glass-02);
-    border: 1px solid var(--glass-05);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-  }
-  
-  /* Chart Cards */
+
+  /* Chart cards — used by ChartCard.jsx */
   .chart-card {
     background: var(--bg-light);
     border: 1px solid var(--glass-10);
@@ -291,7 +175,7 @@
     padding: 1.5rem;
     backdrop-filter: blur(10px);
   }
-  
+
   .chart-wrapper {
     position: relative;
     height: 300px;
@@ -306,32 +190,23 @@
     gap: 0.5rem;
   }
 
-  .chart-empty-emoji {
-    font-size: 2.5rem;
-    line-height: 1;
-  }
-
   .chart-empty-text {
     color: var(--text-muted, #94a3b8);
     font-size: var(--font-size-sm, 0.875rem);
   }
 
-  /* Section Subheaders */
-  .section-subheader {
+  /* Spending insights — used by DashboardOverview */
+  .insights-list {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
   }
-  
-  .section-subheader h3 {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    margin: 0;
-  }
-  
-  /* Expenses Table Section */
-  .expenses-table-section {
-    margin-top: 2rem;
+
+  .insight-item {
+    background: var(--glass-02);
+    border: 1px solid var(--glass-05);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
   }

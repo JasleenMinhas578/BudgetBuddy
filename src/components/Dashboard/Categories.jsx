@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { LuTag, LuPlus, LuChevronDown, LuChevronUp, LuMoreVertical, LuPencil, LuTrash2 } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
@@ -40,7 +41,18 @@ export default function Categories() {
   const [hiddenDefaults, setHiddenDefaults] = useState([]);
   const [editName, setEditName] = useState('');
   const { currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const dateRangeCtx = useDateRangeContext();
+
+  // Open add-category modal when navigated here with ?add=true (e.g. from sidebar "+" button)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('add') === 'true') {
+      setIsModalOpen(true);
+      navigate('/dashboard/categories', { replace: true });
+    }
+  }, [location.search, navigate]);
   const {
     filteredExpenses, dateFilter, setDateFilter,
     customDateRange, setCustomDateRange,
