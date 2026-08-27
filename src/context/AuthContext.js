@@ -74,13 +74,14 @@ export function AuthProvider({ children }) {
 
   // Value object to be provided by the context
   const value = {
-    currentUser,  // Current user object (null if not logged in)
-    signup,       // Function to register new users
-    login,        // Function to log in users
-    logout,       // Function to log out users
-    resetPassword,      // Function to send password reset email
-    updatePassword,     // Function to confirm password reset with code
-    updateDisplayName   // Function to update the user's display name
+    currentUser,
+    loading,
+    signup,
+    login,
+    logout,
+    resetPassword,
+    updatePassword,
+    updateDisplayName,
   };
 
   return (

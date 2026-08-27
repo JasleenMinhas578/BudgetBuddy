@@ -15,8 +15,11 @@ import { snapshotToArray } from '../utils/firebaseUtils';
 
 export const addExpense = async (userId, expenseData) => {
   try {
-    if (!userId || !expenseData.title || !expenseData.amount || !expenseData.category || !expenseData.date) {
+    if (!userId || !expenseData.title || !expenseData.category || !expenseData.date) {
       throw new Error('Missing required expense data');
+    }
+    if (expenseData.amount == null || Number.isNaN(expenseData.amount) || expenseData.amount <= 0) {
+      throw new Error('Amount must be a positive number');
     }
     const expenseWithMetadata = {
       ...expenseData,

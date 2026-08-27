@@ -14,13 +14,24 @@ export function CurrencyProvider({ children }) {
   const [ratesLoading, setRatesLoading] = useState(true);
 
   useEffect(() => {
-    fetch('https://open.er-api.com/v6/latest/USD')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    fetch('https://open.er-api.com/v6/latest/USD', { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
       .then(data => {
         if (data?.rates) setLiveRates(data.rates);
       })
-      .catch(err => console.warn('[CurrencyProvider] Live rate fetch failed:', err))
-      .finally(() => setRatesLoading(false));
+      .catch(err => {
+        if (err.name !== 'AbortError') console.warn('[CurrencyProvider] Live rate fetch failed:', err);
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
+        setRatesLoading(false);
+      });
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const setCurrency = (code) => {

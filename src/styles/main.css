@@ -6,8 +6,7 @@
  * tokens.css          — :root design tokens (colours, fonts, spacing, shadows)
  * styles-landing.css  — Landing page, auth, base reset + shared components
  * styles-pages.css    — Dashboard layout, expenses, categories, reports (authoritative)
- * styles-additions.css — Categories grid, toast, pagination, 404, keyframes
- * styles-overrides.css — Visual polish overrides + mobile bug fixes
+ * styles-additions.css — Categories grid, date filter bar, toast, pagination, 404, keyframes
  * styles-settings.css  — Settings page, sidebar footer, AI chat welcome
  */
 
@@ -15,5 +14,4 @@
 @import './styles-landing.css';
 @import './styles-pages.css';
 @import './styles-additions.css';
-@import './styles-overrides.css';
 @import './styles-settings.css';

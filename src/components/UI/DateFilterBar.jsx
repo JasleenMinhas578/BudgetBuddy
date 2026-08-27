@@ -30,9 +30,6 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentYear - i);
-
 export default function DateFilterBar({
   dateFilter,
   onChange,
@@ -45,6 +42,9 @@ export default function DateFilterBar({
   onPageReset,
   title = 'Date Range',
 }) {
+  const currentYear = new Date().getFullYear();
+  const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => currentYear - i);
+
   // Build sorted list of "yyyy-MM" values with data, newest first
   const monthOptions = availableMonths && availableMonths.size > 0
     ? [...availableMonths].sort((a, b) => b.localeCompare(a)).map(value => {

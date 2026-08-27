@@ -3,7 +3,7 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
+import { subscribeToExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
 import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
@@ -97,10 +97,13 @@ export function useAIChat() {
     catch {}
   }, [messages]);
 
-  // Load expenses + live-subscribe to categories and budgets when chat opens
+  // Live-subscribe to expenses, categories, and budgets when chat opens
   useEffect(() => {
     if (!isOpen || !currentUser) return;
-    getExpenses(currentUser.uid).then(setExpenses).catch(console.error);
+    let unsubExpenses = () => {};
+    try {
+      unsubExpenses = subscribeToExpenses(currentUser.uid, setExpenses);
+    } catch {}
     const q = query(collection(db, 'users', currentUser.uid, 'categories'));
     const unsubCats = onSnapshot(q, (snap) =>
       setCustomCategories(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
@@ -109,7 +112,7 @@ export function useAIChat() {
     try {
       unsubBudgets = subscribeToBudgets(currentUser.uid, setBudgets);
     } catch {}
-    return () => { unsubCats(); unsubBudgets(); };
+    return () => { unsubExpenses(); unsubCats(); unsubBudgets(); };
   }, [isOpen, currentUser]);
 
   const sendMessage = useCallback(async (text) => {
@@ -170,10 +173,27 @@ export function useAIChat() {
 
   const handleConfirmAction = useCallback(async (msg, idx) => {
     const { type } = msg;
-    const needsExpenseRefresh = ['expense_confirm', 'multiple_expense_confirm', 'delete_expense_confirm', 'edit_expense_confirm'];
     try {
       if (type === 'expense_confirm')              await addExpense(currentUser.uid, msg.expenseData);
-      else if (type === 'multiple_expense_confirm') await Promise.all(msg.expensesData.map(e => addExpense(currentUser.uid, e)));
+      else if (type === 'multiple_expense_confirm') {
+        const results = await Promise.allSettled(msg.expensesData.map(e => addExpense(currentUser.uid, e)));
+        const failed = results.filter(r => r.status === 'rejected');
+        if (failed.length === results.length) {
+          throw new Error(failed[0]?.reason?.message ?? 'Failed to add expenses');
+        }
+        if (failed.length > 0) {
+          // Partial failure: mark confirmed immediately to prevent duplicate retries
+          setMessages((prev) => prev.map((m, i) => (i === idx ? { ...m, confirmed: true } : m)));
+          setMessages((prev) => [...prev, {
+            role: 'assistant',
+            content: `${results.length - failed.length} of ${results.length} expenses saved. ${failed.length} could not be added.`,
+            type: 'text',
+            isError: true,
+          }]);
+          return;
+        }
+        // all succeeded — falls through to mark confirmed below
+      }
       else if (type === 'category_confirm')        await addCategory(currentUser.uid, { name: msg.categoryData.name });
       else if (type === 'delete_expense_confirm')  await deleteExpense(currentUser.uid, msg.deleteExpenseData.id);
       else if (type === 'edit_expense_confirm')    await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);
@@ -183,7 +203,6 @@ export function useAIChat() {
       else if (type === 'remove_budget_confirm')   await updateCategoryBudget(currentUser.uid, msg.budgetData.categoryName, null);
 
       setMessages((prev) => prev.map((m, i) => (i === idx ? { ...m, confirmed: true } : m)));
-      if (needsExpenseRefresh.includes(type)) setExpenses(await getExpenses(currentUser.uid));
     } catch (err) {
       setMessages((prev) => [
         ...prev,

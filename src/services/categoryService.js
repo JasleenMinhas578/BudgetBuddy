@@ -21,12 +21,11 @@ export const addCategory = async (userId, categoryData) => {
   try {
     if (!db) throw new Error('Firebase not configured. Please set up your Firebase project.');
     if (!userId || !categoryData.name) throw new Error('Missing required category data');
-    const now = new Date();
     const categoryWithMetadata = {
       ...categoryData,
       userId,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     };
     const docRef = await addDoc(collection(db, 'users', userId, 'categories'), categoryWithMetadata);
     return docRef.id;
@@ -83,13 +82,25 @@ export const hideDefaultCategory = async (userId, categoryName) => {
 };
 
 export const deleteCategoryAndExpenses = async (userId, categoryId, categoryName) => {
-  const batch = writeBatch(db);
-  batch.delete(doc(db, 'users', userId, 'categories', categoryId));
   const expSnap = await getDocs(
     query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
   );
-  expSnap.forEach(d => batch.delete(d.ref));
-  await batch.commit();
+  const expDocs = expSnap.docs;
+  const BATCH_SIZE = 499;
+
+  // First batch: category doc + up to 498 expense docs
+  const firstBatch = writeBatch(db);
+  firstBatch.delete(doc(db, 'users', userId, 'categories', categoryId));
+  expDocs.slice(0, BATCH_SIZE - 1).forEach(d => firstBatch.delete(d.ref));
+  await firstBatch.commit();
+
+  // Any remaining expense docs in subsequent batches of 499
+  const remaining = expDocs.slice(BATCH_SIZE - 1);
+  for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    remaining.slice(i, i + BATCH_SIZE).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
 };
 
 export const subscribeToCategories = (userId, callback) => {

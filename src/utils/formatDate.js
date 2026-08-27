@@ -8,7 +8,10 @@ const MONTHS = [
 export function formatDate(dateString) {
   if (!dateString) return '';
   const [year, month, day] = dateString.split('-');
-  return `${MONTHS[parseInt(month, 10) - 1]} ${day}, ${year}`;
+  if (!year || !month || !day) return dateString;
+  const monthIndex = parseInt(month, 10) - 1;
+  if (monthIndex < 0 || monthIndex > 11) return dateString;
+  return `${MONTHS[monthIndex]} ${day}, ${year}`;
 }
 
 export function safeFormatDate(dateStr, fmt) {

@@ -8,10 +8,10 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const RETRY_DELAYS = [5000, 15000, 30000];
 
 const fetchWithRetry = async (url, options) => {
-  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+  for (let attempt = 0; attempt < RETRY_DELAYS.length; attempt++) {
     const res = await fetch(url, options);
     if (res.status !== 429) return res;
-    if (attempt < RETRY_DELAYS.length) await sleep(RETRY_DELAYS[attempt]);
+    await sleep(RETRY_DELAYS[attempt]);
   }
   return fetch(url, options);
 };
@@ -228,7 +228,7 @@ Rules:
 - For CURRENCY_CONVERT: Use the LIVE EXCHANGE RATES section to calculate. If the user does not specify a FROM currency, assume the home currency (${currencyInfo?.homeCurrency ?? 'USD'}). Compute the rate using the rates (all relative to USD as bridge: rate = (toRate / fromRate)). Format the "message" as ONLY the conversion result — no full sentences, just the value. Examples: "1 CAD = 0.7234 USD" or "100 EUR = 8,312.40 INR". If a specific amount was given, show the converted total. If no amount, show the rate for 1 unit.
 - If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, answer spending questions and budget status for any time period, and check live currency conversion rates
 
-User message: "${userMessage}"`;
+User message: "${userMessage.replace(/"/g, '\\"').replace(/[\n\r]/g, ' ')}"`;
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
@@ -246,12 +246,12 @@ User message: "${userMessage}"`;
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
 
-  // Only count a successful response against the daily quota
-  checkAndIncrementUsage();
-
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
+
+  // Only count a successful, non-empty response against the daily quota
+  checkAndIncrementUsage();
 
   // Find the JSON object — look for {"intent": specifically to skip any leading reasoning text
   const intentIdx = text.indexOf('{"intent"');
@@ -309,11 +309,12 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
 
-  // Only count a successful response against the daily quota
-  checkAndIncrementUsage();
-
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
+
+  // Only count a successful, non-empty response against the daily quota
+  checkAndIncrementUsage();
+
   return text;
 };

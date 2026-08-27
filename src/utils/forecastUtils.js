@@ -1,7 +1,7 @@
 export function getMonthEndForecast(filteredExpenses) {
   const now = new Date();
   const daysElapsed = now.getDate();
-  if (daysElapsed === 0 || filteredExpenses.length === 0) return null;
+  if (filteredExpenses.length === 0) return null;
 
   const total = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const dailyAvg = total / daysElapsed;

@@ -61,6 +61,7 @@ function GoalInput({ categoryName, initialValue, onSave }) {
       />
       <button
         className="goal-save-btn"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={save}
         disabled={!isDirty}
         title="Save goal"

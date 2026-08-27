@@ -294,7 +294,7 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useCategoryData.js` | Aggregates filtered expenses into Chart.js-ready category data; seeds deleted categories as 0 |
 | `useReportData.js` | Aggregates filtered expenses into report statistics: totals, averages, monthly trend, top category, spending insights |
 | `useSidebar.js` | Sidebar open/close state, mobile drag-to-open gesture, edge-swipe indicator, and overlay click handling |
-| `useReportExport.js` | CSV export, PDF generation (jsPDF), AI summary fetch (`generateSummary`), and export dropdown state for the Reports page |
+| `useReportExport.js` | CSV export, PDF generation (jsPDF), AI summary fetch (`generateSummary`), and export dropdown state; used by the inline export modal in DashboardOverview |
 | `useCategoryActions.js` | Add/delete category logic for the Categories page; wraps `categoryService.js` calls with toast feedback and pending-delete confirmation |
 | `useAuthForm.js` | Shared form state (`error`, `message`, `loading`) reused across Login, Signup, ForgotPassword, and ResetPassword |
 | `useExpenses.js` | Subscribes to the current user's Firestore expenses in real-time via `subscribeToExpenses`; returns `{ expenses, loading }`. Single data source for Expenses page and DashboardOverview. |
@@ -302,6 +302,8 @@ The Package Diagram illustrates the high-level architecture and dependencies of 
 | `useBudgets.js` | Subscribes to the user's budget document in Firestore; exposes `budgets` (category spending targets) and `setCategoryBudget`. Used by Goals page and BudgetProgressPanel. |
 | `useBudgetProgress.js` | Computes spend-vs-budget metrics (per-category `spent`, `budget`, `remaining`, `pct`, `status`) from filtered expenses, categories, and budgets. Always reflects current-month spend regardless of the dashboard date filter. |
 | `useGlobalSearch.js` | Live search hook used by the Navbar; subscribes to expenses and categories, filters both against a query string (case-insensitive, amount-aware), and returns up to 4 grouped results per type. |
+| `useCategories.js` | Single Firestore subscription for the current user's custom categories; replaces repeated `subscribeToCategories` calls that previously lived inside individual components. |
+| `useClickOutside.js` | Reusable click-outside detection; uses a stable handler ref so consumers never stale-close over old state. |
 
 ### 2.3.2 Component Organization
 
@@ -311,25 +313,27 @@ budget-buddy/
 │   └── ai.js          # Gemini API proxy — key stays server-side in GEMINI_API_KEY env var
 ├── src/
 │   ├── components/
-│   │   ├── AI/            # AIChat.jsx, AIChat.css — floating Gemini chat widget
+│   │   ├── AI/            # AIChat.jsx, AIChat.css, ChatMessage.jsx — floating Gemini chat widget
 │   │   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
 │   │                      #   AuthLayout, AuthSubmitButton
-│   │   ├── Dashboard/     # DashboardOverview, Expenses, Categories, Goals, Reports,
-│   │                      #   Settings, BudgetProgressPanel
+│   │   ├── Dashboard/     # DashboardOverview (+ inline export modal), Expenses,
+│   │                      #   Categories, Goals, Settings, BudgetProgressPanel
 │   │   ├── Expense/       # ExpenseForm, ExpenseList
 │   │   ├── Charts/        # PieChart, BarChart, LineChart
 │   │   ├── Layout/        # Navbar, Sidebar
 │   │   └── UI/            # Modal, Toast, Pagination, DateFilterBar,
 │   │                      #   ConfirmDialog, BudgetBuddyLogo, ExpenseTable,
 │   │                      #   CuteEmptyFace, ChartCard, PageHeader,
-│   │                      #   PasswordInput, UserAvatar, SearchDropdown
-│   ├── context/           # AuthContext.js, DateRangeContext.js
+│   │                      #   PasswordInput, UserAvatar, SearchDropdown,
+│   │                      #   AddCategoryModal
+│   ├── context/           # AuthContext.js, DateRangeContext.js, CurrencyContext.jsx
 │   ├── hooks/             # useDateFilter.js, useAIChat.js, useCategoryData.js,
 │   │                      #   useReportData.js, useSidebar.js, useReportExport.js,
 │   │                      #   useCategoryActions.js, useAuthForm.js,
 │   │                      #   useExpenses.js, useToast.js,
 │   │                      #   useBudgets.js, useBudgetProgress.js,
-│   │                      #   useGlobalSearch.js
+│   │                      #   useGlobalSearch.js, useCategories.js,
+│   │                      #   useClickOutside.js
 │   ├── services/          # expenseService.js, categoryService.js,
 │   │                      #   settingsService.js, aiService.js, budgetService.js
 │   ├── styles/            # main.css, tokens.css, modal.css, modal-forms.css,
@@ -337,7 +341,10 @@ budget-buddy/
 │   │                      #   styles-pages.css, styles-settings.css,
 │   │                      #   styles-additions.css, styles-overrides.css
 │   ├── utils/             # getCategoryIcon.js, getCategoryColor.js,
-│   │                      #   formatDate.js, validatePassword.js
+│   │                      #   formatDate.js, validatePassword.js,
+│   │                      #   currencyUtils.js, categorySuggester.js,
+│   │                      #   categoryUtils.js, dateFilterLabel.js,
+│   │                      #   firebaseUtils.js, forecastUtils.js
 │   └── __tests__/         # Unit tests
 ├── cypress/               # E2E tests
 ├── .github/workflows/     # CI/CD workflows

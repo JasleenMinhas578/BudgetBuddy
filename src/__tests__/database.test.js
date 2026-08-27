@@ -98,6 +98,30 @@ describe('database service', () => {
       );
     });
 
+    it('throws when amount is null', async () => {
+      await expect(addExpense('user', {
+        title: 'T', category: 'C', date: '2024-01-01', amount: null,
+      })).rejects.toThrow('Amount must be a positive number');
+    });
+
+    it('throws when amount is NaN', async () => {
+      await expect(addExpense('user', {
+        title: 'T', category: 'C', date: '2024-01-01', amount: NaN,
+      })).rejects.toThrow('Amount must be a positive number');
+    });
+
+    it('throws when amount is zero', async () => {
+      await expect(addExpense('user', {
+        title: 'T', category: 'C', date: '2024-01-01', amount: 0,
+      })).rejects.toThrow('Amount must be a positive number');
+    });
+
+    it('throws when amount is negative', async () => {
+      await expect(addExpense('user', {
+        title: 'T', category: 'C', date: '2024-01-01', amount: -5,
+      })).rejects.toThrow('Amount must be a positive number');
+    });
+
     it('gets expenses and maps docs', async () => {
       const expenses = await getExpenses('user-1');
       expect(getDocs).toHaveBeenCalledWith('query-ref');
