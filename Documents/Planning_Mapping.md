@@ -1,9 +1,7 @@
 # 📌 Budget Buddy – Planning & Issues Mapping Document
 
-**Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
-**Team**: Group 6  
-**Date**: November 26, 2025  
+**Date**: August 27, 2026  
 **Status**: ✅ Complete — All issues resolved, 211 story points completed
 
 This document provides a complete mapping of all project issues, story points, team responsibilities, velocity, and Agile workflow details.  
@@ -21,11 +19,9 @@ It also includes screenshots of the GitHub Project Board and a detailed contribu
 1. [GitHub Project Board Overview](#️-1-github-project-board-overview)
 2. [Issue-to-Planning Mapping Table](#-2-issue-to-planning-mapping-table)
 3. [GitHub Issues Mapping by Category](#-3-github-issues-mapping-by-category)
-4. [Story Point Contribution Per Member](#-3-story-point-contribution-per-member)
-5. [Detailed Contribution Summary](#-4-detailed-contribution-summary-per-team-member)
-6. [Project Velocity](#-5-project-velocity)
-7. [Agile Practices Followed](#-6-agile-practices-followed)
-8. [Conclusion](#-7-conclusion)
+4. [Project Velocity](#-5-project-velocity)
+5. [Agile Practices Followed](#-6-agile-practices-followed)
+6. [Conclusion](#-7-conclusion)
 
 ---
 
@@ -280,82 +276,6 @@ This section provides a comprehensive mapping of all GitHub issues organized by 
 
 ---
 
-# 🧮 4. Story Point Contribution Per Member
-
-> 📌 Each contributor receives **full story points for any issue they worked on** — standard for team Agile contribution analysis unless partial points were assigned originally.
-
-### ✅ **Automated Story Point Summary**
-(Complete calculation based on the full issue list)
-
-| Member | Total Story Points |
-|--------|--------------------|
-| **Jasleen** |  **≈ 198 SP** |
-| **Mashroor** | **≈ 147 SP** |
-| **Sumaiya** | **≈ 104 SP** |
-| **Joel** | **≈ 92 SP** |
-| **Kaustubh** | **≈ 95 SP** |
-| **Ronit** | **≈ 95 SP** |
-
----
-
-# 👥 5. Detailed Contribution Summary (Per Team Member)
-
-## **👩‍💻 Jasleen Minhas — Project Lead**
-- Led entire frontend architecture & Firebase authentication flow  
-- Implemented Login, Signup, Logout pages + UI, routing, error states  
-- Built Expense Management CRUD UI and integration  
-- Led Dashboard UI, charts, PDF/CSV reporting  
-- Wrote majority of unit tests (Auth, Dashboard, Expense modules)  
-- Implemented Cypress E2E UI Testing & cross-browser verification  
-- Set up Vercel CI/CD pipeline and deployment troubleshooting  
-- Managed GitHub boards, issues, story points & documentation  
-- Guided teammates and ensured sprint completion  
-
----
-
-## **🧑‍💻 Mashroor Rahman — Firebase & Frontend**
-- Setup Firebase initialization, configuration & .env  
-- Contributed to Login/Signup Firebase authentication logic  
-- Worked on Landing Page, Logout flow, UI fixes  
-- Helped implement Categories & Expenses database integration  
-- Assisted in Cypress tests, Vercel deployment debugging  
-- Helped in fixing bugs
-
-
----
-
-## **🧑‍💻 Joel George Sam — Backend & Testing**
-- Contributed heavily to unit testing across Authentication, Dashboard, Expenses  
-- Worked on requirements, UML, architecture & backlog planning  
-- Helped with Dashboard visualizations, test coverage improvement  
-- Assisted in Firebase database integrations  
-
-
----
-
-## **🧑‍💻 Kaustubh — UI/UX + Dashboard**
-- Implemented parts of Expense Management UI  
-- Assisted in Dashboard charts & summary widgets  
-- Contributed to Category UI, Landing Page content  
-- Helped with frontend styling & UX consistency  
-
----
-
-## **🧑‍💻 Sumaiya — UI + Testing**
-- Signup/Login styling, content, error handling  
-- Categories UI, Landing Page content  
-- Assisted in Dashboard widgets & testing tasks  
-
----
-
-## **🧑‍💻 Ronit — Expense & Dashboard**
-- Implemented Add Expense UI  
-- Worked on CRUD operations and Firebase syncing  
-- Helped with Dashboard charting  
-- Contributed to Categories and Landing Page  
-
----
-
 # 📈 6. Project Velocity
 
 Velocity = **Average Story Points Completed per Sprint**
@@ -445,7 +365,6 @@ This document summarizes:
 | **Infrastructure Points** | 98 SP (24 Issues) |
 | **Iterations** | 5 (10 weeks) |
 | **Average Velocity** | 42 SP per sprint |
-| **Team Members** | 6 |
 | **Status** | ✅ Complete |
 
 > 📋 **For detailed requirements traceability**: See [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)  

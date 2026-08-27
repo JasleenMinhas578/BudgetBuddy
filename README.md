@@ -1,4 +1,4 @@
-# 💸 Budget Buddy (Group 6)
+# 💸 Budget Buddy
 
 > **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
 
@@ -8,7 +8,6 @@
 
 - [🚀 Project Overview](#-project-overview)
 - [📊 Project Status & Quick Links](#-project-status--quick-links)
-- [👥 Team](#-team)
 - [🖥️ Methodology & Iterations](#️-methodology--iterations)
 - [🗒️ Iterations Summary](#-iterations-summary)
 - [📋 Feature Issues](#-feature-issues)
@@ -86,81 +85,6 @@ Budget Buddy is a **free, easy-to-use web application** for managing personal ex
 
 ---
 
-## 👥 Team
-
-**Group**: 6 | **Course**: COMP6905 — Software Engineering | **Institution**: Memorial University of Newfoundland
-
-### Team Members
-
-| Member | ID | Email | Role |
-|--------|-----|-------|------|
-| **Jasleen Minhas** (Lead) | 202481225 | jminhas@mun.ca | Project Lead / Full-Stack |
-| **Sumaiya Khan** | 202480995 | sumaiyak@mun.ca | Frontend (UI/UX) |
-| **Kaustubh Patil** | 202580621 | kspatil@mun.ca | Frontend (Expenses) |
-| **Joel George Sam** | 202483190 | jgeorgesam@mun.ca | QA/Testing |
-| **Masroor Rahman** | 202482239 | masroorr@mun.ca | Backend/Database |
-| **Ronit Gajjar** | 202488048 | rhgajjar@mun.ca | Reporting/Features |
-
-### Team Responsibilities
-
-**1. Jasleen Minhas (Project Lead)**
-- Led frontend architecture & Firebase authentication flow
-- Implemented Login, Signup, Logout pages with UI, routing, error handling
-- Built Expense Management CRUD UI and Firebase integration
-- Led Dashboard UI, charts, PDF/CSV reporting
-- Wrote majority of unit tests (Auth, Dashboard, Expense modules)
-- Implemented Cypress E2E testing & cross-browser verification
-- Set up Vercel CI/CD pipeline and deployment troubleshooting
-- Managed GitHub boards, issues, story points & documentation
-
-**2. Masroor Rahman (Backend/Database)**
-- Set up Firebase initialization, configuration & .env
-- Contributed to Login/Signup Firebase authentication logic
-- Worked on Landing Page, Logout flow, UI fixes
-- Implemented Categories & Expenses database integration
-- Assisted in Cypress tests, Vercel deployment debugging
-- Bug fixing and troubleshooting
-
-**3. Joel George Sam (QA/Testing)**
-- Contributed heavily to unit testing across Authentication, Dashboard, Expenses
-- Worked on requirements, UML, architecture & backlog planning
-- Helped with Dashboard visualizations, test coverage improvement
-- Assisted in Firebase database integrations
-
-**4. Kaustubh Patil (Frontend - Expenses)**
-- Implemented parts of Expense Management UI
-- Assisted in Dashboard charts & summary widgets
-- Contributed to Category UI, Landing Page content
-- Helped with frontend styling & UX consistency
-
-**5. Sumaiya Khan (Frontend - UI/UX)**
-- Signup/Login styling, content, error handling
-- Categories UI, Landing Page content
-- Assisted in Dashboard widgets & testing tasks
-
-**6. Ronit Gajjar (Reporting/Features)**
-- Implemented Add Expense UI
-- Worked on CRUD operations and Firebase syncing
-- Helped with Dashboard charting
-- Contributed to Categories and Landing Page
-
-### Story Point Contributions
-
-| Member | Story Points |
-|--------|--------------|
-| **Jasleen** | ≈ 198 SP |
-| **Masroor** | ≈ 147 SP |
-| **Sumaiya** | ≈ 104 SP |
-| **Joel** | ≈ 92 SP |
-| **Kaustubh** | ≈ 95 SP |
-| **Ronit** | ≈ 95 SP |
-
-**Total Completed**: 211 Story Points | **Average Velocity**: 42 SP per Sprint
-
-> 📌 **Detailed contribution report**: [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md)
-
----
-
 ## 🖥️ Methodology & Iterations
 
 ### Methodology
@@ -197,10 +121,10 @@ In particular, we adopted **four core XP practices** throughout the project:
 
 ## 📋 Feature Issues
 
-> 📌 **Note**: The GitHub Issues themselves serve as the user stories. Issues are organized into 7 feature categories (US-001 through US-007) for better tracking and planning.
+> 📌 **Note**: The GitHub Issues themselves serve as the user stories. Issues are organized into feature categories for better tracking and planning.
 
 ### 📌 **Primary Feature Issues**  
-**Total**: **29 feature issues** organized into **7 categories** (US-001 through US-007) with **113 story points**
+**Total**: **29 feature issues** organized into **12 categories** (US-001 through US-012) with **113+ story points**
 
 #### Iteration 1 (Sept 22 – Oct 5)
 *No feature issues - Just Setup and planning phase*
@@ -226,7 +150,21 @@ In particular, we adopted **four core XP practices** throughout the project:
   - **Issues**: [#30](https://github.com/JasleenMinhas578/BudgetBuddy/issues/30), [#32](https://github.com/JasleenMinhas578/BudgetBuddy/issues/32), [#34](https://github.com/JasleenMinhas578/BudgetBuddy/issues/34), [#35](https://github.com/JasleenMinhas578/BudgetBuddy/issues/35)
 
 #### Iteration 5 (Nov 17 – Nov 30)
-*No new feature issues - Testing, quality assurance, and documentation (covered by infrastructure/support issues such as testing, CI/CD, documentation, and quality tasks)*
+*Testing, quality assurance, and documentation (covered by infrastructure/support issues)*
+
+#### Post-Iteration — Additional Features Implemented
+- **US-008**: AI Chat Assistant [Status: Done]
+  - Add, edit, and delete expenses in plain English via Google Gemini
+  - Auto-categorize expenses; query spending data with natural-language date ranges
+  - API key proxied server-side via `api/ai.js` (never exposed to the browser)
+- **US-009**: User Settings [Status: Done]
+  - Update display name, trigger password-reset email, save a default date-range preference
+- **US-010**: Budget Goals [Status: Done]
+  - Set monthly per-category spending limits; real-time progress bars with on-track / near-limit / over-budget alerts on the Goals page and dashboard
+- **US-011**: Multi-Currency Support [Status: Done]
+  - Choose a home currency and a display currency in Settings; live exchange rates convert amounts app-wide with symbol-aware formatting and fallback rates
+- **US-012**: Global Live Search [Status: Done]
+  - Navbar search bar with real-time expense and category results; highlights matching text and navigates directly to the matched item
 
 ### 📌 **Infrastructure & Supporting Issues**  
 In addition to the 29 feature issues, the project includes **infrastructural/supporting work** that enabled those features:
@@ -238,7 +176,7 @@ In addition to the 29 feature issues, the project includes **infrastructural/sup
 - **Documentation & Quality**: 5 issues, 17 SP (README/docs, UI/UX polish, ESLint/Lighthouse work)
 
 ## 📌 **Overall Summary of Issues**  
-All **29 feature issues** completed (113 story points) organized into **7 categories** (US-001 through US-007).  
+All **29 original feature issues** completed (113 story points) organized into **7 core categories** (US-001 through US-007), plus **5 additional features** (US-008 through US-012) implemented beyond the original scope.  
 Infrastructure/support work adds **24 issues** and **98 story points**, for a total of **53 core issues** and **211 story points** across **5 iterations** (plus additional overhead issues as detailed in `Documents/Planning_Mapping.md`).  
 Status: ✅ **100% feature + infrastructure scope complete**
 
@@ -509,7 +447,7 @@ budget-buddy/
 
 | Category | Total | Tested/Verified | Coverage | Status |
 |----------|-------|-----------------|----------|--------|
-| **Functional Requirements** | 11 | 11 | 100% | ✅ Complete |
+| **Functional Requirements** | 18 | 18 | 100% | ✅ Complete |
 | **Non-Functional Requirements** | 10 | 10 | 100% | ✅ Complete |
 | **Feature Issues** | 29 | 29 | 100% | ✅ Complete |
 | **Infrastructure Issues** | 24 | 24 | 100% | ✅ Complete |
@@ -529,11 +467,11 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 │         Requirements Coverage Summary                   │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  Total Requirements:              21                    │
-│  Requirements Tested/Verified:    21                    │
+│  Total Requirements:              28                    │
+│  Requirements Tested/Verified:    28                    │
 │  Coverage Percentage:             100%                  │
 │                                                         │
-│  Functional Requirements:         11/11                 │
+│  Functional Requirements:         18/18                 │
 │  Non-Functional Requirements:     10/10                 │
 │                                                         │
 │  Feature Issues Implemented:      29                    │
@@ -796,7 +734,7 @@ This beta round confirmed that the core functionality is usable and clearly iden
 **Result**: ✅ 99/100 Lighthouse score, fast load times
 
 ### 8. Team Collaboration & Git Workflow
-**Challenge**: Managing 6 team members with merge conflicts and integration issues.  
+**Challenge**: Managing merge conflicts and integration issues across multiple contributors.  
 **Solution**: Clear Git workflow with feature branches, PR review process, GitHub Projects, coding standards, automated CI/CD testing, regular sync meetings.  
 **Lesson**: Clear processes and communication are essential. Workflows, standards, and regular communication prevent conflicts.  
 **Result**: ✅ Smooth collaboration, 100 issues completed
@@ -843,21 +781,12 @@ This beta round confirmed that the core functionality is usable and clearly iden
 
 ## 🚀 Future Enhancements
 
-### AI-Powered Features *(Substantially Complete)*
-- ✅ Natural language expense input (e.g., "spent $45 on lunch")
-- ✅ Automatic expense categorization via Gemini AI
-- ✅ Natural language spending queries (totals, averages, highest expense)
-- ✅ Edit expenses via chat (e.g., "change my coffee yesterday to $6")
-- ✅ Delete expenses via chat (e.g., "remove the Uber ride on July 3")
-- ✅ Add/delete/rename custom categories via chat
-- ✅ Natural language date-range control (e.g., "show me last month" focuses the chat's queries on that period)
+### AI-Powered Features
 - 🔜 Predictive analytics for spending patterns
 - 🔜 Budget alerts when nearing category limits
 
 ### Advanced Financial Features
-- Budget goals & tracking
 - Bill reminders & notifications
-- Multi-currency support
 - Split expenses with friends/family
 - Income tracking
 - Savings goals
@@ -937,7 +866,7 @@ Complete system architecture documentation following the 4+1 architectural view 
 
 ## 📝 Contributing
 
-While this is an academic project, we welcome suggestions and feedback! If you have ideas for improvements or notice any issues:
+We welcome suggestions and feedback! If you have ideas for improvements or notice any issues:
 
 1. Open an issue on GitHub with your suggestion or bug report
 2. Follow the issue template and provide as much detail as possible
@@ -947,16 +876,8 @@ While this is an academic project, we welcome suggestions and feedback! If you h
 
 ## 📄 License
 
-This project is for academic purposes as part of **COMP6905 - Software Engineering** at Memorial University of Newfoundland.
+This project was developed as an academic group project.
 
 ---
 
-## 🙏 Acknowledgments
-
-- **Dr. Liao** - Course Instructor, COMP6905
-- **Mr. Syed** - TA
-- **Memorial University of Newfoundland** - Computer Science Department
-
----
-
-**Made with ❤️ by Group 6 | Memorial University of Newfoundland | Fall 2025**
+**Made with ❤️ by the BudgetBuddy Team**

@@ -1,8 +1,6 @@
 # 📌 Acceptance Tests & Requirements Traceability - Budget Buddy
 
-**Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
-**Team**: Group 6  
 **Purpose**: Comprehensive acceptance tests documentation with complete traceability from requirements to issues (user stories) to acceptance criteria to tests  
 **Status**: ✅ 100% Complete Coverage | ✅ 102/102 E2E Tests Passing | ✅ 295/295 Unit Tests Passing
 
@@ -65,9 +63,8 @@
 4. [Non-Functional Requirements Traceability](#4-non-functional-requirements-traceability)
 5. [Test File Mapping](#5-test-file-mapping)
 6. [GitHub Issues Mapping](#6-github-issues-mapping)
-7. [Team Contributions](#7-team-contributions)
-8. [How to Run Tests](#8-how-to-run-tests)
-9. [Compliance Statement](#9-compliance-statement)
+7. [How to Run Tests](#8-how-to-run-tests)
+8. [Compliance Statement](#9-compliance-statement)
 
 ---
 
@@ -542,36 +539,6 @@ cypress/e2e/
 
 ---
 
-## 7. Team Contributions
-
-### 7.1 Story Point Contribution Per Member
-
-| Team Member | Total Story Points | Primary Responsibilities |
-|-------------|-------------------|--------------------------|
-| **Jasleen Minhas** | ≈ 198 SP | Project Lead, Frontend Architecture, Firebase Auth, Expense Management, Dashboard, Unit Tests, E2E Testing, CI/CD, Documentation |
-| **Mashroor Rahman** | ≈ 147 SP | Firebase Setup, Authentication Logic, Database Integration, Categories & Expenses, Cypress Tests, Deployment |
-| **Sumaiya** | ≈ 104 SP | Signup/Login UI, Categories UI, Landing Page, Dashboard Widgets, Testing |
-| **Joel George Sam** | ≈ 92 SP | Unit Testing (Auth, Dashboard, Expenses), Requirements, UML, Architecture, Database Integration |
-| **Kaustubh** | ≈ 95 SP | Expense Management UI, Dashboard Charts, Category UI, Landing Page, Frontend Styling |
-| **Ronit** | ≈ 95 SP | Add Expense UI, CRUD Operations, Firebase Syncing, Dashboard Charting, Categories |
-
-**Note**: Each contributor receives full story points for any issue they worked on (standard Agile contribution analysis). The cumulative total (731 SP) is higher than the total project story points (211 SP) because multiple team members collaborated on the same issues. See [`Documents/Planning_Mapping.md`](Documents/Planning_Mapping.md) for detailed breakdown.
-
-### 7.2 Sprint Velocity
-
-| Sprint | Story Points Completed | Key Deliverables |
-|--------|------------------------|------------------|
-| **Sprint 1** | 35 SP | Requirements, UML Diagrams, GitHub Setup, React/Firebase Initialization |
-| **Sprint 2** | 76 SP | Landing Page, Authentication (Signup/Login/Logout), Unit Tests, CI/CD Setup |
-| **Sprint 3** | 46 SP | Expense Management (CRUD), Category Management, Dashboard UI, Firebase Integration |
-| **Sprint 4** | 28 SP | Dashboard & Reporting, Charts (Pie/Bar/Line), PDF/CSV Export, Forgot Password |
-| **Sprint 5** | 26 SP | Cypress E2E Testing, Cross-Browser Testing, Lighthouse Audit, ESLint Report, Final Checklist |
-| **TOTAL** | **211 SP** | **All Features Complete** |
-
-**Average Velocity**: ≈ 42 SP per Sprint
-
----
-
 ## 8. How to Run Tests
 
 ### 8.1 E2E Tests (Cypress)
@@ -745,7 +712,6 @@ The acceptance tests fully satisfy all requirements in `Documents/Requirements.m
 | **Total Tests** | 397 (100% passing) |
 | **Sprints** | 5 |
 | **Average Velocity** | 42 SP/sprint |
-| **Team Members** | 6 |
 | **Test Coverage** | 100% |
 
 ### 10.4 References
@@ -759,8 +725,8 @@ The acceptance tests fully satisfy all requirements in `Documents/Requirements.m
 
 ---
 
-**Last Updated**: December 10, 2025  
-**Project**: Budget Buddy | Group 6 | Memorial University of Newfoundland
+**Last Updated**: August 27, 2026  
+**Project**: Budget Buddy
 
 **Traceability Status**: ✅ **100% COMPLETE**  
 **Requirements Coverage**: ✅ **21/21 (100%)**  

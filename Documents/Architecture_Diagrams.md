@@ -1,9 +1,7 @@
 # Architecture Diagrams - Budget Buddy
 
-**Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
-**Team**: Group 6  
-**Date**: November 26, 2025  
+**Date**: August 27, 2026  
 **Purpose**: Overall system architecture and 4+1 architectural view model  
 **Status**: ✅ Complete — All diagrams documented
 
@@ -529,7 +527,7 @@ For detailed technology choices and alternatives considered, see the [Technologi
 ---
 
 **Last Updated**: August 26, 2026  
-**Project**: Budget Buddy | Group 6 | Memorial University of Newfoundland
+**Project**: Budget Buddy
 
 > 📋 **UML Diagrams**: All diagrams are located in [`Documents/UML/`](Documents/UML/)  
 > 📋 **Related Documents**: See [`Documents/Requirements.md`](Documents/Requirements.md) and [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md)

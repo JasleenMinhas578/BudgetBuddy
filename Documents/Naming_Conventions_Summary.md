@@ -1,7 +1,7 @@
 # Naming Conventions - Budget Buddy Project
 
 **Project**: Budget Buddy  
-**Date**: November 25, 2025  
+**Date**: August 27, 2026  
 **Purpose**: Document all naming conventions used throughout the codebase  
 
 ---
@@ -861,5 +861,5 @@ By following these conventions, the Budget Buddy project maintains a professiona
 
 **Document Version**: 1.1  
 **Last Updated**: August 26, 2026  
-**Project**: Budget Buddy | Group 6 | Memorial University of Newfoundland
+**Project**: Budget Buddy
 

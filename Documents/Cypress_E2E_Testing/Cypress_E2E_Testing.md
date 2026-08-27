@@ -1,7 +1,7 @@
 # 🎭 Cypress E2E Testing - Budget Buddy
 
-**Project**: Budget Buddy | **Group**: 6 | **Course**: COMP6905 — Software Engineering  
-**Status**: ✅ **PRODUCTION READY** | **Last Updated**: December 01, 2024
+**Project**: Budget Buddy  
+**Status**: ✅ **PRODUCTION READY** | **Last Updated**: August 27, 2026
 
 ---
 
@@ -545,7 +545,6 @@ If you encounter issues:
 2. Review [Cypress Documentation](https://docs.cypress.io)
 3. Check GitHub Actions logs for CI failures
 4. Review screenshots and videos in artifacts
-5. Contact team lead: jminhas@mun.ca
 
 ### Additional Resources
 
@@ -572,6 +571,5 @@ The test suite ensures application quality, catches regressions early, and provi
 ---
 
 **Status**: ✅ Complete & Production Ready  
-**Project**: Budget Buddy - Group 6  
-**Course**: COMP6905 — Software Engineering  
+**Project**: Budget Buddy
 

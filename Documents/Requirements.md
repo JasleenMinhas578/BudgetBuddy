@@ -1,9 +1,7 @@
 # 📑 Requirements Document — Budget Buddy
 
-**Course**: COMP6905 — Software Engineering  
 **Project**: Budget Buddy  
-**Team**: Group 6  
-**Date**: September 22, 2025  
+**Date**: August 27, 2026  
 **Status**: ✅ Complete — All requirements implemented and tested
 
 ---
@@ -95,9 +93,8 @@ The following features are documented for future implementation:
 ## 5. Constraints
 
 - **Timeframe**: September 22, 2025 – November 30, 2025 (5 iterations, 10 weeks)
-- **Team Size**: 6 members
 - **Tech Stack**: React.js, Firebase (Auth + Firestore), Chart.js, date-fns, jsPDF, html2canvas, Google Gemini API, react-icons (Lucide)
-- **Scope**: Core features to be completed within this semester; extended features considered as future work
+- **Scope**: Core features completed; extended features considered as future work
 
 ---
 
