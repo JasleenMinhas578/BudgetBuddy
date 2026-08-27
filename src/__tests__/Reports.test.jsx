@@ -106,6 +106,16 @@ jest.mock('framer-motion', () => ({
   },
 }));
 
+// Mock CurrencyContext — Reports uses useCurrency() for amount formatting
+jest.mock('../context/CurrencyContext', () => ({
+  useCurrency: () => ({
+    formatAmount: (amount) => `$${Number(amount).toFixed(2)}`,
+    currency: 'USD',
+    currencySymbol: '$',
+  }),
+  CurrencyProvider: ({ children }) => children,
+}));
+
 // Mock URL.createObjectURL and document methods for CSV export
 global.URL.createObjectURL = jest.fn(() => 'blob:mock-url');
 global.URL.revokeObjectURL = jest.fn();

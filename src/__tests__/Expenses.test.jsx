@@ -101,6 +101,16 @@ jest.mock('../components/Expense/ExpenseForm', () => {
   };
 });
 
+// Mock CurrencyContext — Expenses uses useCurrency() for amount formatting
+jest.mock('../context/CurrencyContext', () => ({
+  useCurrency: () => ({
+    formatAmount: (amount) => `$${Number(amount).toFixed(2)}`,
+    currency: 'USD',
+    currencySymbol: '$',
+  }),
+  CurrencyProvider: ({ children }) => children,
+}));
+
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {

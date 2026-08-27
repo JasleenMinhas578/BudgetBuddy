@@ -16,8 +16,10 @@ import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import DateFilterBar, { FILTER_BUTTONS_REPORTS } from '../UI/DateFilterBar';
 import '../../styles/main.css';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export default function Reports() {
+  const { formatAmount } = useCurrency();
   const { expenses } = useExpenses();
   const dateRangeCtx = useDateRangeContext();
   const {
@@ -91,7 +93,6 @@ export default function Reports() {
             onPickedMonthChange={setPickedMonth}
             availableMonths={availableMonths}
             buttons={FILTER_BUTTONS_REPORTS}
-            title="Select date range"
           />
         </div>
       </div>
@@ -102,7 +103,7 @@ export default function Reports() {
           <div className="filter-stats">
             <span>{filteredExpenses.length} transactions</span>
             <span>•</span>
-            <span>${totalAmount.toFixed(2)} total</span>
+            <span>{formatAmount(totalAmount)} total</span>
           </div>
         </div>
 
