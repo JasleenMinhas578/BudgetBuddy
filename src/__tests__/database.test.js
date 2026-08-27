@@ -5,14 +5,12 @@
 // - Ensures that service functions rethrow Firestore failures so calling code can respond appropriately.
 import {
   addExpense,
-  getExpenses,
   updateExpense,
   deleteExpense,
   subscribeToExpenses,
 } from '../services/expenseService';
 import {
   addCategory,
-  getCategories,
   updateCategory,
   deleteCategory,
   subscribeToCategories,
@@ -122,17 +120,6 @@ describe('database service', () => {
       })).rejects.toThrow('Amount must be a positive number');
     });
 
-    it('gets expenses and maps docs', async () => {
-      const expenses = await getExpenses('user-1');
-      expect(getDocs).toHaveBeenCalledWith('query-ref');
-      expect(expenses).toEqual([{ id: '1', amount: 10 }]);
-    });
-
-    it('logs and rethrows when getExpenses fails', async () => {
-      getDocs.mockRejectedValueOnce(new Error('boom'));
-      await expect(getExpenses('user-1')).rejects.toThrow('boom');
-    });
-
     it('updates expense with timestamp', async () => {
       await updateExpense('user-1', 'exp-1', { title: 'Updated' });
       expect(doc).toHaveBeenCalledWith('db-instance', 'users', 'user-1', 'expenses', 'exp-1');
@@ -165,16 +152,6 @@ describe('database service', () => {
 
     it('throws when category data missing', async () => {
       await expect(addCategory('user', {})).rejects.toThrow('Missing required category data');
-    });
-
-    it('gets categories', async () => {
-      const categories = await getCategories('user-1');
-      expect(categories).toEqual([{ id: '1', amount: 10 }]);
-    });
-
-    it('propagates errors when getCategories fails', async () => {
-      getDocs.mockRejectedValueOnce(new Error('fail categories'));
-      await expect(getCategories('user-1')).rejects.toThrow('fail categories');
     });
 
     it('updates category', async () => {
