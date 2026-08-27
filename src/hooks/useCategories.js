@@ -13,7 +13,9 @@ export function useCategories() {
       unsub = subscribeToCategories(currentUser.uid, (data) => {
         if (data !== null) setCategories(data);
       });
-    } catch {}
+    } catch (error) {
+      console.error('Error setting up category subscription:', error);
+    }
     return () => {
       try {
         if (typeof unsub === 'function') unsub();

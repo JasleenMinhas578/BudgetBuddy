@@ -15,6 +15,7 @@ import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useReportData } from '../../hooks/useReportData';
 import { useReportExport } from '../../hooks/useReportExport';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { validCategory } from '../../utils/categoryUtils';
 import DateFilterBar from '../UI/DateFilterBar';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import ExpenseTable from '../UI/ExpenseTable';
@@ -65,7 +66,7 @@ export default function DashboardOverview() {
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
     ...firestoreCategories
-      .filter(c => c && c.name && c.name !== 'undefined' && c.name !== 'null')
+      .filter(c => c && validCategory(c.name))
       .map(c => ({ ...c, Icon: LuTag })),
   ], [firestoreCategories]);
 
@@ -81,16 +82,6 @@ export default function DashboardOverview() {
   // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
   const averageExpense = filteredExpenses.length > 0 ? totalSpent / filteredExpenses.length : 0;
-
-  const topCategoryName = (() => {
-    const map = filteredExpenses.reduce((acc, e) => {
-      acc[e.category] = (acc[e.category] || 0) + e.amount;
-      return acc;
-    }, {});
-    return Object.keys(map).length > 0
-      ? Object.entries(map).sort(([, a], [, b]) => b - a)[0][0]
-      : 'None';
-  })();
 
   const recentExpenses = filteredExpenses.slice(0, 5);
 
@@ -255,7 +246,7 @@ export default function DashboardOverview() {
           </div>
           <div className="card-content">
             <h3>Top Category</h3>
-            <p className="card-amount">{topCategoryName}</p>
+            <p className="card-amount">{topCategory ?? 'None'}</p>
             <p className="card-subtitle">Most spent category</p>
           </div>
         </div>

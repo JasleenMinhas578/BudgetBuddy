@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LuPlus } from 'react-icons/lu';

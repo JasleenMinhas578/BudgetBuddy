@@ -1,4 +1,5 @@
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const ALLOWED_MODELS = new Set(['gemini-3.6-flash']);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,6 +14,9 @@ export default async function handler(req, res) {
   const { model, contents, generationConfig } = req.body;
   if (!model || !contents) {
     return res.status(400).json({ error: 'Missing required fields' });
+  }
+  if (!ALLOWED_MODELS.has(model)) {
+    return res.status(400).json({ error: 'Invalid model' });
   }
 
   const geminiUrl = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;

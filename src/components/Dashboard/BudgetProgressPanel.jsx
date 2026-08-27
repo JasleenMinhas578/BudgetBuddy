@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { LuTarget, LuChevronRight, LuCalendar } from 'react-icons/lu';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
@@ -10,9 +11,8 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
   // Always compare against current month — regardless of the dashboard's date filter
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
-    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const end = `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
+    const start = format(startOfMonth(now), 'yyyy-MM-dd');
+    const end = format(endOfMonth(now), 'yyyy-MM-dd');
     return expenses.filter((e) => e.date >= start && e.date <= end);
   }, [expenses]);
 

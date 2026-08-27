@@ -1,7 +1,9 @@
+import { DEFAULT_CATEGORIES as DEFAULT_CATEGORY_OBJECTS } from '../utils/getCategoryIcon';
+
 const GEMINI_MODEL = 'gemini-3.6-flash';
 const AI_PROXY_URL = '/api/ai';
 
-const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Shopping', 'Other'];
+const DEFAULT_CATEGORIES = DEFAULT_CATEGORY_OBJECTS.map(c => c.name);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

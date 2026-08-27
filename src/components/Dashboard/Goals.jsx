@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { useCategories } from '../../hooks/useCategories';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LuTag, LuTarget, LuTrendingUp, LuAlertTriangle, LuCheckCircle, LuPlus, LuGripVertical } from 'react-icons/lu';
@@ -8,6 +9,7 @@ import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useExpenses } from '../../hooks/useExpenses';
 import { useCategoryActions } from '../../hooks/useCategoryActions';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { validCategory } from '../../utils/categoryUtils';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 import PageHeader from '../UI/PageHeader';
 import Modal from '../UI/Modal';
@@ -94,7 +96,7 @@ export default function Goals() {
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES,
     ...firestoreCategories
-      .filter((c) => c && c.name && c.name !== 'undefined' && c.name !== 'null')
+      .filter((c) => c && validCategory(c.name))
       .map((c) => ({ ...c, Icon: LuTag })),
   ], [firestoreCategories]);
 
@@ -106,10 +108,9 @@ export default function Goals() {
   // Always show current-month progress against goals
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
-    const start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
-    return expenses.filter((e) => e.date >= start && e.date <= endStr);
+    const start = format(startOfMonth(now), 'yyyy-MM-dd');
+    const end = format(endOfMonth(now), 'yyyy-MM-dd');
+    return expenses.filter((e) => e.date >= start && e.date <= end);
   }, [expenses]);
 
   const { categoryProgress } = useBudgetProgress(thisMonthExpenses, allCategories, budgets);

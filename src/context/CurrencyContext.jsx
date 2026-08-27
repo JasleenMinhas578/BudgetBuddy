@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { formatAmount as utilFormatAmount, CURRENCIES } from '../utils/currencyUtils';
 
+const EXCHANGE_RATE_URL = 'https://open.er-api.com/v6/latest/USD';
+
 const CurrencyContext = createContext();
 
 export function CurrencyProvider({ children }) {
@@ -16,7 +18,7 @@ export function CurrencyProvider({ children }) {
   useEffect(() => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
-    fetch('https://open.er-api.com/v6/latest/USD', { signal: controller.signal })
+    fetch(EXCHANGE_RATE_URL, { signal: controller.signal })
       .then(r => (r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)))
       .then(data => {
         if (data?.rates) setLiveRates(data.rates);

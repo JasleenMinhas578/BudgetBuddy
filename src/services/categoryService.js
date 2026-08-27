@@ -35,17 +35,6 @@ export const addCategory = async (userId, categoryData) => {
   }
 };
 
-export const getCategories = async (userId) => {
-  try {
-    const q = query(collection(db, 'users', userId, 'categories'));
-    const querySnapshot = await getDocs(q);
-    return snapshotToArray(querySnapshot);
-  } catch (error) {
-    console.error('Error getting categories:', error);
-    throw error;
-  }
-};
-
 export const updateCategory = async (userId, categoryId, updateData) => {
   try {
     if (!userId || !categoryId) throw new Error('Missing required parameters');

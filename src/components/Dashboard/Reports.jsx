@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import {
   LuUpload, LuFileText, LuFileSpreadsheet, LuLoader,
   LuX, LuSparkles, LuZap, LuLightbulb, LuBarChart2,

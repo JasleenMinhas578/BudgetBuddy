@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import { useState, useEffect, useMemo } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { LuTag, LuPlus, LuChevronDown, LuChevronUp, LuMoreVertical, LuPencil, LuTrash2 } from 'react-icons/lu';

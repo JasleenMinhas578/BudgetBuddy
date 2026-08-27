@@ -1,7 +1,6 @@
 import {
   collection,
   addDoc,
-  getDocs,
   query,
   doc,
   updateDoc,
@@ -32,17 +31,6 @@ export const addExpense = async (userId, expenseData) => {
   } catch (error) {
     console.error('Error adding expense:', error);
     throw new Error(`Failed to add expense: ${error.message}`);
-  }
-};
-
-export const getExpenses = async (userId) => {
-  try {
-    const q = query(collection(db, 'users', userId, 'expenses'), orderBy('createdAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    return snapshotToArray(querySnapshot);
-  } catch (error) {
-    console.error('Error getting expenses:', error);
-    throw error;
   }
 };
 
