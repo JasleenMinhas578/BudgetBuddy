@@ -1028,6 +1028,13 @@
     pointer-events: auto;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    /* Reset button defaults when sidebar-link is on a <button> */
+    background: none;
+    border: none;
+    width: 100%;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
   }
   
   .sidebar-link:hover {
@@ -1363,10 +1370,34 @@
     margin: 0;
   }
   
+  .welcome-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    position: relative;
+  }
+
   .welcome-illustration {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .welcome-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .welcome-actions .export-btn-wrapper {
+    position: relative;
+  }
+
+  .welcome-actions .export-dropdown {
+    right: 0;
+    left: auto;
   }
   
   .illustration-circle {
@@ -2733,6 +2764,36 @@
     backdrop-filter: blur(10px);
   }
 
+  .filter-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-row .filter-controls {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
+  }
+
+  .dashboard-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    position: relative;
+    justify-content: center;
+  }
+
+  .dashboard-actions .export-btn-wrapper {
+    position: relative;
+  }
+
+  .dashboard-actions .btn-sm {
+    width: 100%;
+  }
+
   .filter-section {
     margin-bottom: 1.5rem;
   }
@@ -3430,10 +3491,15 @@
     padding-bottom: 3rem;
   }
 
+  .goals-container .section-header {
+    margin-bottom: 0;
+  }
+
   /* Monthly summary card */
   .goals-chart-section .chart-container {
     width: 100%;
   }
+
 
   .goals-summary-card {
     background: var(--bg-light);
@@ -3517,6 +3583,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-top: 1.25rem;
   }
 
   .goals-insight {
@@ -4365,3 +4432,235 @@
     border-left: 1px solid var(--glass-10, rgba(255,255,255,0.1));
   }
 
+
+/* ── Collapsible insight/chart blocks ────────────────────────────── */
+  .spending-insights-block {
+    background: var(--bg-light);
+    border: 1px solid var(--glass-10);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  /* Works as both <button> (Charts block) and <div> (Spending Insights block) */
+  .spending-insights-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    gap: 0.75rem;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+    text-align: left;
+  }
+
+  .spending-insights-toggle[aria-expanded="true"] {
+    border-bottom-color: var(--glass-10);
+  }
+
+  .spending-insights-toggle:hover {
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* Left clickable area inside Spending Insights toggle div */
+  .spending-insights-expand {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    padding: 0;
+    text-align: left;
+    gap: 0.5rem;
+    font-family: inherit;
+  }
+
+  .spending-insights-expand:hover .spending-insights-toggle-left {
+    color: var(--accent-teal);
+  }
+
+  /* Right side: AI Summary button + chevron */
+  .spending-insights-toggle-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  /* Chevron-only button */
+  .spending-insights-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .spending-insights-chevron:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.06);
+  }
+
+  .spending-insights-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .spending-insights-content {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .insights-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Export Modal */
+  .export-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .export-modal-desc {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
+  }
+
+  .export-modal-date-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .export-modal-date-label {
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+  }
+
+  .export-modal-date-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .export-date-pill {
+    padding: 0.35rem 0.8rem;
+    border-radius: 99px;
+    border: 1px solid var(--glass-10);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .export-date-pill:hover {
+    background: var(--glass-05);
+    color: var(--text-primary);
+  }
+
+  .export-date-pill.active {
+    background: var(--accent-teal);
+    border-color: var(--accent-teal);
+    color: #0d1f1e;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .export-modal-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .export-modal-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--glass-05);
+    border: 1px solid var(--glass-10);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  .export-modal-option:hover:not(:disabled) {
+    background: var(--glass-10);
+    border-color: var(--accent-teal);
+  }
+
+  .export-modal-option:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .export-modal-option svg {
+    flex-shrink: 0;
+    color: var(--accent-teal);
+  }
+
+  .export-modal-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .export-modal-option-label {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+  }
+
+  .export-modal-option-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+
+  .export-modal-empty {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 0.5rem 0;
+    margin: 0;
+  }

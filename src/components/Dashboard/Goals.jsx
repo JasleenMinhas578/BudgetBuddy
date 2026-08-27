@@ -256,60 +256,36 @@ export default function Goals() {
             />
           </div>
           <p className="goals-overall-pct">{overallPct.toFixed(0)}% of monthly budget used</p>
-        </div>
-      )}
 
-      {/* Insights — alerts for over-budget and near-limit categories */}
-      {hasAnyBudget && (overBudget.length > 0 || nearLimit.length > 0 || onTrack.length > 0) && (
-        <div className="goals-insights">
-          {overBudget.map((p) => (
-            <div key={p.name} className="goals-insight goals-insight--danger">
-              <LuAlertTriangle size={15} />
-              <span>
-                <strong>{p.name}</strong> is over budget by ${Math.abs(p.remaining).toFixed(2)}
-              </span>
-            </div>
-          ))}
-          {nearLimit.map((p) => (
-            <div key={p.name} className="goals-insight goals-insight--warning">
-              <LuTrendingUp size={15} />
-              <span>
-                <strong>{p.name}</strong> is at {p.pct.toFixed(0)}% — ${p.remaining.toFixed(2)} left
-              </span>
-            </div>
-          ))}
-          {onTrack.length > 0 && (
-            <div className="goals-insight goals-insight--ok">
-              <LuCheckCircle size={15} />
-              <span>
-                {onTrack.map((p) => p.name).join(', ')} {onTrack.length === 1 ? 'is' : 'are'} on track
-              </span>
+          {/* Insights — alerts for over-budget and near-limit categories */}
+          {(overBudget.length > 0 || nearLimit.length > 0 || onTrack.length > 0) && (
+            <div className="goals-insights">
+              {overBudget.map((p) => (
+                <div key={p.name} className="goals-insight goals-insight--danger">
+                  <LuAlertTriangle size={15} />
+                  <span>
+                    <strong>{p.name}</strong> is over budget by ${Math.abs(p.remaining).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              {nearLimit.map((p) => (
+                <div key={p.name} className="goals-insight goals-insight--warning">
+                  <LuTrendingUp size={15} />
+                  <span>
+                    <strong>{p.name}</strong> is at {p.pct.toFixed(0)}% — ${p.remaining.toFixed(2)} left
+                  </span>
+                </div>
+              ))}
+              {onTrack.length > 0 && (
+                <div className="goals-insight goals-insight--ok">
+                  <LuCheckCircle size={15} />
+                  <span>
+                    {onTrack.map((p) => p.name).join(', ')} {onTrack.length === 1 ? 'is' : 'are'} on track
+                  </span>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Budget vs Spent chart — only when at least one goal is set */}
-      {hasAnyBudget && (
-        <div className="goals-chart-section">
-          <ChartCard title="Budget vs. Spent by Category">
-            <BarChart
-              data={budgetChartData}
-              options={{
-                scales: {
-                  y: { ticks: { callback: (v) => `$${v}` } },
-                  x: { grid: { display: false } },
-                },
-                plugins: {
-                  tooltip: {
-                    callbacks: {
-                      label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`,
-                    },
-                  },
-                },
-              }}
-            />
-          </ChartCard>
         </div>
       )}
 
@@ -426,6 +402,36 @@ export default function Goals() {
         )}
 
       </div>
+
+      {/* Budget vs Spent chart — only when at least one goal is set */}
+      {hasAnyBudget && (
+        <div className="goals-chart-section">
+          <div className="section-subheader">
+            <div>
+              <h3>Charts &amp; Visualizations</h3>
+              <p>Visual breakdown of your spending against budget goals</p>
+            </div>
+          </div>
+          <ChartCard title="Budget vs. Spent by Category">
+            <BarChart
+              data={budgetChartData}
+              options={{
+                scales: {
+                  y: { ticks: { callback: (v) => `$${v}` } },
+                  x: { grid: { display: false } },
+                },
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`,
+                    },
+                  },
+                },
+              }}
+            />
+          </ChartCard>
+        </div>
+      )}
 
       <Modal isOpen={isGoalModalOpen} onClose={() => setIsGoalModalOpen(false)} title="Set Category Goals">
         <div className="goal-picker-modal">
