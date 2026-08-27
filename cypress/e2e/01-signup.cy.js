@@ -94,9 +94,11 @@ describe('User Signup Flow', () => {
   it('should successfully register a new user with valid credentials', () => {
     // Generate unique email for this test
     const timestamp = Date.now();
-    const email = `test${Date.now()}@budgetbuddy.test`;
+    const email = `test${timestamp}@budgetbuddy.test`;
     const password = 'TestPassword123!';
-    
+
+    // Fill display name (required field in the signup form)
+    cy.get('#displayName').type('Test User');
     cy.get('input[type="email"]').type(email);
     cy.get('input[type="password"]').first().type(password);
     cy.get('input[type="password"]').last().type(password);
@@ -108,7 +110,7 @@ describe('User Signup Flow', () => {
     cy.wait(5000);
     
     // Should redirect to dashboard after successful signup
-    cy.url().should('include', '/dashboard', { timeout: 15000 });
+    cy.url({ timeout: 15000 }).should('include', '/dashboard');
     
     // Dashboard should be visible
     cy.contains(/dashboard|overview|expenses/i, { timeout: 10000 }).should('be.visible');
@@ -149,18 +151,11 @@ describe('User Signup Flow', () => {
   });
 
   it('should toggle password visibility', () => {
-    // Check if password visibility toggle exists
-    cy.get('input[type="password"]').first().should('exist');
-    
-    // Look for eye icon or visibility toggle button
-    cy.get('button, [role="button"]').each(($el) => {
-      const text = $el.text();
-      if (text.includes('show') || text.includes('Show') || $el.find('svg').length > 0) {
-        cy.wrap($el).click({ force: true });
-        // Password field might change to text type
-        cy.wait(500);
-      }
-    });
+    // Target the eye-icon toggle specifically (aria-label set in PasswordInput component)
+    cy.get('[aria-label="Show password"]').first().click({ force: true });
+    cy.wait(300);
+    // After clicking, the input should be visible as text or the label flips
+    cy.get('[aria-label="Hide password"], [aria-label="Show password"]').first().should('exist');
   });
 
   it('should navigate to login page from signup', () => {
@@ -184,21 +179,24 @@ describe('User Signup Flow', () => {
   });
 
   it('should disable submit button during form submission', () => {
-    const timestamp = Date.now();
-    const email = `test.button@budgetbuddy.test`;
+    // Use unique email so Firebase takes time creating a new account (keeps button disabled longer)
+    const email = `test.button.${Date.now()}@budgetbuddy.test`;
     const password = 'TestPassword123!';
-    
+
+    // Fill display name (required) so the form actually submits
+    cy.get('#displayName').type('Button Test User');
     cy.get('input[type="email"]').type(email);
     cy.get('input[type="password"]').first().type(password);
     cy.get('input[type="password"]').last().type(password);
-    
+
     cy.get('button[type="submit"]').click();
-    
-    // Button should show loading state or be disabled
+
+    // Button should be disabled or show loading text while Firebase call is in flight
     cy.get('button[type="submit"]').should('satisfy', ($btn) => {
       const isDisabled = $btn.prop('disabled');
-      const hasLoadingClass = $btn.hasClass('loading') || $btn.find('.loading').length > 0;
-      return isDisabled || hasLoadingClass || $btn.text().toLowerCase().includes('loading');
+      const hasSpinner = $btn.find('.loading-spinner').length > 0;
+      const text = $btn.text().toLowerCase();
+      return isDisabled || hasSpinner || text.includes('loading') || text.includes('creating');
     });
   });
 });

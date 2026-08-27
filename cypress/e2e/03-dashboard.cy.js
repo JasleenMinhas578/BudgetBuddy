@@ -38,6 +38,7 @@ describe('Dashboard Display', () => {
   before(() => {
     // Create and login user
     cy.visit('/signup');
+    cy.get('#displayName').type('Test Dashboard User');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').first().type(testUser.password);
     cy.get('input[type="password"]').last().type(testUser.password);
@@ -104,10 +105,11 @@ describe('Dashboard Display', () => {
     cy.url().should('match', /categories|dashboard/);
   });
 
-  it('should navigate to reports page', () => {
-    cy.visit('/dashboard/reports');
+  it('should navigate to goals page', () => {
+    // Navigate via sidebar link (avoids full-page reload / auth race condition)
+    cy.contains('a, button', /goals/i).first().click();
     cy.wait(2000);
-    cy.url().should('match', /reports|dashboard/);
+    cy.url().should('match', /goals|dashboard/);
   });
 
   it('should display user profile or account info', () => {

@@ -36,6 +36,7 @@ describe('Add Categories Flow', () => {
   before(() => {
     // Create and login user
     cy.visit('/signup');
+    cy.get('#displayName').type('Test Categories User');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').first().type(testUser.password);
     cy.get('input[type="password"]').last().type(testUser.password);
@@ -106,20 +107,20 @@ describe('Add Categories Flow', () => {
 
 
   it('should successfully add a new category', () => {
+    // Use timestamp to ensure category name is unique across CI runs
+    const catName = `Dining ${Date.now()}`;
+
     cy.contains('button', /add category/i).click();
     cy.wait(1000);
-    
-    // Fill in category form
-    cy.get('input[name="name"], input[placeholder*="name" i]').first().type('Food & Dining');
-    
+
+    cy.get('input[placeholder*="name" i]').first().type(catName);
+
     cy.get('.modal-overlay').find('button[type="submit"]').click();
     cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
-    
-    // Wait for modal to close
+
     cy.wait(3000);
-    
-    // Verify category appears in list
-    cy.contains('Food & Dining').should('be.visible');
+
+    cy.contains(catName).should('be.visible');
   });
 
   // it('should add multiple categories', () => {
@@ -147,16 +148,18 @@ describe('Add Categories Flow', () => {
   // });
 
   it('should display category budget correctly', () => {
+    const catName = `Utilities ${Date.now()}`;
+
     cy.contains('button', /add category/i).click();
     cy.wait(1000);
-    
-    cy.get('input[name="name"], input[placeholder*="name" i]').first().type('Utilities');
-    
+
+    cy.get('input[placeholder*="name" i]').first().type(catName);
+
     cy.get('.modal-overlay').find('button[type="submit"]').click();
     cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     cy.wait(3000);
-    
-    cy.contains('Utilities').should('be.visible');
+
+    cy.contains(catName).should('be.visible');
   });
 
   it('should display category list after adding categories', () => {

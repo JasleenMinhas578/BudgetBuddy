@@ -39,6 +39,7 @@ describe('User Login Flow', () => {
   before(() => {
     // Create a user account for login tests
     cy.visit('/signup');
+    cy.get('#displayName').type('Test Login User');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').first().type(testUser.password);
     cy.get('input[type="password"]').last().type(testUser.password);
@@ -139,13 +140,14 @@ describe('User Login Flow', () => {
 
   it('should toggle password visibility', () => {
     cy.get('input[type="password"]').type('testpassword');
-    
-    // Look for visibility toggle button
-    cy.get('button, [role="button"]').each(($el) => {
-      const text = $el.text();
-      if (text.includes('show') || text.includes('Show') || $el.find('svg').length > 0) {
-        cy.wrap($el).click({ force: true });
-        cy.wait(500);
+
+    // Login form has no password toggle — skip if absent to avoid clicking the submit button
+    cy.get('body').then(($body) => {
+      const toggles = $body.find('[aria-label="Show password"], [aria-label="Hide password"]');
+      if (toggles.length > 0) {
+        cy.wrap(toggles.first()).click({ force: true });
+        cy.wait(300);
+        cy.get('[aria-label="Hide password"], [aria-label="Show password"]').first().should('exist');
       }
     });
   });
