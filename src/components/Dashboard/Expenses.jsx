@@ -56,7 +56,8 @@ export default function Expenses() {
       title: expense.title,
       amount: expense.amount.toString(),
       category: expense.category,
-      date: expense.date
+      date: expense.date,
+      notes: expense.notes || '',
     });
     setIsEditExpenseFormOpen(true);
   };
@@ -68,6 +69,7 @@ export default function Expenses() {
         amount: parseFloat(updatedExpense.amount),
         category: updatedExpense.category,
         date: updatedExpense.date,
+        notes: updatedExpense.notes || null,
       });
       showToast(`Expense "${updatedExpense.title}" updated successfully!`, 'success');
       setIsEditExpenseFormOpen(false);

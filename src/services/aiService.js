@@ -1,4 +1,4 @@
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash';
 const AI_PROXY_URL = '/api/ai';
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Rent', 'Shopping', 'Other'];
@@ -20,7 +20,8 @@ const DAILY_LIMIT = 50;
 const USAGE_KEY = 'bb_ai_usage';
 
 const checkAndIncrementUsage = () => {
-  const today = new Date().toISOString().split('T')[0];
+  const _d = new Date();
+  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
   let usage = { date: today, count: 0 };
 
   try {
@@ -40,7 +41,8 @@ const checkAndIncrementUsage = () => {
 };
 
 export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null) => {
-  const today = new Date().toISOString().split('T')[0];
+  const _d = new Date();
+  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
 
   const allCategories = [
     ...DEFAULT_CATEGORIES,
@@ -153,7 +155,8 @@ TASK: Read the user message and respond with ONLY raw JSON — no markdown, no c
 For QUERY answers that have multiple data points (e.g. category breakdown, budget status per category, top expenses), format the "message" using short bullet lines with • so it's easy to scan. Keep each bullet concise. For simple single-fact answers, a plain sentence is fine.
 
 Classify the user's intent as one of:
-- "ADD_EXPENSE"     → user wants to log/add/record an expense (e.g. "spent $30 on lunch", "add coffee $5")
+- "ADD_EXPENSE"     → user wants to log/add/record exactly ONE expense (e.g. "spent $30 on lunch", "add coffee $5")
+- "ADD_MULTIPLE_EXPENSES" → user mentions TWO OR MORE expenses in one message (e.g. "spent $30 on lunch and $15 on coffee", "add 100 rec room, 50 urban planet")
 - "ADD_CATEGORY"    → user wants to create a new category (e.g. "add category gym", "create a travel category", "new category masti")
 - "DELETE_EXPENSE"  → user wants to delete/remove a specific expense from their history
 - "EDIT_EXPENSE"    → user wants to change/update/fix a specific expense (amount, title, category, or date)
@@ -168,9 +171,10 @@ Classify the user's intent as one of:
 
 Required JSON format:
 {
-  "intent": "ADD_EXPENSE" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
+  "intent": "ADD_EXPENSE" | "ADD_MULTIPLE_EXPENSES" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
   "message": "friendly 1-3 sentence response",
   "expenseData": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
+  "expensesData": [{ "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" }],
   "categoryData": { "name": "..." },
   "deleteExpenseData": { "id": "...", "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
   "editExpenseData": { "id": "...", "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD", "updates": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" } },
@@ -182,6 +186,7 @@ Required JSON format:
 
 Rules:
 - Include "expenseData" ONLY when intent is "ADD_EXPENSE"
+- Include "expensesData" ONLY when intent is "ADD_MULTIPLE_EXPENSES" — each element must have title, amount, category, date. If any expense is missing amount or title, use CHAT and ask for the missing detail instead
 - Include "categoryData" ONLY when intent is "ADD_CATEGORY" — "name" should be the category name the user specified, capitalised properly
 - Include "deleteExpenseData" ONLY when intent is "DELETE_EXPENSE" — find the matching expense from the history by its id, title, amount, category, and date
 - Include "editExpenseData" ONLY when intent is "EDIT_EXPENSE" — "updates" contains only the fields being changed; use the expense's id from the history
@@ -190,7 +195,7 @@ Rules:
 - Include "dateRange" ONLY when intent is "SET_DATE_RANGE"
 - Include "budgetData" ONLY when intent is "SET_BUDGET" — "categoryName" must exactly match a name from AVAILABLE CATEGORIES, "amount" is the goal in dollars (a positive number)
 - For SET_BUDGET: match the category name using fuzzy matching from AVAILABLE CATEGORIES. If the amount is missing, use CHAT and ask what amount they want.
-- For REMOVE_BUDGET: include "budgetData" with "categoryName" and "amount": null. Match the category name using fuzzy matching.
+- For REMOVE_BUDGET: include "budgetData" with "categoryName" and "amount" set to the CURRENT budget limit for that category (from the BUDGET GOALS section — not null). Match the category name using fuzzy matching.
 - For QUERY about budget/goals: use the BUDGET GOALS section to answer. Give specific numbers: which categories are over, which are on track, how much is left overall.
 - If the user says "add category X" prefer ADD_CATEGORY over ADD_EXPENSE even if X sounds like a purchase
 - Spelling mistakes are common — use fuzzy matching to find the closest expense title or category name from the lists above, even if the user's spelling is off (e.g. "masti categor" → "Masti", "coffe" → "Coffee"). Always pick the best match rather than giving up.
@@ -216,7 +221,7 @@ User message: "${userMessage}"`;
     body: JSON.stringify({
       model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 512, responseMimeType: 'application/json' },
+      generationConfig: { temperature: 0.2, maxOutputTokens: 1024, responseMimeType: 'application/json' },
     }),
   });
 
@@ -249,7 +254,8 @@ User message: "${userMessage}"`;
 };
 
 export const generateSummary = async (expenses, filterLabel) => {
-  const today = new Date().toISOString().split('T')[0];
+  const _d = new Date();
+  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
   const trimmed = expenses
     .slice(-200)
     .map(e => ({ title: e.title, amount: e.amount, category: e.category, date: e.date }));

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
 import { useClickOutside } from '../../hooks/useClickOutside';
-import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter } from 'react-icons/lu';
+import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter, LuMessageSquare } from 'react-icons/lu';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { formatDate } from '../../utils/formatDate';
 import Pagination from './Pagination';
@@ -47,6 +47,15 @@ export default function ExpenseTable({
   const [categoryFilter, setCategoryFilter] = useState('');
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef(null);
+  const [expandedNotes, setExpandedNotes] = useState(new Set());
+
+  const toggleNote = (id) => {
+    setExpandedNotes(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   // When the expenses dataset changes (e.g. date range switch), clear any stale
   // category filter first — the previously selected category may not exist in the new set.
@@ -111,6 +120,12 @@ export default function ExpenseTable({
   const startIdx = (currentPage - 1) * itemsPerPage;
   const page = sorted.slice(startIdx, startIdx + itemsPerPage);
   const showActions = !!(onEdit || onDelete);
+  const colCount =
+    (!hide.has('category') ? 1 : 0) +
+    (!hide.has('title') ? 1 : 0) +
+    (!hide.has('amount') ? 1 : 0) +
+    (!hide.has('date') ? 1 : 0) +
+    (showActions ? 1 : 0);
 
   if (visibleExpenses.length === 0) {
     return (
@@ -193,63 +208,85 @@ export default function ExpenseTable({
           </thead>
           <tbody>
             {page.map((expense) => (
-              <tr key={expense.id}>
-                {!hide.has('category') && (
-                  <td>
-                    <div className="category-cell">
-                      <span className="category-icon">{getCategoryIcon(expense.category)}</span>
-                      <span className="category-name">{expense.category}</span>
-                    </div>
-                  </td>
+              <Fragment key={expense.id}>
+                <tr>
+                  {!hide.has('category') && (
+                    <td>
+                      <div className="category-cell">
+                        <span className="category-icon">{getCategoryIcon(expense.category)}</span>
+                        <span className="category-name">{expense.category}</span>
+                      </div>
+                    </td>
+                  )}
+                  {!hide.has('title') && (
+                    <td>
+                      <div className="title-cell">
+                        <span className="expense-title">{expense.title}</span>
+                        {expense.notes && (
+                          <button
+                            className={`note-toggle-btn${expandedNotes.has(expense.id) ? ' active' : ''}`}
+                            onClick={() => toggleNote(expense.id)}
+                            title={expandedNotes.has(expense.id) ? 'Hide note' : 'Show note'}
+                            type="button"
+                          >
+                            <LuMessageSquare size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                  {!hide.has('amount') && (
+                    <td>
+                      <span className="amount-cell">
+                        ${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}
+                      </span>
+                    </td>
+                  )}
+                  {!hide.has('date') && (
+                    <td>
+                      <span className="date-cell">
+                        {hide.has('category') && expense.category
+                          ? `${expense.category} • ${formatDate(expense.date)}`
+                          : formatDate(expense.date)}
+                      </span>
+                    </td>
+                  )}
+                  {showActions && (
+                    <td>
+                      <div className="action-buttons">
+                        {onEdit && (
+                          <button
+                            onClick={() => onEdit(expense)}
+                            className="btn btn-secondary btn-sm edit-btn"
+                            title="Edit expense"
+                          >
+                            <LuPencil size={14} />
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            onClick={() => onDelete(expense.id)}
+                            className="btn btn-danger btn-sm delete-btn"
+                            title="Delete expense"
+                          >
+                            <LuTrash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+                {expense.notes && expandedNotes.has(expense.id) && (
+                  <tr className="note-row">
+                    <td colSpan={colCount} className="note-row-cell">
+                      <div className="note-row-inner">
+                        <LuMessageSquare size={12} />
+                        <span>{expense.notes}</span>
+                      </div>
+                    </td>
+                  </tr>
                 )}
-                {!hide.has('title') && (
-                  <td>
-                    <div className="title-cell">
-                      <span className="expense-title">{expense.title}</span>
-                    </div>
-                  </td>
-                )}
-                {!hide.has('amount') && (
-                  <td>
-                    <span className="amount-cell">
-                      ${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}
-                    </span>
-                  </td>
-                )}
-                {!hide.has('date') && (
-                  <td>
-                    <span className="date-cell">
-                      {hide.has('category') && expense.category
-                        ? `${expense.category} • ${formatDate(expense.date)}`
-                        : formatDate(expense.date)}
-                    </span>
-                  </td>
-                )}
-                {showActions && (
-                  <td>
-                    <div className="action-buttons">
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(expense)}
-                          className="btn btn-secondary btn-sm edit-btn"
-                          title="Edit expense"
-                        >
-                          <LuPencil size={14} />
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => onDelete(expense.id)}
-                          className="btn btn-danger btn-sm delete-btn"
-                          title="Delete expense"
-                        >
-                          <LuTrash2 size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                )}
-              </tr>
+              </Fragment>
             ))}
           </tbody>
         </table>

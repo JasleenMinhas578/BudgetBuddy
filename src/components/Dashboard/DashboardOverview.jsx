@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { Link } from 'react-router-dom';
-import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget, LuTag } from 'react-icons/lu';
+import { LuDollarSign, LuTrendingUp, LuAward, LuPlus, LuTarget, LuTag, LuAlertTriangle } from 'react-icons/lu';
 import { format, subMonths, subWeeks, subDays, subYears, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfYear, endOfYear } from 'date-fns';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
@@ -15,6 +15,7 @@ import ExpenseTable from '../UI/ExpenseTable';
 import Modal from '../UI/Modal';
 import ExpenseForm from '../Expense/ExpenseForm';
 import BudgetProgressPanel from './BudgetProgressPanel';
+import { getMonthEndForecast } from '../../utils/forecastUtils';
 import '../../styles/main.css';
 
 
@@ -46,7 +47,11 @@ export default function DashboardOverview() {
   const dateRangeCtx = useDateRangeContext();
   const { filteredExpenses, dateFilter, setDateFilter, customDateRange, setCustomDateRange, pickedMonth, setPickedMonth, availableMonths } = useDateFilter(expenses, 'thisMonth', dateRangeCtx);
 
-  const { closestToLimit } = useBudgetProgress(filteredExpenses, allCategories, budgets);
+  const { categoryProgress, closestToLimit } = useBudgetProgress(filteredExpenses, allCategories, budgets);
+
+  // Feature 4 — budget alert categories
+  const dangerCategories = categoryProgress.filter(c => c.status === 'danger');
+  const warnCategories = categoryProgress.filter(c => c.status === 'warning');
 
   // Stats derived from the filtered period
   const totalSpent = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
@@ -63,6 +68,9 @@ export default function DashboardOverview() {
   })();
 
   const recentExpenses = filteredExpenses.slice(0, 5);
+
+  // Feature 1 — month-end spending forecast (only meaningful for thisMonth filter)
+  const forecastResult = dateFilter === 'thisMonth' ? getMonthEndForecast(filteredExpenses) : null;
 
   const prevPeriodTotal = useMemo(() => {
     if (!expenses.length) return null;
@@ -144,6 +152,38 @@ export default function DashboardOverview() {
         </div>
       </div>
 
+      {/* Feature 4 — Budget over-limit banner */}
+      {(dangerCategories.length > 0 || warnCategories.length > 0) && (
+        <div className="budget-alert-strip">
+          {dangerCategories.length > 0 && (
+            <div className="budget-alert budget-alert--danger">
+              <LuAlertTriangle size={15} className="budget-alert__icon" />
+              <span className="budget-alert__label">Over budget:</span>
+              <div className="budget-alert__chips">
+                {dangerCategories.map(c => (
+                  <Link key={c.name} to="/dashboard/goals" className="budget-alert__chip">
+                    {c.name} · ${(c.spent - c.budget).toFixed(0)} over
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {warnCategories.length > 0 && (
+            <div className="budget-alert budget-alert--warn">
+              <LuAlertTriangle size={15} className="budget-alert__icon" />
+              <span className="budget-alert__label">Near limit:</span>
+              <div className="budget-alert__chips">
+                {warnCategories.map(c => (
+                  <Link key={c.name} to="/dashboard/goals" className="budget-alert__chip">
+                    {c.name} · {Math.round(c.pct)}%
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Summary Cards - Key financial metrics */}
       <div className="summary-cards">
         <div className="summary-card">
@@ -208,14 +248,18 @@ export default function DashboardOverview() {
             )}
           </div>
         </div>
+
       </div>
 
-      {/* Budget Goals Progress */}
-      <BudgetProgressPanel
-        expenses={expenses}
-        allCategories={allCategories}
-        budgets={budgets}
-      />
+      {/* Budget Goals Progress — only relevant for month-scoped filters */}
+      {['today', 'thisWeek', 'thisMonth', 'pickMonth'].includes(dateFilter) && (
+        <BudgetProgressPanel
+          expenses={expenses}
+          allCategories={allCategories}
+          budgets={budgets}
+          forecastResult={forecastResult}
+        />
+      )}
 
       {/* Recent Expenses Table */}
       <div className="recent-activity">

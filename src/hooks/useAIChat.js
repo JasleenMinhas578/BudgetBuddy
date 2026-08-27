@@ -9,7 +9,7 @@ import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
 
 const ACTION_TYPES = [
-  'expense_confirm', 'category_confirm',
+  'expense_confirm', 'multiple_expense_confirm', 'category_confirm',
   'delete_expense_confirm', 'edit_expense_confirm',
   'delete_category_confirm', 'edit_category_confirm',
   'set_budget_confirm', 'remove_budget_confirm',
@@ -17,7 +17,8 @@ const ACTION_TYPES = [
 
 // Maps AI intent names → message type + data key
 const INTENT_MAP = {
-  ADD_EXPENSE:     { type: 'expense_confirm',         dataKey: 'expenseData' },
+  ADD_EXPENSE:           { type: 'expense_confirm',          dataKey: 'expenseData' },
+  ADD_MULTIPLE_EXPENSES: { type: 'multiple_expense_confirm', dataKey: 'expensesData' },
   ADD_CATEGORY:    { type: 'category_confirm',        dataKey: 'categoryData' },
   DELETE_EXPENSE:  { type: 'delete_expense_confirm',  dataKey: 'deleteExpenseData' },
   EDIT_EXPENSE:    { type: 'edit_expense_confirm',    dataKey: 'editExpenseData' },
@@ -28,7 +29,8 @@ const INTENT_MAP = {
 };
 
 const ERROR_LABELS = {
-  expense_confirm:         'add expense',
+  expense_confirm:          'add expense',
+  multiple_expense_confirm: 'add expenses',
   category_confirm:        'add category',
   delete_expense_confirm:  'delete expense',
   edit_expense_confirm:    'update expense',
@@ -44,7 +46,8 @@ const getPendingReminder = (currentMessages) => {
   );
   if (!pending.length) return null;
   const labels = pending.map((m) => {
-    if (m.type === 'expense_confirm')         return `add expense "${m.expenseData?.title}"`;
+    if (m.type === 'expense_confirm')          return `add expense "${m.expenseData?.title}"`;
+    if (m.type === 'multiple_expense_confirm') return `add ${m.expensesData?.length ?? 'multiple'} expenses`;
     if (m.type === 'category_confirm')        return `add category "${m.categoryData?.name}"`;
     if (m.type === 'delete_expense_confirm')  return `delete expense "${m.deleteExpenseData?.title}"`;
     if (m.type === 'edit_expense_confirm')    return `update expense "${m.editExpenseData?.title}"`;
@@ -158,9 +161,10 @@ export function useAIChat() {
 
   const handleConfirmAction = useCallback(async (msg, idx) => {
     const { type } = msg;
-    const needsExpenseRefresh = ['expense_confirm', 'delete_expense_confirm', 'edit_expense_confirm'];
+    const needsExpenseRefresh = ['expense_confirm', 'multiple_expense_confirm', 'delete_expense_confirm', 'edit_expense_confirm'];
     try {
       if (type === 'expense_confirm')              await addExpense(currentUser.uid, msg.expenseData);
+      else if (type === 'multiple_expense_confirm') await Promise.all(msg.expensesData.map(e => addExpense(currentUser.uid, e)));
       else if (type === 'category_confirm')        await addCategory(currentUser.uid, { name: msg.categoryData.name });
       else if (type === 'delete_expense_confirm')  await deleteExpense(currentUser.uid, msg.deleteExpenseData.id);
       else if (type === 'edit_expense_confirm')    await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);

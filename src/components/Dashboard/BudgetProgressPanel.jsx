@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { LuTarget, LuChevronRight } from 'react-icons/lu';
+import { LuTarget, LuChevronRight, LuCalendar } from 'react-icons/lu';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 
-export default function BudgetProgressPanel({ expenses, allCategories, budgets }) {
+export default function BudgetProgressPanel({ expenses, allCategories, budgets, forecastResult }) {
   // Always compare against current month — regardless of the dashboard's date filter
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
@@ -28,20 +28,7 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets }
 
   const categoriesWithBudget = categoryProgress.filter((p) => p.budget !== null);
 
-  if (categoriesWithBudget.length === 0) {
-    return (
-      <div className="budget-panel budget-panel--empty">
-        <LuTarget size={18} />
-        <p>
-          No budget goals set yet.{' '}
-          <Link to="/dashboard/goals" className="budget-panel-cta-link">
-            Set up your monthly goals
-          </Link>{' '}
-          to track progress here.
-        </p>
-      </div>
-    );
-  }
+  if (categoriesWithBudget.length === 0) return null;
 
   return (
     <div className="budget-panel">
@@ -54,6 +41,16 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets }
           Manage goals <LuChevronRight size={14} />
         </Link>
       </div>
+
+      {/* Feature 1 — Month-end forecast, shown when available */}
+      {forecastResult && (
+        <div className="budget-panel-forecast">
+          <LuCalendar size={13} className="budget-panel-forecast__icon" />
+          <span className="budget-panel-forecast__label">Month-end forecast</span>
+          <span className="budget-panel-forecast__amount">${forecastResult.forecast.toFixed(2)}</span>
+          <span className="budget-panel-forecast__pace">${forecastResult.dailyAvg.toFixed(2)}/day</span>
+        </div>
+      )}
 
       {/* Overall progress bar */}
       {totalBudgeted > 0 && (
@@ -79,10 +76,21 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets }
         </div>
       )}
 
+      {/* Column headers */}
+      <div className="budget-panel-col-headers">
+        <span className="budget-panel-col-headers__cat">Categories</span>
+        <span />
+        <span>Spent</span>
+        <span>Budget</span>
+        <span>Left</span>
+        <span>%</span>
+      </div>
+
       {/* Per-category rows */}
       <div className="budget-panel-rows">
         {categoriesWithBudget.map((prog) => {
           const pct = prog.pct !== null ? Math.min(prog.pct, 100) : 0;
+          const remaining = prog.remaining ?? null;
           return (
             <div key={prog.name} className="budget-panel-row">
               <div className="budget-panel-row-label">
@@ -97,19 +105,27 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets }
                   className={`budget-panel-row-fill budget-panel-row-fill--${prog.status}`}
                   style={{ width: `${pct}%` }}
                 />
+                {pct > 0 && (
+                  <div
+                    className={`budget-panel-row-marker budget-panel-row-marker--${prog.status}`}
+                    style={{ left: `${pct}%` }}
+                  />
+                )}
               </div>
-              <div className="budget-panel-row-meta">
-                <span className={`budget-panel-row-status budget-panel-row-status--${prog.status}`}>
-                  {prog.remaining !== null && prog.remaining >= 0
-                    ? `$${prog.remaining.toFixed(0)} left`
-                    : prog.remaining !== null
-                      ? `$${Math.abs(prog.remaining).toFixed(0)} over`
-                      : '—'}
-                </span>
-                <span className="budget-panel-row-pct">
-                  {prog.pct !== null ? `${Math.min(prog.pct, 999).toFixed(0)}%` : '—'}
-                </span>
-              </div>
+              <span className="budget-panel-col budget-panel-col--spent">
+                ${prog.spent.toFixed(0)}
+              </span>
+              <span className="budget-panel-col budget-panel-col--budget">
+                ${prog.budget.toFixed(0)}
+              </span>
+              <span className={`budget-panel-col budget-panel-col--left budget-panel-col--left-${prog.status}`}>
+                {remaining !== null && remaining >= 0
+                  ? `$${remaining.toFixed(0)}`
+                  : remaining !== null ? `$${Math.abs(remaining).toFixed(0)} over` : '—'}
+              </span>
+              <span className={`budget-panel-col budget-panel-col--pct budget-panel-col--pct-${prog.status}`}>
+                {prog.pct !== null ? `${Math.min(prog.pct, 999).toFixed(0)}%` : '—'}
+              </span>
             </div>
           );
         })}

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { useCategories } from '../../hooks/useCategories';
-import { LuChevronDown, LuCheck, LuTag } from 'react-icons/lu';
+import { LuChevronDown, LuCheck, LuTag, LuLightbulb } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { suggestCategory } from '../../utils/categorySuggester';
 import '../../styles/main.css';
+import '../../styles/modal-forms.css';
 
 const MAX_AMOUNT = 1_000_000;
 
@@ -25,6 +27,10 @@ export default function ExpenseForm({
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [amountError, setAmountError] = useState('');
+  const [notes, setNotes] = useState(initialExpense ? initialExpense.notes || '' : '');
+  // Feature 8 — category suggestion state
+  const [suggestion, setSuggestion] = useState(null);
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   
   // Get current user from authentication context
   const { currentUser } = useAuth();
@@ -61,6 +67,7 @@ export default function ExpenseForm({
       setTitle(initialExpense.title);
       setCategory(initialExpense.category);
       setDate(initialExpense.date);
+      setNotes(initialExpense.notes || '');
     }
   }, [initialExpense]);
 
@@ -83,6 +90,9 @@ export default function ExpenseForm({
       setMessageType('');
     }
     setAmountError('');
+    setNotes(initialExpense ? initialExpense.notes || '' : '');
+    setSuggestion(null);
+    setSuggestionDismissed(false);
   };
 
   /**
@@ -159,7 +169,8 @@ export default function ExpenseForm({
           amount: parseFloat(amount),
           title: title.trim(),
           category,
-          date
+          date,
+          notes: notes.trim() || null,
         });
       } else {
       // Create expense object with all necessary data
@@ -167,7 +178,8 @@ export default function ExpenseForm({
         amount: parseFloat(amount),
           title: title.trim(),
         category,
-          date
+          date,
+          ...(notes.trim() && { notes: notes.trim() }),
       };
       // Save expense to Firebase database
         await addExpense(currentUser.uid, expenseData);
@@ -271,7 +283,13 @@ export default function ExpenseForm({
             id="title"
             name="title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setTitle(val);
+              if (!suggestionDismissed) {
+                setSuggestion(suggestCategory(val));
+              }
+            }}
             placeholder="Expense title"
             required
             disabled={loading}
@@ -319,8 +337,30 @@ export default function ExpenseForm({
               </div>
             )}
           </div>
+          {/* Feature 8 — category suggestion chip */}
+          {suggestion && suggestion !== category && !suggestionDismissed && (
+            <div className="category-suggestion">
+              <LuLightbulb size={13} className="category-suggestion__icon" />
+              <span>Suggested: <strong>{suggestion}</strong></span>
+              <button
+                type="button"
+                className="category-suggestion-accept"
+                onClick={() => { setCategory(suggestion); setSuggestion(null); }}
+              >
+                Use it
+              </button>
+              <button
+                type="button"
+                className="category-suggestion-dismiss"
+                onClick={() => setSuggestionDismissed(true)}
+                aria-label="Dismiss suggestion"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
-        
+
         {/* Date picker */}
         <div className="form-group">
           <label htmlFor="date">Date</label>
@@ -335,6 +375,25 @@ export default function ExpenseForm({
           />
         </div>
         
+        {/* Feature 3 — optional notes field */}
+        <div className="form-group">
+          <label htmlFor="notes">
+            Notes <span className="field-optional">(optional)</span>
+          </label>
+          <textarea
+            id="notes"
+            name="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="What was this for?"
+            maxLength={200}
+            rows={2}
+            disabled={loading}
+            className="notes-textarea"
+          />
+          <div className="char-counter">{notes.length}/200</div>
+        </div>
+
         {/* Actions */}
         <div className="form-actions">
           <button 

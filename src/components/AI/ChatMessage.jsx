@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { LuCheck } from 'react-icons/lu';
 
 const DATE_PRESETS = ['Today', 'This Week', 'This Month', 'Last Month', 'This Year', 'All Time'];
@@ -21,13 +22,15 @@ function MessageText({ text, className }) {
 }
 
 const CONFIRMED_LABELS = {
-  category_confirm:        'Category added successfully!',
-  delete_expense_confirm:  'Expense deleted!',
-  edit_expense_confirm:    'Expense updated!',
-  delete_category_confirm: 'Category deleted!',
-  edit_category_confirm:   'Category renamed!',
-  set_budget_confirm:      'Budget goal saved!',
-  remove_budget_confirm:   'Budget goal removed!',
+  expense_confirm:          'Expense added!',
+  multiple_expense_confirm: 'All expenses added!',
+  category_confirm:         'Category added successfully!',
+  delete_expense_confirm:   'Expense deleted!',
+  edit_expense_confirm:     'Expense updated!',
+  delete_category_confirm:  'Category deleted!',
+  edit_category_confirm:    'Category renamed!',
+  set_budget_confirm:       'Budget goal saved!',
+  remove_budget_confirm:    'Budget goal removed!',
 };
 
 function ExpenseCard({ rows, confirmLabel, isDanger, onConfirm, onDismiss }) {
@@ -46,6 +49,37 @@ function ExpenseCard({ rows, confirmLabel, isDanger, onConfirm, onDismiss }) {
         >
           {!isDanger && <LuCheck size={14} />} {confirmLabel}
         </button>
+        <button className="btn-dismiss" onClick={onDismiss}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function EditableExpenseCard({ data, onConfirm, onDismiss }) {
+  const [title, setTitle] = useState(data.title || '');
+  const [amount, setAmount] = useState(String(data.amount ?? ''));
+  const [category, setCategory] = useState(data.category || '');
+  const [date, setDate] = useState(data.date || '');
+
+  const handleConfirm = () => {
+    onConfirm({ ...data, title, amount: parseFloat(amount) || 0, category, date });
+  };
+
+  return (
+    <div className="ai-expense-card">
+      {[
+        { label: 'Title',    el: <input className="ai-edit-input" value={title}    onChange={e => setTitle(e.target.value)} /> },
+        { label: 'Amount',   el: <input className="ai-edit-input" type="number" min="0" step="0.01" value={amount}   onChange={e => setAmount(e.target.value)} /> },
+        { label: 'Category', el: <input className="ai-edit-input" value={category} onChange={e => setCategory(e.target.value)} /> },
+        { label: 'Date',     el: <input className="ai-edit-input" type="date"  value={date}     onChange={e => setDate(e.target.value)} /> },
+      ].map(({ label, el }) => (
+        <div key={label} className="ai-expense-row">
+          <span>{label}</span>
+          {el}
+        </div>
+      ))}
+      <div className="ai-expense-actions">
+        <button className="btn-confirm" onClick={handleConfirm}><LuCheck size={14} /> Add Expense</button>
         <button className="btn-dismiss" onClick={onDismiss}>Cancel</button>
       </div>
     </div>
@@ -85,17 +119,31 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
     return (
       <div className="ai-expense-confirm">
         <p>{msg.content}</p>
-        <ExpenseCard
-          rows={[
-            { label: 'Title',    value: msg.expenseData.title },
-            { label: 'Amount',   value: `$${Number(msg.expenseData.amount).toFixed(2)}` },
-            { label: 'Category', value: msg.expenseData.category },
-            { label: 'Date',     value: msg.expenseData.date },
-          ]}
-          confirmLabel="Add Expense"
-          onConfirm={() => onConfirm(msg, index)}
+        <EditableExpenseCard
+          data={msg.expenseData}
+          onConfirm={(editedData) => onConfirm({ ...msg, expenseData: editedData }, index)}
           onDismiss={() => onDismiss(index)}
         />
+      </div>
+    );
+  }
+
+  if (msg.type === 'multiple_expense_confirm' && active) {
+    return (
+      <div className="ai-expense-confirm">
+        <p>{msg.content}</p>
+        <div className="ai-expense-card">
+          {msg.expensesData.map((e, i) => (
+            <div key={i} className="ai-expense-row ai-multi-row">
+              <span>{e.title}</span>
+              <strong>${Number(e.amount).toFixed(2)} · {e.category}</strong>
+            </div>
+          ))}
+          <div className="ai-expense-actions">
+            <button className="btn-confirm" onClick={() => onConfirm(msg, index)}><LuCheck size={14} /> Add All</button>
+            <button className="btn-dismiss" onClick={() => onDismiss(index)}>Cancel</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -207,7 +255,10 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
       <div className="ai-expense-confirm">
         <p>{msg.content}</p>
         <ExpenseCard
-          rows={[{ label: 'Category', value: msg.budgetData.categoryName }]}
+          rows={[
+            { label: 'Category', value: msg.budgetData.categoryName },
+            { label: 'Current goal', value: msg.budgetData.amount ? `$${Number(msg.budgetData.amount).toFixed(0)}/mo` : '—' },
+          ]}
           confirmLabel="Remove Goal"
           isDanger
           onConfirm={() => onConfirm(msg, index)}
