@@ -8,6 +8,16 @@ import { render, screen } from '@testing-library/react';
 
 import LineChart from '../components/Charts/LineChart';
 
+// Mock CurrencyContext
+jest.mock('../context/CurrencyContext', () => ({
+  useCurrency: () => ({
+    formatAmount: (amount) => `$${Number(amount).toFixed(2)}`,
+    currency: 'USD',
+    currencySymbol: '$',
+  }),
+  CurrencyProvider: ({ children }) => children,
+}));
+
 // Mock Chart.js
 jest.mock('chart.js', () => ({
   Chart: {

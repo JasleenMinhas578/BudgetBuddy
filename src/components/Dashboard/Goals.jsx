@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useCategories } from '../../hooks/useCategories';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LuTag, LuTarget, LuTrendingUp, LuAlertTriangle, LuCheckCircle, LuPlus, LuGripVertical } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useBudgets } from '../../hooks/useBudgets';
@@ -20,13 +21,19 @@ import ConfirmDialog from '../UI/ConfirmDialog';
 import '../../styles/main.css';
 import '../../styles/modal-forms.css';
 
+function toDisplayStr(v) {
+  if (v === null || v === undefined || v === '') return '';
+  const n = parseFloat(v);
+  return isNaN(n) ? '' : String(parseFloat(n.toFixed(2)));
+}
+
 // Input with an explicit Save button — button is disabled until the value changes
 function GoalInput({ categoryName, initialValue, onSave }) {
-  const normalized = initialValue !== null && initialValue !== undefined ? String(initialValue) : '';
+  const normalized = toDisplayStr(initialValue);
   const [value, setValue] = useState(normalized);
 
   useEffect(() => {
-    setValue(initialValue !== null && initialValue !== undefined ? String(initialValue) : '');
+    setValue(toDisplayStr(initialValue));
   }, [initialValue]);
 
   const isDirty = value !== normalized;
@@ -65,9 +72,17 @@ function GoalInput({ categoryName, initialValue, onSave }) {
 }
 
 export default function Goals() {
+  const { formatAmount, currencySymbol, toDisplayAmount, toHomeAmount } = useCurrency();
+  // Budget amounts are stored in home currency. Inputs show display currency (toDisplayAmount/toHomeAmount
+  // convert on read/write). formatAmount handles home→display for all rendered labels.
   const { currentUser } = useAuth();
   const { expenses } = useExpenses();
   const { budgets, setCategoryBudget } = useBudgets();
+  // User types in display currency; we convert back to home currency before storing
+  const saveGoalConverted = useCallback(
+    (name, displayVal) => setCategoryBudget(name, displayVal != null ? toHomeAmount(displayVal) : null),
+    [setCategoryBudget, toHomeAmount]
+  );
   const firestoreCategories = useCategories();
   const { toast, showToast, hideToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -236,15 +251,15 @@ export default function Goals() {
           <div className="goals-summary-top">
             <div>
               <p className="goals-summary-label">Total Monthly Budget</p>
-              <p className="goals-summary-total">${totalBudgeted.toFixed(2)}</p>
+              <p className="goals-summary-total">{formatAmount(totalBudgeted)}</p>
             </div>
             <div className="goals-summary-right">
-              <p className="goals-summary-spent">${totalSpent.toFixed(2)} spent</p>
+              <p className="goals-summary-spent">{formatAmount(totalSpent)} spent</p>
               {totalRemaining !== null && (
                 <p className={`goals-summary-remaining${overStatus !== 'ok' ? ` goals-summary-remaining--${overStatus}` : ''}`}>
                   {totalRemaining >= 0
-                    ? `$${totalRemaining.toFixed(2)} remaining`
-                    : `$${Math.abs(totalRemaining).toFixed(2)} over budget`}
+                    ? `${formatAmount(totalRemaining)} remaining`
+                    : `${formatAmount(Math.abs(totalRemaining))} over budget`}
                 </p>
               )}
             </div>
@@ -264,7 +279,7 @@ export default function Goals() {
                 <div key={p.name} className="goals-insight goals-insight--danger">
                   <LuAlertTriangle size={15} />
                   <span>
-                    <strong>{p.name}</strong> is over budget by ${Math.abs(p.remaining).toFixed(2)}
+                    <strong>{p.name}</strong> is over budget by {formatAmount(Math.abs(p.remaining))}
                   </span>
                 </div>
               ))}
@@ -272,7 +287,7 @@ export default function Goals() {
                 <div key={p.name} className="goals-insight goals-insight--warning">
                   <LuTrendingUp size={15} />
                   <span>
-                    <strong>{p.name}</strong> is at {p.pct.toFixed(0)}% — ${p.remaining.toFixed(2)} left
+                    <strong>{p.name}</strong> is at {p.pct.toFixed(0)}% — {formatAmount(p.remaining)} left
                   </span>
                 </div>
               ))}
@@ -336,7 +351,7 @@ export default function Goals() {
                     <div className="goal-info">
                       <h4>{category.name}</h4>
                       {prog?.spent > 0
-                        ? <p className="goal-spent">${prog.spent.toFixed(2)} spent this month</p>
+                        ? <p className="goal-spent">{formatAmount(prog.spent)} spent this month</p>
                         : <p className="goal-spent">No spending yet</p>
                       }
                     </div>
@@ -358,8 +373,8 @@ export default function Goals() {
                     <span className={`goal-remaining${prog?.status !== 'ok' ? ` goal-remaining--${prog?.status}` : ''}`}
                       style={(!prog?.status || prog.status === 'ok') ? { color: 'var(--accent-teal)' } : {}}>
                       {(prog?.remaining ?? 0) >= 0
-                        ? `$${(prog?.remaining ?? 0).toFixed(2)} left of $${(prog?.budget ?? 0).toFixed(2)}`
-                        : `$${Math.abs(prog?.remaining ?? 0).toFixed(2)} over $${(prog?.budget ?? 0).toFixed(2)}`}
+                        ? `${formatAmount(prog?.remaining ?? 0)} left of ${formatAmount(prog?.budget ?? 0)}`
+                        : `${formatAmount(Math.abs(prog?.remaining ?? 0))} over ${formatAmount(prog?.budget ?? 0)}`}
                     </span>
                     <span className={`goal-pct goal-pct--${prog?.status ?? 'ok'}`}
                       style={(!prog?.status || prog.status === 'ok') ? { color: 'var(--accent-teal)' } : {}}>
@@ -368,12 +383,12 @@ export default function Goals() {
                   </div>
 
                   <div className="goal-input-row">
-                    <label className="goal-input-label">Monthly goal ($)</label>
+                    <label className="goal-input-label">Monthly goal ({currencySymbol})</label>
                     <div className="goal-input-wrapper">
                       <GoalInput
                         categoryName={category.name}
-                        initialValue={budgets.categories?.[category.name] ?? null}
-                        onSave={setCategoryBudget}
+                        initialValue={toDisplayAmount(budgets.categories?.[category.name] ?? null)}
+                        onSave={saveGoalConverted}
                       />
                       <button
                         className="goal-remove-btn"
@@ -417,13 +432,13 @@ export default function Goals() {
               data={budgetChartData}
               options={{
                 scales: {
-                  y: { ticks: { callback: (v) => `$${v}` } },
+                  y: { ticks: { callback: (v) => formatAmount(v) } },
                   x: { grid: { display: false } },
                 },
                 plugins: {
                   tooltip: {
                     callbacks: {
-                      label: (ctx) => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`,
+                      label: (ctx) => ` ${ctx.dataset.label}: ${formatAmount(ctx.parsed.y)}`,
                     },
                   },
                 },
@@ -453,7 +468,7 @@ export default function Goals() {
                   <GoalInput
                     categoryName={category.name}
                     initialValue={null}
-                    onSave={setCategoryBudget}
+                    onSave={saveGoalConverted}
                   />
                 </div>
               </div>
@@ -484,7 +499,7 @@ export default function Goals() {
         isOpen={!!pendingRemoveCategory}
         title="Remove Goal"
         message={pendingRemoveCategory ? <>Remove the <strong>{pendingRemoveCategory}</strong> monthly budget goal?</> : ''}
-        onConfirm={() => { setCategoryBudget(pendingRemoveCategory, null); setPendingRemoveCategory(null); }}
+        onConfirm={() => { saveGoalConverted(pendingRemoveCategory, null); setPendingRemoveCategory(null); }}
         onCancel={() => setPendingRemoveCategory(null)}
         variant="danger"
       />

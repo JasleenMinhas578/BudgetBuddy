@@ -5,8 +5,13 @@ import jsPDF from 'jspdf';
 import { generateSummary } from '../services/aiService';
 import { safeFormatDate } from '../utils/formatDate';
 import { getDateFilterFlatLabel } from '../utils/dateFilterLabel';
+import { useCurrency } from '../context/CurrencyContext';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
+  const { formatAmount, homeCurrency, currency, CURRENCIES, liveRates } = useCurrency();
+  const homeSymbol = CURRENCIES?.find(c => c.code === homeCurrency)?.symbol ?? '$';
+  const displaySymbol = CURRENCIES?.find(c => c.code === currency)?.symbol ?? '$';
+  const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [aiSummary, setAiSummary] = useState(null);
@@ -28,7 +33,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
     setAiSummaryError(null);
     setAiSummary(null);
     try {
-      const raw = await generateSummary(filteredExpenses, getFilterLabel());
+      const raw = await generateSummary(filteredExpenses, getFilterLabel(), currencyInfo);
       setAiSummary(raw.charAt(0).toUpperCase() + raw.slice(1));
     } catch (err) {
       setAiSummaryError(err.message);
@@ -66,106 +71,214 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const margin = 20;
-      const contentWidth = pageWidth - (2 * margin);
-      let yPosition = margin;
+      const contentWidth = pageWidth - margin * 2;
 
-      pdf.setFillColor(79, 209, 197);
-      pdf.rect(0, 0, pageWidth, 40, 'F');
-      pdf.setTextColor(15, 23, 42);
-      pdf.setFontSize(24);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('BudgetBuddy Expense Report', margin, 25);
-      pdf.setFontSize(12);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Generated on: ${format(new Date(), 'MMMM dd, yyyy')}`, margin, 35);
+      const C = {
+        teal:       [79, 209, 197],
+        dark:       [15, 23, 42],
+        textPri:    [15, 23, 42],
+        textSec:    [100, 116, 139],
+        white:      [255, 255, 255],
+        lightGray:  [248, 250, 252],
+        borderGray: [226, 232, 240],
+        footerText: [148, 163, 184],
+      };
 
-      yPosition = 50;
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Report Summary', margin, yPosition);
-      yPosition += 10;
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Date Range: ${getFilterLabel()}`, margin, yPosition); yPosition += 6;
-      pdf.text(`Total Transactions: ${filteredExpenses.length}`, margin, yPosition); yPosition += 6;
-      pdf.text(`Total Amount: $${totalAmount.toFixed(2)}`, margin, yPosition); yPosition += 6;
-      pdf.text(`Average Transaction: $${averageAmount.toFixed(2)}`, margin, yPosition);
-      yPosition += 15;
-
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Key Statistics', margin, yPosition);
-      yPosition += 10;
-      const stats = [
-        { label: 'Total Spent', value: `$${totalAmount.toFixed(2)}` },
-        { label: 'Transactions', value: filteredExpenses.length.toString() },
-        { label: 'Average Amount', value: `$${averageAmount.toFixed(2)}` },
-        { label: 'Top Category', value: topCategory || 'None' },
+      const catPalette = [
+        [79, 209, 197], [99, 102, 241], [251, 146, 60],
+        [34, 197, 94],  [236, 72, 153], [234, 179, 8],
+        [168, 85, 247], [239, 68, 68],
       ];
-      stats.forEach((stat, index) => {
-        const xPos = margin + (index % 2) * (contentWidth / 2);
-        const yPos = yPosition + Math.floor(index / 2) * 8;
-        pdf.setFontSize(10);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(stat.label, xPos, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(stat.value, xPos + 50, yPos);
-      });
-      yPosition += 25;
 
-      if (categoryData.labels.length > 0) {
-        pdf.setFontSize(14);
+      // ── HEADER ─────────────────────────────────────────────
+      pdf.setFillColor(...C.dark);
+      pdf.rect(0, 0, pageWidth, 48, 'F');
+      pdf.setFillColor(...C.teal);
+      pdf.rect(0, 0, 5, 48, 'F');
+
+      pdf.setTextColor(...C.white);
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('BudgetBuddy', margin + 5, 22);
+
+      pdf.setTextColor(...C.teal);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Expense Report', margin + 5, 32);
+
+      pdf.setTextColor(...C.footerText);
+      pdf.setFontSize(8.5);
+      pdf.text(`Generated: ${format(new Date(), 'MMMM dd, yyyy')}`, pageWidth - margin, 20, { align: 'right' });
+      pdf.text(getFilterLabel(), pageWidth - margin, 30, { align: 'right' });
+
+      // ── STAT CARDS ──────────────────────────────────────────
+      let y = 62;
+      const stats = [
+        { label: 'Total Spent',    value: formatAmount(totalAmount) },
+        { label: 'Transactions',   value: filteredExpenses.length.toString() },
+        { label: 'Avg Transaction', value: formatAmount(averageAmount) },
+        { label: 'Top Category',   value: topCategory ? (topCategory.length > 11 ? topCategory.substring(0, 9) + '…' : topCategory) : 'None' },
+      ];
+      const cardW = (contentWidth - 9) / 4;
+      const cardH = 22;
+      stats.forEach((stat, i) => {
+        const cx = margin + i * (cardW + 3);
+        pdf.setFillColor(...C.lightGray);
+        pdf.roundedRect(cx, y, cardW, cardH, 2, 2, 'F');
+        pdf.setFillColor(...C.teal);
+        pdf.rect(cx, y, cardW, 1.5, 'F');
+        pdf.setTextColor(...C.textSec);
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(stat.label.toUpperCase(), cx + cardW / 2, y + 9, { align: 'center' });
+        pdf.setTextColor(...C.textPri);
+        pdf.setFontSize(11);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Spending by Category', margin, yPosition);
-        yPosition += 10;
-        categoryData.labels.forEach((category, index) => {
-          const amount = categoryData.datasets[0].data[index];
-          const percentage = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
-          pdf.setFontSize(10);
+        pdf.text(stat.value, cx + cardW / 2, y + 18, { align: 'center' });
+      });
+      y += cardH + 16;
+
+      // ── SPENDING BY CATEGORY ────────────────────────────────
+      if (categoryData.labels.length > 0) {
+        pdf.setFillColor(...C.teal);
+        pdf.rect(margin, y, 3, 10, 'F');
+        pdf.setTextColor(...C.textPri);
+        pdf.setFontSize(13);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Spending by Category', margin + 7, y + 7.5);
+        y += 16;
+
+        const barMax = contentWidth * 0.45;
+        const labelCol = margin + 42 + barMax + 4;
+        const labelAreaW = pageWidth - margin - labelCol;
+        categoryData.labels.forEach((cat, i) => {
+          const amount = categoryData.datasets[0].data[i];
+          const pct = totalAmount > 0 ? (amount / totalAmount) * 100 : 0;
+          const barW = (pct / 100) * barMax;
+          const color = catPalette[i % catPalette.length];
+
+          pdf.setTextColor(...C.textPri);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(cat, margin, y + 4.5);
+
+          pdf.setFillColor(...C.borderGray);
+          pdf.roundedRect(margin + 42, y, barMax, 6, 1, 1, 'F');
+          if (barW > 0) {
+            pdf.setFillColor(...color);
+            pdf.roundedRect(margin + 42, y, barW, 6, 1, 1, 'F');
+          }
+
+          pdf.setTextColor(...C.textSec);
+          pdf.setFontSize(8.5);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(`${category}: $${amount.toFixed(2)} (${percentage.toFixed(1)}%)`, margin, yPosition);
-          yPosition += 6;
+          pdf.text(
+            `${pct.toFixed(1)}%  ·  ${formatAmount(amount)}`,
+            labelCol,
+            y + 4.5,
+            { maxWidth: labelAreaW },
+          );
+          y += 12;
         });
-        yPosition += 10;
+
+        // section divider
+        pdf.setDrawColor(...C.borderGray);
+        pdf.setLineWidth(0.3);
+        pdf.line(margin, y + 2, pageWidth - margin, y + 2);
+        y += 10;
       }
 
+      // ── DETAILED EXPENSES TABLE ─────────────────────────────
       if (filteredExpenses.length > 0) {
-        pdf.setFontSize(14);
+        pdf.setFillColor(...C.teal);
+        pdf.rect(margin, y, 3, 10, 'F');
+        pdf.setTextColor(...C.textPri);
+        pdf.setFontSize(13);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Detailed Expenses', margin, yPosition);
-        yPosition += 10;
-        const tableHeaders = ['Date', 'Category', 'Title', 'Amount'];
-        const columnWidths = [30, 40, 80, 30];
-        let xPos = margin;
+        pdf.text('Detailed Expenses', margin + 7, y + 7.5);
+        y += 16;
+
+        const colW = [28, 38, 0, 28];
+        colW[2] = contentWidth - colW[0] - colW[1] - colW[3];
+        const colX = [
+          margin,
+          margin + colW[0],
+          margin + colW[0] + colW[1],
+          margin + colW[0] + colW[1] + colW[2],
+        ];
+        const rowH = 7;
+        const amountRightX = colX[3] + colW[3] - 2; // 2mm inset from right edge
+        const headers = ['Date', 'Category', 'Title', 'Amount'];
+
+        const drawTableHeader = (startY) => {
+          pdf.setFillColor(...C.dark);
+          pdf.rect(margin, startY, contentWidth, rowH + 2, 'F');
+          pdf.setTextColor(...C.white);
+          pdf.setFontSize(8.5);
+          pdf.setFont('helvetica', 'bold');
+          headers.forEach((h, i) => {
+            if (i === 3) pdf.text(h, amountRightX, startY + 6, { align: 'right' });
+            else         pdf.text(h, colX[i] + 2, startY + 6);
+          });
+          return startY + rowH + 2;
+        };
+
+        y = drawTableHeader(y);
+
+        filteredExpenses.forEach((expense, rowIdx) => {
+          if (y > pageHeight - 25) {
+            pdf.addPage();
+            y = margin;
+            y = drawTableHeader(y);
+          }
+          if (rowIdx % 2 === 0) {
+            pdf.setFillColor(...C.lightGray);
+            pdf.rect(margin, y, contentWidth, rowH, 'F');
+          }
+          pdf.setTextColor(...C.textPri);
+          pdf.setFontSize(8.5);
+          pdf.setFont('helvetica', 'normal');
+
+          pdf.text(safeFormatDate(expense.date, 'MMM dd') || '—', colX[0] + 2, y + 5);
+          pdf.text(expense.category ?? '—', colX[1] + 2, y + 5);
+          const title = expense.title ?? '—';
+          pdf.text(title.length > 32 ? title.substring(0, 29) + '...' : title, colX[2] + 2, y + 5);
+
+          pdf.setTextColor(...C.teal);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(
+            formatAmount(typeof expense.amount === 'number' ? expense.amount : 0),
+            amountRightX, y + 5, { align: 'right' },
+          );
+          y += rowH;
+        });
+
+        // Total row
+        pdf.setFillColor(...C.dark);
+        pdf.rect(margin, y, contentWidth, rowH + 2, 'F');
+        pdf.setTextColor(...C.white);
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'bold');
-        tableHeaders.forEach((header, index) => {
-          pdf.text(header, xPos, yPosition);
-          xPos += columnWidths[index];
-        });
-        yPosition += 5;
-        pdf.setFont('helvetica', 'normal');
-        filteredExpenses.forEach((expense) => {
-          if (yPosition > pageHeight - 30) { pdf.addPage(); yPosition = margin; }
-          xPos = margin;
-          pdf.text(safeFormatDate(expense.date, 'MMM dd') || '—', xPos, yPosition); xPos += columnWidths[0];
-          pdf.text(expense.category ?? '—', xPos, yPosition); xPos += columnWidths[1];
-          const rawTitle = expense.title ?? '—';
-          pdf.text(rawTitle.length > 25 ? rawTitle.substring(0, 22) + '...' : rawTitle, xPos, yPosition); xPos += columnWidths[2];
-          pdf.text(`$${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}`, xPos, yPosition);
-          yPosition += 5;
-        });
+        pdf.text('TOTAL', colX[0] + 2, y + 6);
+        pdf.setTextColor(...C.teal);
+        pdf.text(formatAmount(totalAmount), amountRightX, y + 6, { align: 'right' });
       }
 
+      // ── FOOTER (every page) ─────────────────────────────────
       const totalPages = pdf.internal.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
+        pdf.setFillColor(...C.dark);
+        pdf.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+        pdf.setFillColor(...C.teal);
+        pdf.rect(0, pageHeight - 12, 5, 12, 'F');
+        pdf.setTextColor(...C.footerText);
         pdf.setFontSize(8);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
-        pdf.text('Generated by BudgetBuddy', margin, pageHeight - 10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Generated by BudgetBuddy', margin + 5, pageHeight - 4.5);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 4.5, { align: 'right' });
       }
+
       pdf.save(`BudgetBuddy-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);

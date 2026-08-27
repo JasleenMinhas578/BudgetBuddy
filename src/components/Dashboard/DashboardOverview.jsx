@@ -25,10 +25,12 @@ import ChartCard from '../UI/ChartCard';
 import PieChart from '../Charts/PieChart';
 import LineChart from '../Charts/LineChart';
 import { getMonthEndForecast } from '../../utils/forecastUtils';
+import { useCurrency } from '../../context/CurrencyContext';
 import '../../styles/main.css';
 
 
 export default function DashboardOverview() {
+  const { formatAmount } = useCurrency();
   const { expenses, loading } = useExpenses();
   const { budgets } = useBudgets();
   const firestoreCategories = useCategories();
@@ -196,7 +198,7 @@ export default function DashboardOverview() {
               <div className="budget-alert__chips">
                 {dangerCategories.map(c => (
                   <Link key={c.name} to="/dashboard/goals" className="budget-alert__chip">
-                    {c.name} · ${(c.spent - c.budget).toFixed(0)} over
+                    {c.name} · {formatAmount(c.spent - c.budget)} over
                   </Link>
                 ))}
               </div>
@@ -226,7 +228,7 @@ export default function DashboardOverview() {
           </div>
           <div className="card-content">
             <h3>Total Spent</h3>
-            <p className="card-amount">${totalSpent.toFixed(2)}</p>
+            <p className="card-amount">{formatAmount(totalSpent)}</p>
             {trendDelta !== null
               ? <p className={`card-delta ${trendDelta >= 0 ? 'card-delta--up' : 'card-delta--down'}`}>
                   {trendDelta >= 0 ? '↑' : '↓'} {Math.abs(trendDelta).toFixed(0)}% vs last period
@@ -242,7 +244,7 @@ export default function DashboardOverview() {
           </div>
           <div className="card-content">
             <h3>Average</h3>
-            <p className="card-amount">${averageExpense.toFixed(2)}</p>
+            <p className="card-amount">{formatAmount(averageExpense)}</p>
             <p className="card-subtitle">Per transaction</p>
           </div>
         </div>
@@ -271,7 +273,7 @@ export default function DashboardOverview() {
                   {Math.min(closestToLimit.pct, 999).toFixed(0)}%
                 </p>
                 <p className="budget-limit-card__detail">
-                  ${closestToLimit.spent.toFixed(2)} of ${closestToLimit.budget.toFixed(2)}
+                  {formatAmount(closestToLimit.spent)} of {formatAmount(closestToLimit.budget)}
                 </p>
               </>
             ) : (

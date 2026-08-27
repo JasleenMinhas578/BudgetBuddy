@@ -17,8 +17,10 @@ import ExpenseForm from '../Expense/ExpenseForm';
 import Modal from '../UI/Modal';
 import ExpenseTable from '../UI/ExpenseTable';
 import ConfirmDialog from '../UI/ConfirmDialog';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export default function Expenses() {
+  const { formatAmount } = useCurrency();
   const { expenses } = useExpenses();
   const { toast, showToast, hideToast } = useToast();
   const dateRangeCtx = useDateRangeContext();
@@ -132,7 +134,7 @@ export default function Expenses() {
       <div className="expenses-summary">
         <div className="summary-stat">
           <span className="stat-label">Total Expenses</span>
-          <span className="stat-value">${totalAmount.toFixed(2)}</span>
+          <span className="stat-value">{formatAmount(totalAmount)}</span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">Total Transactions</span>
@@ -141,7 +143,7 @@ export default function Expenses() {
         <div className="summary-stat">
           <span className="stat-label">Average Amount</span>
           <span className="stat-value">
-            ${searchFilteredExpenses.length > 0 ? (totalAmount / searchFilteredExpenses.length).toFixed(2) : '0.00'}
+            {formatAmount(searchFilteredExpenses.length > 0 ? totalAmount / searchFilteredExpenses.length : 0)}
           </span>
         </div>
       </div>
@@ -194,12 +196,12 @@ export default function Expenses() {
 
       {(() => {
         const expense = expenses.find(e => e.id === pendingDeleteId);
-        const amount = expense ? (typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2) : '0.00';
+        const rawAmount = expense ? (typeof expense.amount === 'number' ? expense.amount : 0) : 0;
         return (
           <ConfirmDialog
             isOpen={!!pendingDeleteId}
             title="Delete Expense"
-            message={expense ? <>Are you sure you want to delete <strong>"{expense.title}"</strong> for ${amount}?</> : 'Are you sure you want to delete this expense?'}
+            message={expense ? <>Are you sure you want to delete <strong>"{expense.title}"</strong> for {formatAmount(rawAmount)}?</> : 'Are you sure you want to delete this expense?'}
             onConfirm={confirmDeleteExpense}
             onCancel={() => setPendingDeleteId(null)}
             variant="danger"

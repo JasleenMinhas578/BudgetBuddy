@@ -134,6 +134,13 @@
 }
 
 
+.settings-rate-hint {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
 .settings-feedback {
   font-size: var(--font-size-sm);
   padding: 0.6rem 0.875rem;

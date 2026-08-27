@@ -40,7 +40,7 @@ const checkAndIncrementUsage = () => {
   try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
 };
 
-export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null) => {
+export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null, currencyInfo = null) => {
   const _d = new Date();
   const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
 
@@ -100,6 +100,17 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
     .sort()
     .map(month => ({ month, total: spendingByMonth[month] }));
 
+  const sym = currencyInfo?.homeSymbol ?? '$';
+  const currencySection = currencyInfo
+    ? `CURRENCY CONTEXT:
+Home currency (all expense amounts stored in): ${currencyInfo.homeCurrency} (${sym})
+Display currency: ${currencyInfo.displayCurrency} (${currencyInfo.displaySymbol})
+${currencyInfo.liveRates
+  ? `LIVE EXCHANGE RATES (each value = how many units of that currency equal 1 USD):
+${JSON.stringify(currencyInfo.liveRates)}`
+  : 'Live exchange rates not available — use general knowledge for estimates.'}`
+    : '';
+
   // Only first 50 individual records (newest first, since Firestore orders by createdAt desc)
   const recentExpenses = filteredExpenses
     .slice(0, 50)
@@ -119,12 +130,12 @@ export const processMessage = async (userMessage, expenses = [], customCategorie
             const spent = spendingByCategory[name] || 0;
             const pct = limit > 0 ? Math.round((spent / limit) * 100) : 0;
             const status = pct >= 100 ? 'OVER BUDGET' : pct >= 80 ? 'WARNING' : 'on track';
-            return `${name}: $${spent} spent of $${limit} limit (${pct}% — ${status})`;
+            return `${name}: ${sym}${spent} spent of ${sym}${limit} limit (${pct}% — ${status})`;
           });
         const totalLimit = Object.values(catBudgets).filter(Boolean).reduce((s, v) => s + v, 0);
-        return `BUDGET GOALS (current month):
+        return `BUDGET GOALS (current month, amounts in ${currencyInfo?.homeCurrency ?? 'home currency'}):
 ${budgetedCategories.length > 0 ? budgetedCategories.join('\n') : 'None set'}
-Total monthly budget: ${totalLimit > 0 ? `$${totalLimit}` : 'not set'}`;
+Total monthly budget: ${totalLimit > 0 ? `${sym}${totalLimit}` : 'not set'}`;
       })()
     : 'BUDGET GOALS: none set yet';
 
@@ -132,10 +143,12 @@ Total monthly budget: ${totalLimit > 0 ? `$${totalLimit}` : 'not set'}`;
 
 ${dateRangeSection}
 
+${currencySection}
+
 SPENDING SUMMARY (all ${filteredExpenses.length} records${sessionDateRange ? ` — ${sessionDateRange.label}` : ''}):
-Total spent: $${grandTotal}
-Average per transaction: $${avgPerTransaction}
-Daily average: ${dailyAvg !== null ? `$${dailyAvg}` : 'n/a'}
+Total spent: ${sym}${grandTotal}
+Average per transaction: ${sym}${avgPerTransaction}
+Daily average: ${dailyAvg !== null ? `${sym}${dailyAvg}` : 'n/a'}
 By category: ${JSON.stringify(spendingByCategory)}
 By month (chronological — use for trend analysis): ${JSON.stringify(spendingByMonthSorted)}
 By category and month: ${JSON.stringify(spendingByCategoryMonth)}
@@ -167,11 +180,12 @@ Classify the user's intent as one of:
 - "QUERY"           → user asks a question about their spending data or budget status AND a time period is known
 - "ASK_DATE_RANGE"  → user asks a spending question but no time period is mentioned and no session range is set
 - "SET_DATE_RANGE"  → user's message IS a date range / time period (e.g. "last month", "January", "past 3 weeks", "2026-07-01 to 2026-07-31")
+- "CURRENCY_CONVERT" → user asks for a currency conversion rate or wants to convert an amount (e.g. "what's 100 CAD in USD?", "USD to INR rate", "convert 50 EUR to JPY", "what's the exchange rate")
 - "CHAT"            → greeting, general question, or unclear intent
 
 Required JSON format:
 {
-  "intent": "ADD_EXPENSE" | "ADD_MULTIPLE_EXPENSES" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CHAT",
+  "intent": "ADD_EXPENSE" | "ADD_MULTIPLE_EXPENSES" | "ADD_CATEGORY" | "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" | "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" | "SET_DATE_RANGE" | "CURRENCY_CONVERT" | "CHAT",
   "message": "friendly 1-3 sentence response",
   "expenseData": { "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" },
   "expensesData": [{ "title": "...", "amount": 0, "category": "...", "date": "YYYY-MM-DD" }],
@@ -211,7 +225,8 @@ Rules:
 - Interpret relative dates: "today" = ${today}, "yesterday" = one day before, "this week" / "recently" / "last few days" = use ${today} as the date for ADD_EXPENSE
 - If amount or title is missing for an expense, use CHAT intent and ask for the missing detail
 - Pick the best matching category from the available list
-- If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, and answer spending questions and budget status for any time period
+- For CURRENCY_CONVERT: Use the LIVE EXCHANGE RATES section to calculate. If the user does not specify a FROM currency, assume the home currency (${currencyInfo?.homeCurrency ?? 'USD'}). Compute the rate using the rates (all relative to USD as bridge: rate = (toRate / fromRate)). Format the "message" as ONLY the conversion result — no full sentences, just the value. Examples: "1 CAD = 0.7234 USD" or "100 EUR = 8,312.40 INR". If a specific amount was given, show the converted total. If no amount, show the rate for 1 unit.
+- If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, answer spending questions and budget status for any time period, and check live currency conversion rates
 
 User message: "${userMessage}"`;
 
@@ -253,7 +268,7 @@ User message: "${userMessage}"`;
   }
 };
 
-export const generateSummary = async (expenses, filterLabel) => {
+export const generateSummary = async (expenses, filterLabel, currencyInfo = null) => {
   const _d = new Date();
   const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
   const trimmed = expenses
@@ -262,11 +277,13 @@ export const generateSummary = async (expenses, filterLabel) => {
 
   const total = trimmed.reduce((sum, e) => sum + e.amount, 0);
 
+  const summarySym = currencyInfo?.homeSymbol ?? '$';
   const prompt = `You are BudgetBuddy AI, a personal finance assistant. Today is ${today}.
 
 The user wants a summary of their spending for: ${filterLabel}
+All amounts are in ${currencyInfo?.homeCurrency ?? 'the user\'s home currency'} (${summarySym}).
 
-EXPENSE DATA (${trimmed.length} transactions, total $${total.toFixed(2)}):
+EXPENSE DATA (${trimmed.length} transactions, total ${summarySym}${total.toFixed(2)}):
 ${JSON.stringify(trimmed)}
 
 Write a 3-4 sentence paragraph that:

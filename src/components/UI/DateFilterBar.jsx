@@ -1,4 +1,5 @@
 import { getDateFilterLabel as getActivePeriodLabel } from '../../utils/dateFilterLabel';
+import { format, parseISO } from 'date-fns';
 
 export const FILTER_BUTTONS_DEFAULT = [
   { key: 'today',      label: 'Today'        },
@@ -107,19 +108,35 @@ export default function DateFilterBar({
         <div className="custom-date-inputs">
           <div className="date-input">
             <label>From</label>
-            <input
-              type="date"
-              value={customDateRange.startDate}
-              onChange={e => onCustomDateRangeChange(prev => ({ ...prev, startDate: e.target.value }))}
-            />
+            <div className="date-input-overlay-wrapper">
+              <span className="date-input-display">
+                {customDateRange.startDate
+                  ? format(parseISO(customDateRange.startDate), 'MMMM d, yyyy')
+                  : 'Select date'}
+              </span>
+              <input
+                type="date"
+                value={customDateRange.startDate}
+                onChange={e => onCustomDateRangeChange(prev => ({ ...prev, startDate: e.target.value }))}
+                className="date-input-picker"
+              />
+            </div>
           </div>
           <div className="date-input">
             <label>To</label>
-            <input
-              type="date"
-              value={customDateRange.endDate}
-              onChange={e => onCustomDateRangeChange(prev => ({ ...prev, endDate: e.target.value }))}
-            />
+            <div className="date-input-overlay-wrapper">
+              <span className="date-input-display">
+                {customDateRange.endDate
+                  ? format(parseISO(customDateRange.endDate), 'MMMM d, yyyy')
+                  : 'Select date'}
+              </span>
+              <input
+                type="date"
+                value={customDateRange.endDate}
+                onChange={e => onCustomDateRangeChange(prev => ({ ...prev, endDate: e.target.value }))}
+                className="date-input-picker"
+              />
+            </div>
           </div>
         </div>
       )}

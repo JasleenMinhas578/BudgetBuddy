@@ -2,10 +2,11 @@ import { useRef, useEffect, useState } from 'react';
 import { useClickOutside } from '../../hooks/useClickOutside';
 import { LuBot, LuWallet, LuX, LuSend, LuInfo } from 'react-icons/lu';
 import { useAIChat } from '../../hooks/useAIChat';
+import { useCurrency } from '../../context/CurrencyContext';
 import ChatMessage from './ChatMessage';
 import './AIChat.css';
 
-const SUGGESTED_GROUPS = [
+const BASE_SUGGESTED_GROUPS = [
   {
     label: 'Spending questions',
     questions: [
@@ -20,20 +21,20 @@ const SUGGESTED_GROUPS = [
   {
     label: 'Add expenses',
     questions: [
-      "Add $25 for coffee today",
-      "Log $50 for groceries",
-      "Spent $80 on transport this week",
+      "Add 25 for coffee today",
+      "Log 50 for groceries",
+      "Spent 80 on transport this week",
     ],
   },
   {
     label: 'Goals & budgets',
     questions: [
-      "Set my food budget to $400",
+      "Set my food budget to 400",
       "Am I over budget anywhere?",
       "How much of my food budget is left?",
       "What's my total monthly budget?",
       "Remove my entertainment goal",
-      "Update my rent goal to $1500",
+      "Update my rent goal to 1500",
     ],
   },
 ];
@@ -51,6 +52,21 @@ export default function AIChat() {
     handlePickDateRange,
     handleKeyDown,
   } = useAIChat();
+
+  const { homeCurrency, currency } = useCurrency();
+
+  const SUGGESTED_GROUPS = [
+    ...BASE_SUGGESTED_GROUPS,
+    {
+      label: 'Currency rates',
+      questions: [
+        `What's the ${homeCurrency} to USD rate?`,
+        `What's the ${homeCurrency} to EUR rate?`,
+        `Convert 100 ${homeCurrency} to ${currency !== homeCurrency ? currency : 'INR'}`,
+        `What's 1 USD in ${homeCurrency}?`,
+      ].filter((q, i, arr) => arr.indexOf(q) === i),
+    },
+  ];
 
   const [showCapabilities, setShowCapabilities] = useState(false);
   const messagesEndRef = useRef(null);

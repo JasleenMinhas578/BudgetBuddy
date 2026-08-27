@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LuCheck } from 'react-icons/lu';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const DATE_PRESETS = ['Today', 'This Week', 'This Month', 'Last Month', 'This Year', 'All Time'];
 
@@ -87,6 +88,7 @@ function EditableExpenseCard({ data, onConfirm, onDismiss }) {
 }
 
 export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDateRange }) {
+  const { formatAmount } = useCurrency();
   const active = !msg.confirmed && !msg.dismissed;
 
   if (msg.type === 'date_range_picker') {
@@ -136,7 +138,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
           {msg.expensesData.map((e, i) => (
             <div key={i} className="ai-expense-row ai-multi-row">
               <span>{e.title}</span>
-              <strong>${Number(e.amount).toFixed(2)} · {e.category}</strong>
+              <strong>{formatAmount(Number(e.amount))} · {e.category}</strong>
             </div>
           ))}
           <div className="ai-expense-actions">
@@ -169,7 +171,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
         <ExpenseCard
           rows={[
             { label: 'Title',    value: msg.deleteExpenseData.title },
-            { label: 'Amount',   value: `$${Number(msg.deleteExpenseData.amount).toFixed(2)}` },
+            { label: 'Amount',   value: formatAmount(Number(msg.deleteExpenseData.amount)) },
             { label: 'Category', value: msg.deleteExpenseData.category },
             { label: 'Date',     value: msg.deleteExpenseData.date },
           ]}
@@ -189,7 +191,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
         <ExpenseCard
           rows={[
             { label: 'Title',    value: msg.editExpenseData.updates.title    ?? msg.editExpenseData.title    },
-            { label: 'Amount',   value: `$${Number(msg.editExpenseData.updates.amount   ?? msg.editExpenseData.amount).toFixed(2)}` },
+            { label: 'Amount',   value: formatAmount(Number(msg.editExpenseData.updates.amount ?? msg.editExpenseData.amount)) },
             { label: 'Category', value: msg.editExpenseData.updates.category ?? msg.editExpenseData.category },
             { label: 'Date',     value: msg.editExpenseData.updates.date     ?? msg.editExpenseData.date     },
           ]}
@@ -240,7 +242,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
         <ExpenseCard
           rows={[
             { label: 'Category', value: msg.budgetData.categoryName },
-            { label: 'Monthly Goal', value: `$${Number(msg.budgetData.amount).toFixed(2)}` },
+            { label: 'Monthly Goal', value: formatAmount(Number(msg.budgetData.amount)) },
           ]}
           confirmLabel="Set Goal"
           onConfirm={() => onConfirm(msg, index)}
@@ -257,7 +259,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
         <ExpenseCard
           rows={[
             { label: 'Category', value: msg.budgetData.categoryName },
-            { label: 'Current goal', value: msg.budgetData.amount ? `$${Number(msg.budgetData.amount).toFixed(0)}/mo` : '—' },
+            { label: 'Current goal', value: msg.budgetData.amount ? `${formatAmount(Number(msg.budgetData.amount))}/mo` : '—' },
           ]}
           confirmLabel="Remove Goal"
           isDanger

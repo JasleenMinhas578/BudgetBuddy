@@ -4,7 +4,7 @@ import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, 
 export function useDateFilter(expenses, defaultFilter = 'all', external = null) {
   const [localDateFilter, setLocalDateFilter] = useState(defaultFilter);
   const [localCustomDateRange, setLocalCustomDateRange] = useState({
-    startDate: format(new Date(), 'yyyy-MM-dd'),
+    startDate: format(subMonths(new Date(), 6), 'yyyy-MM-dd'),
     endDate: format(new Date(), 'yyyy-MM-dd'),
   });
   const [localPickedMonth, setLocalPickedMonth] = useState(format(new Date(), 'yyyy-MM'));

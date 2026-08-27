@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { LuTarget, LuChevronRight, LuCalendar } from 'react-icons/lu';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { getCategoryColor } from '../../utils/getCategoryColor';
+import { useCurrency } from '../../context/CurrencyContext';
 
 export default function BudgetProgressPanel({ expenses, allCategories, budgets, forecastResult }) {
+  const { formatAmount } = useCurrency();
   // Always compare against current month — regardless of the dashboard's date filter
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
@@ -47,8 +49,8 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
         <div className="budget-panel-forecast">
           <LuCalendar size={13} className="budget-panel-forecast__icon" />
           <span className="budget-panel-forecast__label">Month-end forecast</span>
-          <span className="budget-panel-forecast__amount">${forecastResult.forecast.toFixed(2)}</span>
-          <span className="budget-panel-forecast__pace">${forecastResult.dailyAvg.toFixed(2)}/day</span>
+          <span className="budget-panel-forecast__amount">{formatAmount(forecastResult.forecast)}</span>
+          <span className="budget-panel-forecast__pace">{formatAmount(forecastResult.dailyAvg)}/day</span>
         </div>
       )}
 
@@ -57,14 +59,14 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
         <div className="budget-panel-overall">
           <div className="budget-panel-overall-labels">
             <span className="budget-panel-overall-amounts">
-              ${totalSpent.toFixed(2)}{' '}
-              <span className="budget-panel-overall-of">of ${totalBudgeted.toFixed(2)}</span>
+              {formatAmount(totalSpent)}{' '}
+              <span className="budget-panel-overall-of">of {formatAmount(totalBudgeted)}</span>
             </span>
             <span className={`budget-panel-overall-pct budget-panel-overall-pct--${overStatus}`}>
               {overallPct.toFixed(0)}%{' '}
               {totalSpent > totalBudgeted
-                ? `($${(totalSpent - totalBudgeted).toFixed(2)} over)`
-                : `($${(totalBudgeted - totalSpent).toFixed(2)} left)`}
+                ? `(${formatAmount(totalSpent - totalBudgeted)} over)`
+                : `(${formatAmount(totalBudgeted - totalSpent)} left)`}
             </span>
           </div>
           <div className="budget-panel-bar">
@@ -113,15 +115,15 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
                 )}
               </div>
               <span className="budget-panel-col budget-panel-col--spent">
-                ${prog.spent.toFixed(0)}
+                {formatAmount(prog.spent)}
               </span>
               <span className="budget-panel-col budget-panel-col--budget">
-                ${prog.budget.toFixed(0)}
+                {formatAmount(prog.budget)}
               </span>
               <span className={`budget-panel-col budget-panel-col--left budget-panel-col--left-${prog.status}`}>
                 {remaining !== null && remaining >= 0
-                  ? `$${remaining.toFixed(0)}`
-                  : remaining !== null ? `$${Math.abs(remaining).toFixed(0)} over` : '—'}
+                  ? formatAmount(remaining)
+                  : remaining !== null ? `${formatAmount(Math.abs(remaining))} over` : '—'}
               </span>
               <span className={`budget-panel-col budget-panel-col--pct budget-panel-col--pct-${prog.status}`}>
                 {prog.pct !== null ? `${Math.min(prog.pct, 999).toFixed(0)}%` : '—'}

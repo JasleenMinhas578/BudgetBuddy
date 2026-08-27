@@ -36,8 +36,24 @@ export function CurrencyProvider({ children }) {
   const formatAmount = (amount) => utilFormatAmount(amount, currency, liveRates, homeCurrency);
   const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol ?? '$';
 
+  // Rate of the display currency against the USD base
+  const displayRate = liveRates?.[currency] ?? (CURRENCIES.find(c => c.code === currency)?.fallbackRate ?? 1);
+  // Rate of the home (storage) currency against the USD base
+  const homeRate = liveRates?.[homeCurrency] ?? (CURRENCIES.find(c => c.code === homeCurrency)?.fallbackRate ?? 1);
+
+  // Convert a home-currency amount to display currency (for showing stored values in inputs)
+  const toDisplayAmount = (homeAmt) => {
+    if (homeAmt == null || isNaN(homeAmt)) return homeAmt;
+    return homeAmt * (displayRate / homeRate);
+  };
+  // Convert a display-currency amount to home currency (for storing user-typed values)
+  const toHomeAmount = (displayAmt) => {
+    if (displayAmt == null || isNaN(displayAmt)) return displayAmt;
+    return displayAmt * (homeRate / displayRate);
+  };
+
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, homeCurrency, setHomeCurrency, formatAmount, currencySymbol, CURRENCIES, liveRates, ratesLoading }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, homeCurrency, setHomeCurrency, formatAmount, currencySymbol, CURRENCIES, liveRates, ratesLoading, toDisplayAmount, toHomeAmount }}>
       {children}
     </CurrencyContext.Provider>
   );

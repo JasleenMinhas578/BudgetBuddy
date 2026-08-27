@@ -3,8 +3,10 @@ import { parse, parseISO } from 'date-fns';
 import { getCategoryColor } from '../utils/getCategoryColor';
 import { safeFormatDate, toAmount } from '../utils/formatDate';
 import { validCategory } from '../utils/categoryUtils';
+import { useCurrency } from '../context/CurrencyContext';
 
 export function useReportData(filteredExpenses) {
+  const { formatAmount } = useCurrency();
   const totalAmount = useMemo(
     () => filteredExpenses.reduce((sum, e) => sum + toAmount(e.amount), 0),
     [filteredExpenses]
@@ -76,7 +78,7 @@ export function useReportData(filteredExpenses) {
       filteredExpenses[0]
     );
     if (largest?.title)
-      insights.push(`Your largest expense was "${largest.title}" at $${toAmount(largest.amount).toFixed(2)}.`);
+      insights.push(`Your largest expense was "${largest.title}" at ${formatAmount(toAmount(largest.amount))}.`);
 
     // Most frequent category by count (skip if same as top-spend category)
     const countMap = {};
@@ -99,18 +101,18 @@ export function useReportData(filteredExpenses) {
     });
     const topDay = Object.entries(dayMap).sort(([, a], [, b]) => b - a)[0];
     if (topDay)
-      insights.push(`You spend the most on ${topDay[0]}s ($${topDay[1].toFixed(2)} total).`);
+      insights.push(`You spend the most on ${topDay[0]}s (${formatAmount(topDay[1])} total).`);
 
     // Average transaction
     if (averageAmount >= 5)
-      insights.push(`Your average transaction is $${averageAmount.toFixed(2)}.`);
+      insights.push(`Your average transaction is ${formatAmount(averageAmount)}.`);
 
     // Transaction count
     if (filteredExpenses.length >= 5)
       insights.push(`You logged ${filteredExpenses.length} transactions this period.`);
 
     return insights.slice(0, 5);
-  }, [filteredExpenses, totalAmount, maxAmount, topCategory, averageAmount]);
+  }, [filteredExpenses, totalAmount, maxAmount, topCategory, averageAmount, formatAmount]);
 
   return { totalAmount, averageAmount, categoryData, monthlyData, topCategory, maxAmount, spendingInsights };
 }

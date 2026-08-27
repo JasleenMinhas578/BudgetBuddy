@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { getExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
 import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
@@ -40,7 +41,7 @@ const ERROR_LABELS = {
   remove_budget_confirm:   'remove budget goal',
 };
 
-const getPendingReminder = (currentMessages) => {
+const getPendingReminder = (currentMessages, homeSymbol = '$') => {
   const pending = currentMessages.filter(
     (m) => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
   );
@@ -53,7 +54,7 @@ const getPendingReminder = (currentMessages) => {
     if (m.type === 'edit_expense_confirm')    return `update expense "${m.editExpenseData?.title}"`;
     if (m.type === 'delete_category_confirm') return `delete category "${m.deleteCategoryData?.name}"`;
     if (m.type === 'edit_category_confirm')   return `rename category "${m.editCategoryData?.name}"`;
-    if (m.type === 'set_budget_confirm')      return `set ${m.budgetData?.categoryName} budget to $${m.budgetData?.amount}`;
+    if (m.type === 'set_budget_confirm')      return `set ${m.budgetData?.categoryName} budget to ${homeSymbol}${m.budgetData?.amount}`;
     if (m.type === 'remove_budget_confirm')   return `remove ${m.budgetData?.categoryName} budget goal`;
     return '';
   }).filter(Boolean);
@@ -63,6 +64,7 @@ const getPendingReminder = (currentMessages) => {
 
 export function useAIChat() {
   const { currentUser } = useAuth();
+  const { homeCurrency, currency, CURRENCIES, liveRates } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -75,6 +77,12 @@ export function useAIChat() {
   // Ref so sendMessage can read current messages without stale closure
   const messagesRef = useRef([]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+
+  // Ref so callbacks always have fresh currency info without adding it to all deps
+  const currencyInfoRef = useRef({});
+  const homeSymbol = CURRENCIES?.find(c => c.code === homeCurrency)?.symbol ?? '$';
+  const displaySymbol = CURRENCIES?.find(c => c.code === currency)?.symbol ?? '$';
+  currencyInfoRef.current = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
 
   // Persist chat across page navigations within the same tab
   useEffect(() => {
@@ -117,7 +125,7 @@ export function useAIChat() {
     setLoading(true);
 
     try {
-      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets);
+      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets, currencyInfoRef.current);
 
       const mapped = INTENT_MAP[result.intent];
       if (mapped && result[mapped.dataKey]) {
@@ -140,8 +148,9 @@ export function useAIChat() {
       }
 
       if (hadPendingBefore) {
+        const _homeSymbol = currencyInfoRef.current.homeSymbol;
         setMessages((prev) => {
-          const reminder = getPendingReminder(prev);
+          const reminder = getPendingReminder(prev, _homeSymbol);
           return reminder ? [...prev, { role: 'assistant', content: reminder, type: 'reminder' }] : prev;
         });
       }
@@ -200,7 +209,7 @@ export function useAIChat() {
 
     setLoading(true);
     try {
-      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets);
+      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets, currencyInfoRef.current);
       setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
     } catch (err) {
       setMessages((prev) => [

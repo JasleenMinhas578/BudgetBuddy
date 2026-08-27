@@ -16,6 +16,7 @@ import Settings from './components/Dashboard/Settings';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
 import { DateRangeProvider } from './context/DateRangeContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import './styles/main.css';
 
 /**
@@ -44,6 +45,7 @@ function App() {
     <Router>
       {/* AuthProvider wraps the entire app to provide authentication context */}
       <AuthProvider>
+      <CurrencyProvider>
       <DateRangeProvider>
         <Routes>
           {/* Public routes - accessible without authentication */}
@@ -71,6 +73,7 @@ function App() {
         {/* AI chat widget — only mounted when logged in */}
         <AuthenticatedAIChat />
       </DateRangeProvider>
+      </CurrencyProvider>
       </AuthProvider>
     </Router>
   );

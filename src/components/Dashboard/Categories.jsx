@@ -17,6 +17,7 @@ import { useBudgetProgress } from '../../hooks/useBudgetProgress';
 import { useAuth } from '../../context/AuthContext';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { useDateRangeContext } from '../../context/DateRangeContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import PieChart from '../Charts/PieChart';
 import BarChart from '../Charts/BarChart';
 import Modal from '../UI/Modal';
@@ -30,6 +31,7 @@ import '../../styles/modal-forms.css';
 
 
 export default function Categories() {
+  const { formatAmount, currencySymbol, toDisplayAmount, toHomeAmount } = useCurrency();
   const { expenses } = useExpenses();
   const firestoreCategories = useCategories();
   const { toast, showToast, hideToast } = useToast();
@@ -83,7 +85,9 @@ export default function Categories() {
   ], [firestoreCategories, hiddenDefaults]);
 
   const { categoryData, totalSpent } = useCategoryData(filteredExpenses, allCategories);
-  const { budgets } = useBudgets();
+  const { budgets, setCategoryBudget } = useBudgets();
+  const [goalInputOpen, setGoalInputOpen] = useState(null);
+  const [goalInputValue, setGoalInputValue] = useState('');
   const { categoryProgress } = useBudgetProgress(filteredExpenses, allCategories, budgets);
 
   const monthlyTrendData = useMemo(() => {
@@ -175,7 +179,7 @@ export default function Categories() {
         </div>
         <div className="summary-stat">
           <span className="stat-label">Total Spent</span>
-          <span className="stat-value">${totalSpent.toFixed(2)}</span>
+          <span className="stat-value">{formatAmount(totalSpent)}</span>
         </div>
         <div className="summary-stat">
           <span className="stat-label">Active Categories</span>
@@ -246,13 +250,64 @@ export default function Categories() {
                     </div>
                     <div className="category-info">
                       <h4>{category.name}</h4>
-                      <p className="category-amount">${categoryAmount.toFixed(2)}</p>
+                      <p className="category-amount">{formatAmount(categoryAmount)}</p>
+                      {goalInputOpen === category.name ? (
+                        <form
+                          className="category-goal-form"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const val = parseFloat(goalInputValue);
+                            if (!isNaN(val) && val > 0) {
+                              setCategoryBudget(category.name, toHomeAmount(val));
+                            }
+                            setGoalInputOpen(null);
+                            setGoalInputValue('');
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            className="category-goal-input"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder={`${currencySymbol}/mo`}
+                            value={goalInputValue}
+                            autoFocus
+                            onChange={(e) => setGoalInputValue(e.target.value)}
+                            onBlur={() => { setGoalInputOpen(null); setGoalInputValue(''); }}
+                            onKeyDown={(e) => { if (e.key === 'Escape') { setGoalInputOpen(null); setGoalInputValue(''); } }}
+                          />
+                          <button type="submit" className="category-goal-save" onMouseDown={(e) => e.preventDefault()}>✓</button>
+                        </form>
+                      ) : hasBudget ? (
+                        <span
+                          className="category-goal-badge"
+                          title="Click to edit monthly budget"
+                          style={{ cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setGoalInputOpen(category.name);
+                            const inDisplay = prog.budget != null ? toDisplayAmount(prog.budget) : null;
+                            setGoalInputValue(inDisplay != null ? String(parseFloat(inDisplay.toFixed(2))) : '');
+                          }}
+                        >
+                          Budget: {formatAmount(prog.budget)}/mo
+                        </span>
+                      ) : (
+                        <button
+                          className="category-set-goal-btn"
+                          title="Set a monthly budget for this category"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setGoalInputOpen(category.name);
+                            setGoalInputValue('');
+                          }}
+                        >
+                          + Set Budget
+                        </button>
+                      )}
                     </div>
-                    {hasBudget && (
-                      <span className="category-goal-badge" title={`Monthly goal: $${prog.budget.toFixed(0)}`}>
-                        Goal: ${prog.budget.toFixed(0)}/mo
-                      </span>
-                    )}
                     <div className="category-actions">
                       <div className="category-menu-wrapper">
                         <button
@@ -308,8 +363,8 @@ export default function Categories() {
                       <div className="budget-row">
                         <span className={`budget-remaining${prog.status === 'ok' ? '' : ` budget-remaining--${prog.status}`}`}>
                           {prog.remaining >= 0
-                            ? `$${prog.remaining.toFixed(2)} left of $${prog.budget.toFixed(2)}`
-                            : `$${Math.abs(prog.remaining).toFixed(2)} over budget`}
+                            ? `${formatAmount(prog.remaining)} left of ${formatAmount(prog.budget)}`
+                            : `${formatAmount(Math.abs(prog.remaining))} over budget`}
                         </span>
                         <span className="progress-text">{Math.min(prog.pct, 999).toFixed(0)}%</span>
                       </div>
@@ -428,7 +483,7 @@ export default function Categories() {
                       <li key={e.id}>
                         <span className="cd-exp-title">{e.title}</span>
                         <span className="cd-exp-date">{e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
-                        <span className="cd-exp-amount">${Number(e.amount).toFixed(2)}</span>
+                        <span className="cd-exp-amount">{formatAmount(Number(e.amount))}</span>
                       </li>
                     ))}
                   </ul>

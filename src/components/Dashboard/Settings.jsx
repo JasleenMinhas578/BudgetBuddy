@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { LuUser, LuLock, LuCalendar } from 'react-icons/lu';
+import { LuUser, LuLock, LuCalendar, LuGlobe } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useDateRangeContext } from '../../context/DateRangeContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { saveUserSettings, getUserSettings } from '../../services/settingsService';
 import '../../styles/main.css';
 
@@ -18,6 +19,7 @@ const DATE_RANGE_OPTIONS = [
 export default function Settings() {
   const { currentUser, updateDisplayName, resetPassword } = useAuth();
   const { setDateFilter } = useDateRangeContext();
+  const { currency, setCurrency, homeCurrency, setHomeCurrency, CURRENCIES, liveRates, ratesLoading } = useCurrency();
 
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [nameLoading, setNameLoading] = useState(false);
@@ -29,6 +31,10 @@ export default function Settings() {
   const [defaultRange, setDefaultRange] = useState('thisMonth');
   const [rangeLoading, setRangeLoading] = useState(false);
   const [rangeMsg, setRangeMsg] = useState({ text: '', type: '' });
+
+  const [selectedHomeCurrency, setSelectedHomeCurrency] = useState(homeCurrency);
+  const [selectedCurrency, setSelectedCurrency] = useState(currency);
+  const [currencyMsg, setCurrencyMsg] = useState({ text: '', type: '' });
 
   useEffect(() => {
     if (!currentUser) return;
@@ -86,6 +92,13 @@ export default function Settings() {
     } finally {
       setEmailLoading(false);
     }
+  };
+
+  const handleSaveCurrency = () => {
+    setHomeCurrency(selectedHomeCurrency);
+    setCurrency(selectedCurrency);
+    setCurrencyMsg({ text: 'Currency settings updated!', type: 'success' });
+    setTimeout(() => setCurrencyMsg({ text: '', type: '' }), 3000);
   };
 
   return (
@@ -191,6 +204,77 @@ export default function Settings() {
             disabled={emailLoading}
           >
             {emailLoading ? 'Sending...' : 'Send Reset Email'}
+          </button>
+        </div>
+        {/* Currency */}
+        <div className="settings-card settings-card-green">
+          <div className="settings-card-header">
+            <span className="settings-card-icon"><LuGlobe size={22} /></span>
+            <div>
+              <h2 className="settings-card-title">Currency</h2>
+              <p className="settings-card-desc">
+                Set your home currency and how amounts are displayed.
+              </p>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="homeCurrencySelect">Home Currency (you enter amounts in)</label>
+            <select
+              id="homeCurrencySelect"
+              value={selectedHomeCurrency}
+              onChange={e => setSelectedHomeCurrency(e.target.value)}
+              className="settings-select"
+            >
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="currencySelect">Display Currency (shown across the app)</label>
+            <select
+              id="currencySelect"
+              value={selectedCurrency}
+              onChange={e => setSelectedCurrency(e.target.value)}
+              className="settings-select"
+            >
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.symbol} {c.name} ({c.code})
+                </option>
+              ))}
+            </select>
+            <p className="settings-rate-hint">
+              {selectedHomeCurrency === selectedCurrency
+                ? 'Home and display currency match — no conversion applied.'
+                : ratesLoading
+                  ? 'Fetching live rate…'
+                  : (() => {
+                      const homeCurr = CURRENCIES.find(c => c.code === selectedHomeCurrency);
+                      const dispCurr = CURRENCIES.find(c => c.code === selectedCurrency);
+                      const homeRate = liveRates?.[selectedHomeCurrency] ?? homeCurr?.fallbackRate ?? 1;
+                      const dispRate = liveRates?.[selectedCurrency]     ?? dispCurr?.fallbackRate ?? 1;
+                      const crossRate = dispRate / homeRate;
+                      const isLive = !!(liveRates?.[selectedHomeCurrency] && liveRates?.[selectedCurrency]);
+                      const formatted = crossRate >= 10 ? crossRate.toFixed(2) : crossRate.toFixed(4);
+                      return `1 ${selectedHomeCurrency} = ${formatted} ${selectedCurrency}${isLive ? ' (live)' : ' (estimated)'}`;
+                    })()}
+            </p>
+          </div>
+
+          {currencyMsg.text && (
+            <p className={`settings-feedback ${currencyMsg.type}`}>{currencyMsg.text}</p>
+          )}
+
+          <button
+            className="btn btn-primary settings-btn"
+            onClick={handleSaveCurrency}
+          >
+            Save Currency
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, Fragment } from 'react';
 import { useClickOutside } from '../../hooks/useClickOutside';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LuPencil, LuTrash2, LuArrowUp, LuArrowDown, LuArrowUpDown, LuFilter, LuMessageSquare } from 'react-icons/lu';
 import { getCategoryIcon } from '../../utils/getCategoryIcon';
 import { formatDate } from '../../utils/formatDate';
@@ -40,6 +41,7 @@ export default function ExpenseTable({
   emptySubMessage = '',
   emptyAction,
 }) {
+  const { formatAmount } = useCurrency();
   const hide = new Set(hiddenColumns);
   const [sortKey, setSortKey] = useState('date');
   const [sortDir, setSortDir] = useState('desc');
@@ -238,7 +240,7 @@ export default function ExpenseTable({
                   {!hide.has('amount') && (
                     <td>
                       <span className="amount-cell">
-                        ${(typeof expense.amount === 'number' ? expense.amount : 0).toFixed(2)}
+                        {formatAmount(typeof expense.amount === 'number' ? expense.amount : 0)}
                       </span>
                     </td>
                   )}

@@ -1,4 +1,5 @@
 import { LuTag, LuArrowRight } from 'react-icons/lu';
+import { useCurrency } from '../../context/CurrencyContext';
 
 function highlight(text, query) {
   if (!query) return text;
@@ -14,6 +15,7 @@ function highlight(text, query) {
 }
 
 export default function SearchDropdown({ expenseResults, categoryResults, query, onSelect, onViewAll }) {
+  const { formatAmount } = useCurrency();
   const hasExpenses = expenseResults.length > 0;
   const hasCategories = categoryResults.length > 0;
   const isEmpty = !hasExpenses && !hasCategories;
@@ -36,7 +38,7 @@ export default function SearchDropdown({ expenseResults, categoryResults, query,
               <span className="search-result-icon"><LuTag size={14} /></span>
               <span className="search-result-title">{highlight(exp.title, query)}</span>
               <span className="search-result-meta">
-                <span className="search-result-amount">${Number(exp.amount).toFixed(2)}</span>
+                <span className="search-result-amount">{formatAmount(Number(exp.amount))}</span>
                 <span className="search-result-category">{exp.category}</span>
               </span>
             </button>
@@ -56,7 +58,7 @@ export default function SearchDropdown({ expenseResults, categoryResults, query,
               <span className="search-result-icon"><cat.Icon size={14} /></span>
               <span className="search-result-title">{highlight(cat.name, query)}</span>
               <span className="search-result-meta">
-                <span className="search-result-amount">${cat.total.toFixed(2)} total</span>
+                <span className="search-result-amount">{formatAmount(cat.total)} total</span>
               </span>
             </button>
           ))}

@@ -1,5 +1,6 @@
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { useCurrency } from '../../context/CurrencyContext';
 import '../../styles/main.css';
 
 /**
@@ -37,7 +38,7 @@ ChartJS.register(
  * @returns {JSX.Element} Rendered line chart component
  */
 export default function LineChart({ data }) {
-  // Chart configuration options
+  const { formatAmount } = useCurrency();
   const options = {
     responsive: true, // Make chart responsive to container size
     maintainAspectRatio: false, // Allow chart to fill container height
@@ -68,9 +69,7 @@ export default function LineChart({ data }) {
         },
         ticks: {
           color: '#e2e8f0',
-          callback: function(value) {
-            return '$' + value.toLocaleString();
-          }
+          callback: (value) => formatAmount(value)
         }
       }
     }
