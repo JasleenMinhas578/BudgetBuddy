@@ -114,7 +114,7 @@ describe('User Signup Flow', () => {
     cy.contains(/dashboard|overview|expenses/i, { timeout: 10000 }).should('be.visible');
     
     // Clean up - logout
-    cy.contains('button', /logout/i).click();
+    cy.logout();
   });
 
   it('should show error when trying to register with existing email', () => {
@@ -132,9 +132,8 @@ describe('User Signup Flow', () => {
     // If successful, logout
     cy.url().then((url) => {
       if (url.includes('/dashboard')) {
-        cy.contains('button', /logout/i).click();
-        cy.wait(2000);
-        
+        cy.logout();
+
         // Try to signup again with same email
         cy.visit('/signup');
         cy.get('input[type="email"]').type(email);

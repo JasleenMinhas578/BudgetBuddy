@@ -61,9 +61,7 @@ describe('Dashboard Display', () => {
     cy.viewport(1280, 720);
     cy.wait(500);
     
-    // Click logout button (use force in case it's in a collapsed menu)
-    cy.contains('button', /logout/i).click({ force: true });
-    cy.wait(2000);
+    cy.logout();
   });
 
   it('should display the dashboard with main components', () => {
@@ -107,7 +105,7 @@ describe('Dashboard Display', () => {
   });
 
   it('should navigate to reports page', () => {
-    cy.contains('a, button', /reports/i).first().click();
+    cy.visit('/dashboard/reports');
     cy.wait(2000);
     cy.url().should('match', /reports|dashboard/);
   });

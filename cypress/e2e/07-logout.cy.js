@@ -1,10 +1,10 @@
 /**
  * E2E Acceptance Tests: User Logout and Session Management Flow
- * 
+ *
  * This test suite validates the complete logout and session management workflow as an end-to-end acceptance test.
  * It ensures that users can securely log out, that sessions are properly cleared, and that protected
  * routes are inaccessible after logout.
- * 
+ *
  * Acceptance Criteria Tested:
  * - AC1: Logout button is visible when user is authenticated
  * - AC2: Users can successfully log out from any page
@@ -22,19 +22,19 @@
  * - AC14: Logout handles pending operations gracefully
  * - AC15: Full authentication cycle (login → logout → login) works correctly
  * - AC16: Logout works on different viewports (mobile, tablet, desktop)
- * 
+ *
  * User Flows Covered:
  * 1. Logout Flow: Click logout → Session cleared → Redirect to landing
  * 2. Access Control: Logout → Attempt to access protected route → Redirected
  * 3. Session Persistence: Logout → Reload page → Still logged out
  * 4. Re-authentication: Logout → Login again → Access restored
  * 5. Multi-page Logout: Logout from different pages → Consistent behavior
- * 
+ *
  * Pre-conditions: Test user account is created and logged in before each test
  */
 
 describe('User Logout Flow', () => {
-  
+
   const testUser = {
     email: `test.logout@budgetbuddy.test`,
     password: 'TestPassword123!'
@@ -45,7 +45,8 @@ describe('User Logout Flow', () => {
     cy.get('body').then(($body) => {
       if ($body.find('button:contains("Logout")').length) {
         cy.contains('button', /logout/i).click({ force: true });
-        cy.wait(2000);
+        cy.get('.cd-btn-confirm', { timeout: 5000 }).click();
+        cy.url().should('not.include', '/dashboard', { timeout: 15000 });
         cy.visit('/login');
       }
     });
@@ -64,12 +65,11 @@ describe('User Logout Flow', () => {
     cy.get('input[type="password"]').last().type(testUser.password);
     cy.get('button[type="submit"]').click();
     cy.wait(5000);
-    
+
     // Logout after initial signup
     cy.url().then((url) => {
       if (url.includes('/dashboard')) {
-        cy.contains('button', /logout/i).click();
-        cy.wait(2000);
+        cy.logout();
       }
     });
   });
@@ -83,22 +83,20 @@ describe('User Logout Flow', () => {
   });
 
   it('should successfully logout user', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Should redirect to landing page
     cy.url().should('not.include', '/dashboard');
     cy.url().should('match', /\/$|\/login|\/signup/);
   });
 
   it('should clear user session after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Try to access protected route
     cy.visit('/dashboard', { timeout: 10000 });
     cy.wait(2000);
-    
+
     // Should redirect to login or landing
     cy.url().should('not.include', '/dashboard');
   });
@@ -109,10 +107,9 @@ describe('User Logout Flow', () => {
       // Firebase stores auth in localStorage/indexedDB
       cy.log('User is authenticated');
     });
-    
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+
+    cy.logout();
+
     // Session should be cleared
     cy.window().then((win) => {
       cy.log('User should be logged out');
@@ -120,131 +117,114 @@ describe('User Logout Flow', () => {
   });
 
   it('should prevent access to dashboard after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Try to navigate to dashboard
     cy.visit('/dashboard', { timeout: 10000 });
     cy.wait(2000);
-    
+
     // Should be redirected away
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should prevent access to expenses page after logout', () => {
-    // Logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Try to access expenses page directly
     cy.visit('/dashboard', { timeout: 10000 });
     cy.wait(2000);
-    
+
     // Should not be able to access protected routes
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should prevent access to categories page after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Try to access categories page
     cy.visit('/dashboard', { timeout: 10000 });
     cy.wait(2000);
-    
+
     // Should be redirected
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should prevent access to reports page after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Try to access reports
     cy.visit('/dashboard', { timeout: 10000 });
     cy.wait(2000);
-    
+
     // Should not have access
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should allow user to login/Signin again after logout', () => {
-    // Logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Login again
     cy.visit('/login');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').type(testUser.password);
     cy.get('button[type="submit"]').click();
     cy.wait(5000);
-    
+
     // Should be back on dashboard
     cy.url().should('include', '/dashboard', { timeout: 15000 });
-    
+
     // Logout again
-    cy.contains('button', /logout/i).click();
+    cy.logout();
   });
 
   it('should handle logout from different pages', () => {
     // Navigate to categories
     cy.contains('a, button', /categories/i).first().click();
     cy.wait(2000);
-    
+
     // Logout from categories page
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Should redirect to landing
     cy.url().should('not.include', '/dashboard');
     cy.url().should('not.include', '/categories');
   });
 
   it('should clear local storage on logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Check that we're logged out
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should clear session storage on logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Verify logout completed
     cy.url().should('match', /\/$|\/login/);
   });
 
   it('should handle logout button click only once', () => {
-    // Click logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(1000);
-    
-    // Should start redirecting
-    cy.wait(2000);
-    
+    cy.logout();
+
     // Should be on landing page
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should maintain logout state after page reload', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Reload page
     cy.reload();
     cy.wait(3000);
-    
+
     // Should still be logged out
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should not show logout button after logout', () => {
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Logout button should not be visible on landing page
     cy.get('body').then(($body) => {
       if ($body.find('button:contains("Logout")').length > 0) {
@@ -256,51 +236,46 @@ describe('User Logout Flow', () => {
   it('should handle logout with pending operations gracefully', () => {
     // Start navigation
     cy.contains('a, button', /categories/i).first().click();
-    
+
     // Immediately logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Should successfully logout
     cy.url().should('not.include', '/dashboard');
   });
 
   it('should complete full authentication cycle', () => {
     // Currently logged in, logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(3000);
-    
+    cy.logout();
+
     // Should be on landing page
     cy.url().should('not.include', '/dashboard');
-    
+
     // Login again
     cy.visit('/login');
     cy.get('input[type="email"]').type(testUser.email);
     cy.get('input[type="password"]').type(testUser.password);
     cy.get('button[type="submit"]').click();
     cy.wait(5000);
-    
+
     // Should be authenticated again
     cy.url().should('include', '/dashboard', { timeout: 15000 });
-    
+
     // Logout for cleanup
-    cy.contains('button', /logout/i).click();
-    cy.wait(2000);
+    cy.logout();
   });
 
   it('should handle logout in different viewports', () => {
     // Test on mobile
     cy.viewport('iphone-x');
     cy.wait(1000);
-    
-    cy.contains('button', /logout/i).click({ force: true });
-    cy.wait(3000);
-    
+
+    cy.logout();
+
     // Should logout successfully
     cy.url().should('not.include', '/dashboard');
-    
+
     // Restore viewport
     cy.viewport(1280, 720);
   });
 });
-

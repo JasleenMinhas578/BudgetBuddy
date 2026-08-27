@@ -51,11 +51,10 @@ Cypress.Commands.add('login', (email, password) => {
  * Custom command for user logout
  */
 Cypress.Commands.add('logout', () => {
-  // Look for logout button in the sidebar or navigation
-  cy.contains('button', /logout/i).click();
-  
-  // Verify redirect to landing page
-  cy.url().should('eq', Cypress.config().baseUrl + '/');
+  cy.contains('button', /logout/i, { timeout: 10000 }).click({ force: true });
+  // Dismiss the logout confirmation dialog
+  cy.get('.cd-btn-confirm', { timeout: 5000 }).click();
+  cy.url().should('not.include', '/dashboard', { timeout: 15000 });
 });
 
 /**

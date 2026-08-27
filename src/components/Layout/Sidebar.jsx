@@ -11,6 +11,7 @@ import {
   LuChevronRight,
   LuTarget,
   LuUpload,
+  LuBarChart2,
 } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
@@ -22,6 +23,7 @@ const navItems = [
   { path: '/dashboard/expenses',   label: 'Expenses',   Icon: LuCreditCard      },
   { path: '/dashboard/categories', label: 'Categories', Icon: LuTag             },
   { path: '/dashboard/goals',      label: 'Goals',      Icon: LuTarget          },
+  { path: '/dashboard/reports',    label: 'Reports',    Icon: LuBarChart2       },
   { path: '/dashboard/settings',   label: 'Settings',   Icon: LuSettings        },
 ];
 

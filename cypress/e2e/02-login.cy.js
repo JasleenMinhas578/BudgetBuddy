@@ -49,7 +49,7 @@ describe('User Login Flow', () => {
     // Logout if signup was successful
     cy.url().then((url) => {
       if (url.includes('/dashboard')) {
-        cy.contains('button', /logout/i).click();
+        cy.logout();
       }
     });
   });
@@ -122,7 +122,7 @@ describe('User Login Flow', () => {
     cy.contains(/dashboard|overview|expenses/i, { timeout: 10000 }).should('be.visible');
     
     // Logout
-    cy.contains('button', /logout/i).click();
+    cy.logout();
   });
 
   it('should show error for wrong password with correct email', () => {
@@ -204,8 +204,7 @@ describe('User Login Flow', () => {
     cy.contains(/dashboard|overview|expenses/i, { timeout: 5000 }).should('exist');
     
     // Logout
-    cy.contains('button', /logout/i).click();
-    cy.wait(2000);
+    cy.logout();
   });
 
   it('should clear form fields when navigating away and back', () => {

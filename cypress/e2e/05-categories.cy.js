@@ -45,8 +45,7 @@ describe('Add Categories Flow', () => {
     // Logout
     cy.url().then((url) => {
       if (url.includes('/dashboard')) {
-        cy.contains('button', /logout/i).click();
-        cy.wait(2000);
+        cy.logout();
       }
     });
   });
@@ -73,8 +72,7 @@ describe('Add Categories Flow', () => {
         cy.get('.modal-overlay').should('not.exist');
       }
     });
-    cy.contains('button', /logout/i).click({force: true});
-    cy.wait(2000);
+    cy.logout();
   });
 
   it('should display the categories page', () => {
@@ -114,7 +112,7 @@ describe('Add Categories Flow', () => {
     // Fill in category form
     cy.get('input[name="name"], input[placeholder*="name" i]').first().type('Food & Dining');
     
-    cy.get('button[type="submit"]').click({ force: true });
+    cy.get('.modal-overlay').find('button[type="submit"]').click();
     cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     
     // Wait for modal to close
@@ -154,7 +152,7 @@ describe('Add Categories Flow', () => {
     
     cy.get('input[name="name"], input[placeholder*="name" i]').first().type('Utilities');
     
-    cy.get('button[type="submit"]').click({ force: true });
+    cy.get('.modal-overlay').find('button[type="submit"]').click();
     cy.get('.modal-overlay', { timeout: 10000 }).should('not.exist');
     cy.wait(3000);
     

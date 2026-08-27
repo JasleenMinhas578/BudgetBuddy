@@ -88,8 +88,7 @@ describe('Export Reports Flow', () => {
         });
         
         // Logout
-        cy.contains('button', /logout/i).click();
-        cy.wait(2000);
+        cy.logout();
       }
     });
   });
@@ -103,15 +102,13 @@ describe('Export Reports Flow', () => {
     cy.wait(5000);
     cy.url().should('include', '/dashboard', { timeout: 15000 });
     
-    // Navigate to reports page
-    cy.contains('a, button', /reports/i).first().click();
+    // Navigate to reports page via URL
+    cy.visit('/dashboard/reports');
     cy.wait(3000);
   });
 
   afterEach(() => {
-    // Logout after each test
-    cy.contains('button', /logout/i).click();
-    cy.wait(2000);
+    cy.logout();
   });
 
   it('should display the reports page', () => {

@@ -12,26 +12,12 @@ import Categories from './components/Dashboard/Categories';
 import DashboardOverview from './components/Dashboard/DashboardOverview';
 import Goals from './components/Dashboard/Goals';
 import Settings from './components/Dashboard/Settings';
+import Reports from './components/Dashboard/Reports';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
 import { DateRangeProvider } from './context/DateRangeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import './styles/main.css';
-
-/**
- * Main App Component
- * 
- * This is the root component that sets up:
- * 1. Browser routing with React Router
- * 2. Authentication context provider
- * 3. Route definitions for the entire application
- * 
- * Route Structure:
- * - / (Landing page)
- * - /login (Authentication)
- * - /signup (User registration)
- * - /dashboard/* (Protected routes requiring authentication)
- */
 
 function AuthenticatedAIChat() {
   const { currentUser } = useAuth();
@@ -63,6 +49,7 @@ function App() {
             <Route path="categories" element={<Categories />} />
             <Route path="goals" element={<Goals />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="reports" element={<Reports />} />
           </Route>
 
           {/* 404 - Catch all route */}
