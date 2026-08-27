@@ -1,8 +1,5 @@
 # 💸 Budget Buddy (Group 6)
 
-[![CI Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/ci.yml)
-[![E2E Tests](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/JasleenMinhas578/BudgetBuddy/actions/workflows/e2e.yml)
-
 > **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
 
 ---
