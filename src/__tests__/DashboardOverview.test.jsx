@@ -455,9 +455,9 @@ describe('DashboardOverview Component', () => {
         expect(screen.getByText('Gas')).toBeInTheDocument();
       }, { timeout: 3000 });
       
-        // Transport appears in the format "Transport • Jan 20, 2024", so use a more flexible matcher
-        expect(screen.getByText(/Transport/)).toBeInTheDocument();
-        expect(screen.getByText('$50.00')).toBeInTheDocument();
+        // Transport may appear in both the expense row and the budget panel — getAllByText handles either count
+        expect(screen.getAllByText(/Transport/).length).toBeGreaterThan(0);
+        expect(screen.getAllByText('$50.00').length).toBeGreaterThan(0);
     });
 
     it('displays empty state when no expenses exist', async () => {

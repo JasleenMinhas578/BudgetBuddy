@@ -22,6 +22,8 @@ jest.mock('firebase/firestore', () => ({
   onSnapshot: jest.fn(),
   orderBy: jest.fn(() => 'order-ref'),
   serverTimestamp: jest.fn(() => new Date()),
+  doc: jest.fn(() => 'doc-ref'),
+  where: jest.fn(() => 'where-clause'),
 }));
 
 jest.mock('../firebaseConfig', () => ({
@@ -47,13 +49,13 @@ describe('ExpenseForm component', () => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ currentUser: { uid: 'user-123' } });
     addExpense.mockResolvedValue('new-expense');
-    onSnapshot.mockImplementation((unused, callback) => {
+    onSnapshot.mockImplementation((ref, callback) => {
+      // Snapshot satisfies both QuerySnapshot (forEach) and DocumentSnapshot (exists/data)
       callback({
+        exists: () => false,
+        data: () => ({}),
         forEach: (fn) =>
-          fn({
-            id: 'custom-cat',
-            data: () => ({ name: 'Travel' })
-          })
+          fn({ id: 'custom-cat', data: () => ({ name: 'Travel' }) }),
       });
       return jest.fn();
     });
