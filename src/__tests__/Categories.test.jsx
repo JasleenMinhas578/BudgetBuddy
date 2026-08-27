@@ -659,7 +659,9 @@ describe('Categories Component', () => {
       onSnapshot.mockImplementation((query, callback) => {
         act(() => {
           callback({
-            forEach: (fn) => mockCategories.forEach(fn)
+            forEach: (fn) => mockCategories.forEach(cat => fn({ id: cat.id, data: () => cat })),
+            exists: () => false,
+            data: () => ({})
           });
         });
         return () => {};
@@ -690,7 +692,9 @@ describe('Categories Component', () => {
         callback({
           forEach: (fn) => {
             mockExpenses.forEach(expense => fn({ id: expense.id, data: () => expense }));
-          }
+          },
+          exists: () => false,
+          data: () => ({})
         });
         return () => {};
       });

@@ -62,10 +62,15 @@ export default function Categories() {
 
   useEffect(() => {
     if (!currentUser) return;
-    const unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
-      setHiddenDefaults(prefs.hiddenDefaultCategories || []);
-    });
-    return () => unsub();
+    let unsub = () => {};
+    try {
+      unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
+        setHiddenDefaults(prefs.hiddenDefaultCategories || []);
+      });
+    } catch (e) {
+      console.error('Error subscribing to user preferences:', e);
+    }
+    return () => { if (typeof unsub === 'function') unsub(); };
   }, [currentUser]);
 
   const allCategories = useMemo(() => [

@@ -14,7 +14,13 @@ export function useCategories() {
         if (data !== null) setCategories(data);
       });
     } catch {}
-    return () => unsub();
+    return () => {
+      try {
+        if (typeof unsub === 'function') unsub();
+      } catch (e) {
+        console.error('Error during cleanup:', e);
+      }
+    };
   }, [currentUser]);
 
   return categories;

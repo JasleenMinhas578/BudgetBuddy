@@ -233,7 +233,7 @@ describe('ExpenseForm component', () => {
 
     setup();
 
-    expect(consoleSpy).toHaveBeenCalledWith('Error setting up categories listener:', expect.any(Error));
+    expect(consoleSpy).toHaveBeenCalledWith('Error setting up category subscription:', expect.any(Error));
     consoleSpy.mockRestore();
   });
 
