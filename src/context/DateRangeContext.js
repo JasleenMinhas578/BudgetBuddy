@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { useAuth } from './AuthContext';
 import { getUserSettings } from '../services/settingsService';
 
@@ -11,7 +11,7 @@ export function DateRangeProvider({ children }) {
   const { currentUser } = useAuth();
   const [dateFilter, setDateFilter] = useState('thisMonth');
   const [customDateRange, setCustomDateRange] = useState({
-    startDate: today(),
+    startDate: format(subMonths(new Date(), 6), 'yyyy-MM-dd'),
     endDate: today(),
   });
   const [pickedMonth, setPickedMonth] = useState(currentMonth());
