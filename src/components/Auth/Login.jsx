@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LuWallet, LuLogIn } from 'react-icons/lu';
+import { LuWallet, LuLogIn, LuEye, LuEyeOff } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import AuthLayout from './AuthLayout';
@@ -9,6 +9,7 @@ import AuthSubmitButton from './AuthSubmitButton';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -87,13 +88,23 @@ export default function Login() {
           </div>
           <div className="input-wrapper">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
             />
+            <span
+              className="input-eye"
+              onClick={() => setShowPassword(v => !v)}
+              tabIndex={0}
+              role="button"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setShowPassword(v => !v); }}
+            >
+              {showPassword ? <LuEyeOff size={16} /> : <LuEye size={16} />}
+            </span>
           </div>
         </div>
 
