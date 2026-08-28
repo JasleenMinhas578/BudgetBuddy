@@ -776,16 +776,10 @@
   }
   
   .auth-logo {
-    width: 60px;
-    height: 60px;
-    border-radius: var(--radius-full);
-    background: var(--accent-teal);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-2xl);
     margin: 0 auto 1rem;
-    box-shadow: 0 8px 25px var(--teal-30);
   }
   
   .auth-title {

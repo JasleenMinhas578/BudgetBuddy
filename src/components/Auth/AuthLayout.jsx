@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { LuArrowLeft, LuAlertTriangle, LuCheckCircle } from 'react-icons/lu';
 import { motion } from 'framer-motion';
+import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import '../../styles/main.css';
 
 export default function AuthLayout({ backTo, logoIcon, title, subtitle, error, message, footer, children }) {
@@ -33,7 +34,7 @@ export default function AuthLayout({ backTo, logoIcon, title, subtitle, error, m
         </div>
 
         <div className="auth-brand">
-          <div className="auth-logo">{logoIcon}</div>
+          <div className="auth-logo"><BudgetBuddyLogo size={56} /></div>
           <h2 className="auth-title">{title}</h2>
           <p className="auth-subtitle">{subtitle}</p>
         </div>
