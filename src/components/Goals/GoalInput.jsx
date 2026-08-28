@@ -9,6 +9,7 @@ export function toDisplayStr(v) {
 export default function GoalInput({ categoryName, initialValue, onSave }) {
   const normalized = toDisplayStr(initialValue);
   const [value, setValue] = useState(normalized);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setValue(toDisplayStr(initialValue));
@@ -19,7 +20,11 @@ export default function GoalInput({ categoryName, initialValue, onSave }) {
   const save = () => {
     if (!isDirty) return;
     const parsed = value === '' ? null : parseFloat(value);
-    if (value !== '' && (Number.isNaN(parsed) || parsed < 0 || parsed > 1000000)) return;
+    if (value !== '' && (Number.isNaN(parsed) || parsed < 0 || parsed > 1000000)) {
+      setError('Enter a positive amount up to 1,000,000');
+      return;
+    }
+    setError('');
     // $0 is treated the same as no goal — removes the budget entry
     onSave(categoryName, parsed === 0 ? null : parsed);
   };
@@ -46,6 +51,7 @@ export default function GoalInput({ categoryName, initialValue, onSave }) {
       >
         Save
       </button>
+      {error && <span className="field-error" style={{ fontSize: '0.75rem' }}>{error}</span>}
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 
 const MONTHS = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -24,4 +24,11 @@ export const toAmount = (v) => (typeof v === 'number' ? v : 0);
 export const todayString = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+export const getCurrentMonthExpenses = (expenses) => {
+  const now = new Date();
+  const start = format(startOfMonth(now), 'yyyy-MM-dd');
+  const end = format(endOfMonth(now), 'yyyy-MM-dd');
+  return expenses.filter((e) => e.date >= start && e.date <= end);
 };

@@ -119,9 +119,12 @@ export default function ExpenseForm({
       return { isValid: false, message: `Amount cannot exceed ${homeSymbol}1,000,000` };
     }
     
-    // Check if title is provided
+    // Check if title is provided and within length limit
     if (!title.trim()) {
       return { isValid: false, message: 'Please enter a title' };
+    }
+    if (title.trim().length > 100) {
+      return { isValid: false, message: 'Title must be 100 characters or fewer' };
     }
     
     // Check if date is selected
@@ -292,6 +295,7 @@ export default function ExpenseForm({
             }}
             placeholder="Expense title"
             required
+            maxLength={100}
             disabled={loading}
             autoComplete="off"
           />

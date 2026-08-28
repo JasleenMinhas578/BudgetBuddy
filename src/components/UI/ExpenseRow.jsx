@@ -34,6 +34,7 @@ export default function ExpenseRow({
                   className={`note-toggle-btn${isNoteExpanded ? ' active' : ''}`}
                   onClick={() => setIsNoteExpanded(v => !v)}
                   title={isNoteExpanded ? 'Hide note' : 'Show note'}
+                  aria-label={isNoteExpanded ? 'Hide note' : 'Show note'}
                   type="button"
                 >
                   <LuMessageSquare size={13} />

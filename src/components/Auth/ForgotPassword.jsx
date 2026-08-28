@@ -55,7 +55,7 @@ export default function ForgotPassword() {
           setError('Unauthorized redirect URL. The domain must be authorized in Firebase.');
           break;
         default:
-          setError(`Failed to send reset email: ${error.message || 'Please try again.'}`);
+          setError('Failed to send reset email. Please try again.');
       }
     } finally {
       setLoading(false);

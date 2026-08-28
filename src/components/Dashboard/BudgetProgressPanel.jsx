@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { getCurrentMonthExpenses } from '../../utils/formatDate';
 import { Link } from 'react-router-dom';
 import { LuTarget, LuChevronRight, LuCalendar } from 'react-icons/lu';
 import { useBudgetProgress } from '../../hooks/useBudgetProgress';
@@ -11,12 +11,7 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
   const { formatAmount } = useCurrency();
 
   // Always uses the real current month, regardless of pickedMonth in the parent date filter.
-  const thisMonthExpenses = useMemo(() => {
-    const now = new Date();
-    const start = format(startOfMonth(now), 'yyyy-MM-dd');
-    const end = format(endOfMonth(now), 'yyyy-MM-dd');
-    return expenses.filter((e) => e.date >= start && e.date <= end);
-  }, [expenses]);
+  const thisMonthExpenses = useMemo(() => getCurrentMonthExpenses(expenses), [expenses]);
 
   const { categoryProgress } = useBudgetProgress(thisMonthExpenses, allCategories, budgets);
 

@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { startOfMonth, endOfMonth, format } from 'date-fns';
+import { getCurrentMonthExpenses } from '../../utils/formatDate';
 import { useCategories } from '../../hooks/useCategories';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LuTag, LuTarget, LuPlus } from 'react-icons/lu';
@@ -51,12 +51,7 @@ export default function Goals() {
 
   const { isLoading, handleAddCategory } = useCategoryActions(currentUser, allCategories, showToast);
 
-  const thisMonthExpenses = useMemo(() => {
-    const now = new Date();
-    const start = format(startOfMonth(now), 'yyyy-MM-dd');
-    const end = format(endOfMonth(now), 'yyyy-MM-dd');
-    return expenses.filter((e) => e.date >= start && e.date <= end);
-  }, [expenses]);
+  const thisMonthExpenses = useMemo(() => getCurrentMonthExpenses(expenses), [expenses]);
 
   const { categoryProgress } = useBudgetProgress(thisMonthExpenses, allCategories, budgets);
 
@@ -112,7 +107,7 @@ export default function Goals() {
       const names = newOrder.map((c) => c.name);
       setCategoryOrder(names);
       const uid = currentUser?.uid;
-      if (uid) localStorage.setItem(`goalOrder_${uid}`, JSON.stringify(names));
+      if (uid) try { localStorage.setItem(`goalOrder_${uid}`, JSON.stringify(names)); } catch { /* private browsing quota */ }
     }
     dragItem.current = null;
     dragOverItem.current = null;

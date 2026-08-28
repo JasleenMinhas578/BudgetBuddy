@@ -13,6 +13,7 @@ import '../styles/main.css';
 export default function Dashboard() {
   const { logout } = useAuth();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const {
     sidebarOpen, setSidebarOpen,
@@ -79,9 +80,16 @@ export default function Dashboard() {
       <ConfirmDialog
         isOpen={logoutDialogOpen}
         title="Logout"
-        message="Are you sure you want to logout?"
-        onConfirm={async () => { try { await logout(); } catch (err) { console.error('Logout failed:', err); } }}
-        onCancel={() => setLogoutDialogOpen(false)}
+        message={logoutError ? logoutError : 'Are you sure you want to logout?'}
+        onConfirm={async () => {
+          try {
+            await logout();
+          } catch (err) {
+            console.error('Logout failed:', err);
+            setLogoutError('Logout failed. Please try again.');
+          }
+        }}
+        onCancel={() => { setLogoutDialogOpen(false); setLogoutError(''); }}
         variant="default"
       />
     </div>

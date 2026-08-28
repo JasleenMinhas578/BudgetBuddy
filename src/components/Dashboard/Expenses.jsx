@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LuPlus } from 'react-icons/lu';
 import { deleteExpense, updateExpense } from '../../services/expenseService';
@@ -81,13 +81,14 @@ export default function Expenses() {
   };
 
   const q = searchQuery.trim().toLowerCase();
-  const searchFilteredExpenses = q
+  const searchFilteredExpenses = useMemo(() => q
     ? filteredExpenses.filter(e =>
         e.title?.toLowerCase().includes(q) ||
         e.category?.toLowerCase().includes(q) ||
         e.amount?.toString().includes(q)
       )
-    : filteredExpenses;
+    : filteredExpenses,
+  [filteredExpenses, q]);
 
   const totalAmount = searchFilteredExpenses.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : 0), 0);
 

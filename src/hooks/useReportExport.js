@@ -10,6 +10,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
   const { formatAmount, homeCurrency, currency, homeSymbol, currencySymbol: displaySymbol, liveRates } = useCurrency();
   const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
   const [aiSummary, setAiSummary] = useState(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState(null);
@@ -276,6 +277,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
       pdf.save(`BudgetBuddy-report-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
+      setPdfError('Failed to generate PDF. Please try again.');
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -283,6 +285,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
 
   return {
     isGeneratingPDF,
+    pdfError, setPdfError,
     aiSummary, setAiSummary,
     aiSummaryLoading,
     aiSummaryError, setAiSummaryError,

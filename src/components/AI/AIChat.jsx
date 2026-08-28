@@ -79,7 +79,9 @@ export default function AIChat() {
 
   // Focus input when panel opens
   useEffect(() => {
-    if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
+    if (!isOpen) return;
+    const raf = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(raf);
   }, [isOpen]);
 
   // Close on outside click only when chat is open and no messages yet

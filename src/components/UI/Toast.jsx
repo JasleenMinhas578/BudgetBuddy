@@ -56,7 +56,7 @@ export default function Toast({
    * Get icon based on message type
    * 
    * @param {string} toastType - Type of toast message
-   * @returns {string} Unicode icon character
+   * @returns {JSX.Element} Icon element for the toast type
    */
   const getIcon = (toastType) => {
     switch (toastType) {

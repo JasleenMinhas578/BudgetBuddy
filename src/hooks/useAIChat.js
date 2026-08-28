@@ -179,6 +179,10 @@ export function useAIChat() {
   }, []);
 
   const handleConfirmAction = useCallback(async (msg, idx) => {
+    if (!currentUser) {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Session expired. Please refresh the page.', type: 'text', isError: true }]);
+      return;
+    }
     const { type } = msg;
     try {
       if (type === 'expense_confirm')              await addExpense(currentUser.uid, msg.expenseData);

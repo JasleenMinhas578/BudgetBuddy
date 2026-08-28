@@ -1,5 +1,7 @@
 const express = require('express');
 
+const ALLOWED_MODELS = new Set(['gemini-3.6-flash']);
+
 // CRA dev server proxy — mirrors api/ai.js so local `npm start` can reach Gemini.
 // In production (Vercel), api/ai.js handles this route instead.
 module.exports = function (app) {
@@ -11,6 +13,7 @@ module.exports = function (app) {
 
     const { model, contents, generationConfig } = req.body;
     if (!model || !contents) return res.status(400).json({ error: 'Missing required fields' });
+    if (!ALLOWED_MODELS.has(model)) return res.status(400).json({ error: 'Invalid model' });
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 

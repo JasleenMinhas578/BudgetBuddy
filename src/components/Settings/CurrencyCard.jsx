@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { LuGlobe } from 'react-icons/lu';
 import { useCurrency } from '../../context/CurrencyContext';
 
@@ -7,12 +7,16 @@ export default function CurrencyCard() {
   const [selectedHomeCurrency, setSelectedHomeCurrency] = useState(homeCurrency);
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
   const [msg, setMsg] = useState({ text: '', type: '' });
+  const timerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleSave = () => {
     setHomeCurrency(selectedHomeCurrency);
     setCurrency(selectedCurrency);
     setMsg({ text: 'Currency settings updated!', type: 'success' });
-    setTimeout(() => setMsg({ text: '', type: '' }), 3000);
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setMsg({ text: '', type: '' }), 3000);
   };
 
   const rateHint = selectedHomeCurrency === selectedCurrency
@@ -65,6 +69,11 @@ export default function CurrencyCard() {
           ))}
         </select>
         <p className="settings-rate-hint">{rateHint}</p>
+        {selectedHomeCurrency !== homeCurrency && (
+          <p className="settings-rate-hint" style={{ color: 'var(--color-warning, #d97706)', marginTop: '0.4rem' }}>
+            Changing your home currency will affect how all existing expenses are interpreted. Only do this if you entered a wrong currency initially.
+          </p>
+        )}
       </div>
       {msg.text && <p className={`settings-feedback ${msg.type}`}>{msg.text}</p>}
       <button className="btn btn-primary settings-btn" onClick={handleSave}>

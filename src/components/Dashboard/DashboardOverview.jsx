@@ -23,6 +23,8 @@ import BudgetAlertStrip from '../DashboardOverview/BudgetAlertStrip';
 import SummaryCards from '../DashboardOverview/SummaryCards';
 import SpendingInsightsBlock from '../DashboardOverview/SpendingInsightsBlock';
 import ChartsBlock from '../DashboardOverview/ChartsBlock';
+import Toast from '../UI/Toast';
+import { useToast } from '../../hooks/useToast';
 import '../../styles/main.css';
 
 
@@ -33,6 +35,7 @@ export default function DashboardOverview() {
   const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const { toast, showToast, hideToast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -65,6 +68,7 @@ export default function DashboardOverview() {
 
   const {
     isGeneratingPDF,
+    pdfError, setPdfError,
     aiSummary, setAiSummary,
     aiSummaryLoading,
     aiSummaryError, setAiSummaryError,
@@ -72,6 +76,10 @@ export default function DashboardOverview() {
     exportToCSV,
     generatePDF,
   } = useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount: reportTotal, averageAmount: reportAvg, categoryData, topCategory });
+
+  useEffect(() => {
+    if (pdfError) { showToast(pdfError, 'error'); setPdfError(null); }
+  }, [pdfError, setPdfError, showToast]);
 
   const forecastResult = dateFilter === 'thisMonth' ? getMonthEndForecast(filteredExpenses) : null;
 
@@ -89,6 +97,7 @@ export default function DashboardOverview() {
 
   return (
     <div className="dashboard-overview">
+      {toast && <Toast message={toast.message} type={toast.type} isVisible onClose={hideToast} />}
       <div className="welcome-section">
         <div className="welcome-content">
           <h1>{isFirstTimeUser ? 'Welcome!' : 'Welcome back!'}</h1>

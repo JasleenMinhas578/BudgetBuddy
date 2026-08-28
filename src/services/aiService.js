@@ -230,7 +230,7 @@ Rules:
 - For CURRENCY_CONVERT: Use the LIVE EXCHANGE RATES section to calculate. If the user does not specify a FROM currency, assume the home currency (${currencyInfo?.homeCurrency ?? 'USD'}). Compute the rate using the rates (all relative to USD as bridge: rate = (toRate / fromRate)). Format the "message" as ONLY the conversion result — no full sentences, just the value. Examples: "1 CAD = 0.7234 USD" or "100 EUR = 8,312.40 INR". If a specific amount was given, show the converted total. If no amount, show the rate for 1 unit.
 - If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, answer spending questions and budget status for any time period, and check live currency conversion rates
 
-User message: "${userMessage.replace(/[\n\r]/g, ' ')}"`;
+User message: <user_input>${userMessage.replace(/[\n\r]/g, ' ')}</user_input>`;
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
