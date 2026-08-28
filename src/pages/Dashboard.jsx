@@ -80,7 +80,7 @@ export default function Dashboard() {
         isOpen={logoutDialogOpen}
         title="Logout"
         message="Are you sure you want to logout?"
-        onConfirm={logout}
+        onConfirm={async () => { try { await logout(); } catch (err) { console.error('Logout failed:', err); } }}
         onCancel={() => setLogoutDialogOpen(false)}
         variant="default"
       />

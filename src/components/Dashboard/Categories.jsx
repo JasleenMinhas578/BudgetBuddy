@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { LuTag, LuPlus, LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import CuteEmptyFace from '../UI/CuteEmptyFace';
-import { subscribeToUserPreferences } from '../../services/categoryService';
+import { useHiddenCategories } from '../../hooks/useHiddenCategories';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 import { useExpenses } from '../../hooks/useExpenses';
 import PageHeader from '../UI/PageHeader';
@@ -39,9 +39,9 @@ export default function Categories() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [openMenu, setOpenMenu] = useState(null);
-  const [hiddenDefaults, setHiddenDefaults] = useState([]);
   const [editName, setEditName] = useState('');
   const { currentUser } = useAuth();
+  const hiddenDefaults = useHiddenCategories(currentUser);
   const location = useLocation();
   const navigate = useNavigate();
   const dateRangeCtx = useDateRangeContext();
@@ -73,19 +73,6 @@ export default function Categories() {
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    let unsub = () => {};
-    try {
-      unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
-        setHiddenDefaults(prefs.hiddenDefaultCategories || []);
-      });
-    } catch (e) {
-      console.error('Error subscribing to user preferences:', e);
-    }
-    return () => { if (typeof unsub === 'function') unsub(); };
-  }, [currentUser]);
 
   const allCategories = useMemo(() => [
     ...DEFAULT_CATEGORIES

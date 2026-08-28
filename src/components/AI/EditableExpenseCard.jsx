@@ -8,7 +8,9 @@ export default function EditableExpenseCard({ data, onConfirm, onDismiss }) {
   const [date, setDate] = useState(data.date || '');
 
   const handleConfirm = () => {
-    onConfirm({ ...data, title, amount: parseFloat(amount) || 0, category, date });
+    const parsedAmount = parseFloat(amount);
+    if (!title.trim() || !parsedAmount || parsedAmount <= 0 || !date) return;
+    onConfirm({ ...data, title: title.trim(), amount: parsedAmount, category, date });
   };
 
   return (

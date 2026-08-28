@@ -3,8 +3,9 @@ import { useCategories } from '../../hooks/useCategories';
 import { LuTag } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
-import { subscribeToUserPreferences } from '../../services/categoryService';
+import { useHiddenCategories } from '../../hooks/useHiddenCategories';
 import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
+import { useCurrency } from '../../context/CurrencyContext';
 import { suggestCategory } from '../../utils/categorySuggester';
 import { validCategory } from '../../utils/categoryUtils';
 import CategoryDropdown from '../UI/CategoryDropdown';
@@ -34,21 +35,14 @@ export default function ExpenseForm({
   const [suggestion, setSuggestion] = useState(null);
   const [suggestionDismissed, setSuggestionDismissed] = useState(false);
   
-  // Get current user from authentication context
   const { currentUser } = useAuth();
+  const { homeSymbol } = useCurrency();
 
   // State for custom categories
   const rawCategories = useCategories();
   const customCategories = rawCategories.map(cat => ({ ...cat, Icon: LuTag }));
 
-  const [hiddenDefaults, setHiddenDefaults] = useState([]);
-  useEffect(() => {
-    if (!currentUser) return;
-    const unsub = subscribeToUserPreferences(currentUser.uid, (prefs) => {
-      setHiddenDefaults(prefs.hiddenDefaultCategories || []);
-    });
-    return () => { if (typeof unsub === 'function') unsub(); };
-  }, [currentUser]);
+  const hiddenDefaults = useHiddenCategories(currentUser);
 
   // Merge default and custom categories, excluding categories the user has hidden
   const allCategories = [
@@ -122,7 +116,7 @@ export default function ExpenseForm({
     
     // Check if amount exceeds $1 million
     if (amountValue > MAX_AMOUNT) {
-      return { isValid: false, message: 'Amount cannot exceed $1,000,000' };
+      return { isValid: false, message: `Amount cannot exceed ${homeSymbol}1,000,000` };
     }
     
     // Check if title is provided
@@ -232,7 +226,7 @@ export default function ExpenseForm({
 
     if (cleanValue && !isNaN(amountValue)) {
       if (amountValue > MAX_AMOUNT) {
-        setAmountError('Amount cannot exceed $1,000,000');
+        setAmountError(`Amount cannot exceed ${homeSymbol}1,000,000`);
       } else {
         setAmountError('');
       }
@@ -260,7 +254,7 @@ export default function ExpenseForm({
       <form onSubmit={handleSubmit} className="expense-form" noValidate>
         {/* Amount input field */}
         <div className="form-group">
-          <label htmlFor="amount">Amount ($)</label>
+          <label htmlFor="amount">Amount ({homeSymbol})</label>
           <input
             type="text"
             id="amount"

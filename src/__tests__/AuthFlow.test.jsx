@@ -72,7 +72,7 @@ const TestWrapper = ({ children }) => (
 
 // Component to test AuthContext directly
 function AuthTestComponent() {
-  const { currentUser, login, signup, logout, resetPassword, updatePassword } = useAuth();
+  const { currentUser, login, signup, logout, resetPassword, resetPasswordWithCode } = useAuth();
   
   return (
     <div>
@@ -91,7 +91,7 @@ function AuthTestComponent() {
       <button onClick={() => resetPassword('reset@example.com', { url: 'https://example.com/reset' })}>
         Reset Password
       </button>
-      <button onClick={() => updatePassword('code-123', 'NewPass123')}>
+      <button onClick={() => resetPasswordWithCode('code-123', 'NewPass123')}>
         Update Password
       </button>
     </div>
@@ -577,7 +577,7 @@ describe('Authentication Flow Tests', () => {
       expect(sendPasswordResetEmail).toHaveBeenCalledWith(expect.anything(), 'reset@example.com', { url: 'https://example.com/reset' });
     });
 
-    it('exposes updatePassword helper that calls Firebase API', () => {
+    it('exposes resetPasswordWithCode helper that calls Firebase API', () => {
       confirmPasswordReset.mockResolvedValue({});
       render(
         <TestWrapper>

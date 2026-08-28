@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths, subYears } from 'date-fns';
 
 export function useDateFilter(expenses, defaultFilter = 'all', external = null) {
@@ -15,10 +15,8 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
   const setCustomDateRange = external ? external.setCustomDateRange : setLocalCustomDateRange;
   const pickedMonth = external ? external.pickedMonth : localPickedMonth;
   const setPickedMonth = external ? external.setPickedMonth : setLocalPickedMonth;
-  const [filteredExpenses, setFilteredExpenses] = useState([]);
-
-  const filterExpenses = useCallback(() => {
-    let filtered = [...expenses];
+  const filteredExpenses = useMemo(() => {
+    let filtered;
     switch (dateFilter) {
       case 'today': {
         const today = format(new Date(), 'yyyy-MM-dd');
@@ -64,6 +62,8 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
           const start = format(startOfMonth(base), 'yyyy-MM-dd');
           const end = format(endOfMonth(base), 'yyyy-MM-dd');
           filtered = expenses.filter(e => e.date >= start && e.date <= end);
+        } else {
+          filtered = expenses;
         }
         break;
       }
@@ -75,17 +75,12 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
       default:
         filtered = expenses;
     }
-    filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const ta = a.date ? new Date(a.date).getTime() : 0;
       const tb = b.date ? new Date(b.date).getTime() : 0;
       return tb - ta;
     });
-    setFilteredExpenses(filtered);
   }, [expenses, dateFilter, customDateRange, pickedMonth]);
-
-  useEffect(() => {
-    filterExpenses();
-  }, [filterExpenses]);
 
   const availableMonths = useMemo(
     () => new Set(expenses.filter(e => e.date).map(e => e.date.slice(0, 7))),

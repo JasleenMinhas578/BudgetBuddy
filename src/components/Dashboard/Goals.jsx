@@ -73,7 +73,8 @@ export default function Goals() {
   // Drag-to-reorder state
   const [categoryOrder, setCategoryOrder] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(`goalOrder_${currentUser?.uid}`)) || [];
+      const uid = currentUser?.uid;
+      return uid ? (JSON.parse(localStorage.getItem(`goalOrder_${uid}`)) || []) : [];
     } catch { return []; }
   });
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -110,7 +111,8 @@ export default function Goals() {
       newOrder.splice(dragOverItem.current, 0, moved);
       const names = newOrder.map((c) => c.name);
       setCategoryOrder(names);
-      localStorage.setItem(`goalOrder_${currentUser?.uid}`, JSON.stringify(names));
+      const uid = currentUser?.uid;
+      if (uid) localStorage.setItem(`goalOrder_${uid}`, JSON.stringify(names));
     }
     dragItem.current = null;
     dragOverItem.current = null;
@@ -122,7 +124,7 @@ export default function Goals() {
     () => Object.values(budgets.categories || {}).reduce((s, v) => s + (v || 0), 0),
     [budgets.categories]
   );
-  const totalSpent = thisMonthExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const totalSpent = useMemo(() => thisMonthExpenses.reduce((s, e) => s + (e.amount || 0), 0), [thisMonthExpenses]);
   const totalRemaining = totalBudgeted > 0 ? totalBudgeted - totalSpent : null;
   const overallPct = totalBudgeted > 0 ? Math.min((totalSpent / totalBudgeted) * 100, 100) : 0;
   const overStatus = totalBudgeted > 0

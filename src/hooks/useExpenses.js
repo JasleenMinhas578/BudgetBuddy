@@ -6,6 +6,7 @@ export function useExpenses() {
   const { currentUser } = useAuth();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!currentUser) {
@@ -15,15 +16,20 @@ export function useExpenses() {
     let unsubscribe = () => {};
     try {
       unsubscribe = subscribeToExpenses(currentUser.uid, (data, err) => {
-        if (!err && data !== null) setExpenses(data);
+        if (err) {
+          setError(err);
+        } else if (data !== null) {
+          setExpenses(data);
+        }
         setLoading(false);
       });
-    } catch (error) {
-      console.error('Error loading expenses:', error);
+    } catch (err) {
+      console.error('Error loading expenses:', err);
+      setError(err);
       setLoading(false);
     }
     return () => unsubscribe();
   }, [currentUser]);
 
-  return { expenses, loading };
+  return { expenses, loading, error };
 }

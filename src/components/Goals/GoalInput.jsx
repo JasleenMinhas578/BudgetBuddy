@@ -29,7 +29,7 @@ export default function GoalInput({ categoryName, initialValue, onSave }) {
       <input
         type="number"
         min="0"
-        step="1"
+        step="0.01"
         className="goal-input"
         placeholder="Add goal"
         value={value}

@@ -19,7 +19,10 @@ export function useBudgets() {
         if (!cleanedLegacyZeros) {
           cleanedLegacyZeros = true;
           const zeroCats = Object.entries(data.categories || {}).filter(([, v]) => v === 0);
-          zeroCats.forEach(([name]) => updateCategoryBudget(currentUser.uid, name, null));
+          Promise.allSettled(zeroCats.map(([name]) => updateCategoryBudget(currentUser.uid, name, null)))
+            .then(results => results.forEach((r, i) => {
+              if (r.status === 'rejected') console.error(`Failed to clean $0 budget for ${zeroCats[i][0]}:`, r.reason);
+            }));
         }
       });
     } catch (err) {

@@ -65,7 +65,6 @@ const KEYWORD_MAP = {
   aritzia: 'shopping', indigo: 'shopping', chapters: 'shopping',
   shein: 'shopping', fashion: 'shopping', outfit: 'shopping',
   drugstore: 'shopping', shoppers: 'shopping',
-  massage: 'shopping', haircut: 'shopping', hair: 'shopping',
   luggage: 'shopping', suitcase: 'shopping',
 
   // ── Health & Fitness ──────────────────────────────────────────
@@ -78,6 +77,7 @@ const KEYWORD_MAP = {
 
   // ── Personal Care ─────────────────────────────────────────────
   salon: 'personal-care', barber: 'personal-care', spa: 'personal-care',
+  massage: 'personal-care', haircut: 'personal-care', hair: 'personal-care',
   nails: 'personal-care', waxing: 'personal-care', manicure: 'personal-care',
   pedicure: 'personal-care', beauty: 'personal-care', skincare: 'personal-care',
   makeup: 'personal-care', sephora: 'personal-care', ulta: 'personal-care',

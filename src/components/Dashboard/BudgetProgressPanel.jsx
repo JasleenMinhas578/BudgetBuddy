@@ -10,6 +10,7 @@ import BudgetRowNoGoal from '../BudgetProgressPanel/BudgetRowNoGoal';
 export default function BudgetProgressPanel({ expenses, allCategories, budgets, forecastResult, setCategoryBudget }) {
   const { formatAmount } = useCurrency();
 
+  // Always uses the real current month, regardless of pickedMonth in the parent date filter.
   const thisMonthExpenses = useMemo(() => {
     const now = new Date();
     const start = format(startOfMonth(now), 'yyyy-MM-dd');
@@ -23,7 +24,7 @@ export default function BudgetProgressPanel({ expenses, allCategories, budgets, 
     () => Object.values(budgets?.categories || {}).reduce((s, v) => s + (v || 0), 0),
     [budgets]
   );
-  const totalSpent = thisMonthExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const totalSpent = useMemo(() => thisMonthExpenses.reduce((s, e) => s + (e.amount || 0), 0), [thisMonthExpenses]);
   const overallPct = totalBudgeted > 0 ? Math.min((totalSpent / totalBudgeted) * 100, 100) : 0;
   const overStatus = totalBudgeted > 0
     ? (totalSpent >= totalBudgeted ? 'danger' : totalSpent / totalBudgeted >= 0.8 ? 'warning' : 'ok')

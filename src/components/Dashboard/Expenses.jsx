@@ -100,6 +100,8 @@ export default function Expenses() {
     setExpenseToEdit(null);
   };
 
+  const expenseToDelete = expenses.find(e => e.id === pendingDeleteId);
+  const deleteAmount = expenseToDelete ? (typeof expenseToDelete.amount === 'number' ? expenseToDelete.amount : 0) : 0;
 
   return (
     <div className="expenses-container">
@@ -188,20 +190,14 @@ export default function Expenses() {
         />
       </Modal>
 
-      {(() => {
-        const expense = expenses.find(e => e.id === pendingDeleteId);
-        const rawAmount = expense ? (typeof expense.amount === 'number' ? expense.amount : 0) : 0;
-        return (
-          <ConfirmDialog
-            isOpen={!!pendingDeleteId}
-            title="Delete Expense"
-            message={expense ? <>Are you sure you want to delete <strong>"{expense.title}"</strong> for {formatAmount(rawAmount)}?</> : 'Are you sure you want to delete this expense?'}
-            onConfirm={confirmDeleteExpense}
-            onCancel={() => setPendingDeleteId(null)}
-            variant="danger"
-          />
-        );
-      })()}
+      <ConfirmDialog
+        isOpen={!!pendingDeleteId}
+        title="Delete Expense"
+        message={expenseToDelete ? <>Are you sure you want to delete <strong>"{expenseToDelete.title}"</strong> for {formatAmount(deleteAmount)}?</> : 'Are you sure you want to delete this expense?'}
+        onConfirm={confirmDeleteExpense}
+        onCancel={() => setPendingDeleteId(null)}
+        variant="danger"
+      />
     </div>
   );
 }

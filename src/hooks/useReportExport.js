@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import jsPDF from 'jspdf';
 import { generateSummary } from '../services/aiService';
@@ -7,15 +7,12 @@ import { getDateFilterFlatLabel } from '../utils/dateFilterLabel';
 import { useCurrency } from '../context/CurrencyContext';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
-  const { formatAmount, homeCurrency, currency, CURRENCIES, liveRates } = useCurrency();
-  const homeSymbol = CURRENCIES?.find(c => c.code === homeCurrency)?.symbol ?? '$';
-  const displaySymbol = CURRENCIES?.find(c => c.code === currency)?.symbol ?? '$';
+  const { formatAmount, homeCurrency, currency, homeSymbol, currencySymbol: displaySymbol, liveRates } = useCurrency();
   const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [aiSummary, setAiSummary] = useState(null);
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [aiSummaryError, setAiSummaryError] = useState(null);
-  const exportDropdownRef = useRef(null);
 
   useEffect(() => {
     setAiSummary(null);
@@ -289,7 +286,6 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
     aiSummary, setAiSummary,
     aiSummaryLoading,
     aiSummaryError, setAiSummaryError,
-    exportDropdownRef,
     handleGenerateSummary,
     exportToCSV,
     generatePDF,

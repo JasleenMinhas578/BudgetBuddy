@@ -28,7 +28,7 @@ import '../../styles/main.css';
 
 export default function DashboardOverview() {
   const { formatAmount } = useCurrency();
-  const { expenses, loading } = useExpenses();
+  const { expenses, loading, error: expensesError } = useExpenses();
   const { budgets, setCategoryBudget } = useBudgets();
   const firestoreCategories = useCategories();
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -68,7 +68,6 @@ export default function DashboardOverview() {
     aiSummary, setAiSummary,
     aiSummaryLoading,
     aiSummaryError, setAiSummaryError,
-    exportDropdownRef,
     handleGenerateSummary,
     exportToCSV,
     generatePDF,
@@ -77,6 +76,16 @@ export default function DashboardOverview() {
   const forecastResult = dateFilter === 'thisMonth' ? getMonthEndForecast(filteredExpenses) : null;
 
   const isFirstTimeUser = !loading && expenses.length === 0;
+
+  if (expensesError) {
+    return (
+      <div className="dashboard-overview">
+        <p style={{ color: 'var(--color-danger, #e53e3e)', padding: '2rem' }}>
+          Failed to load expenses. Please refresh the page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-overview">
@@ -160,7 +169,6 @@ export default function DashboardOverview() {
       </div>
 
       <SpendingInsightsBlock
-        exportDropdownRef={exportDropdownRef}
         handleGenerateSummary={handleGenerateSummary}
         aiSummaryLoading={aiSummaryLoading}
         aiSummary={aiSummary}

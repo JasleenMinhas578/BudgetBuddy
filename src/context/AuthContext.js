@@ -10,21 +10,10 @@ import {
   updateProfile
 } from 'firebase/auth';
 
-/**
- * Authentication Context
- * 
- * This context provides authentication state and methods throughout the app.
- * It manages user login, signup, logout, and tracks the current user state.
- */
-
-// Create the context
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // State to track the currently logged-in user
   const [currentUser, setCurrentUser] = useState(null);
-  
-  // State to track if authentication is still loading
   const [loading, setLoading] = useState(true);
 
   function signup(email, password) {
@@ -43,7 +32,7 @@ export function AuthProvider({ children }) {
     return sendPasswordResetEmail(auth, email, actionCodeSettings);
   }
 
-  function updatePassword(oobCode, newPassword) {
+  function resetPasswordWithCode(oobCode, newPassword) {
     return confirmPasswordReset(auth, oobCode, newPassword);
   }
 
@@ -55,24 +44,14 @@ export function AuthProvider({ children }) {
   }
 
 
-  /**
-   * Listen for authentication state changes
-   * This effect runs once when the component mounts and sets up
-   * a listener that updates the currentUser state whenever
-   * the user logs in or out
-   */
   useEffect(() => {
-    // Set up the authentication state listener
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user); // Update current user state
-      setLoading(false);    // Mark loading as complete
+      setCurrentUser(user);
+      setLoading(false);
     });
-
-    // Cleanup function to remove the listener when component unmounts
     return unsubscribe;
   }, []);
 
-  // Value object to be provided by the context
   const value = {
     currentUser,
     loading,
@@ -80,13 +59,12 @@ export function AuthProvider({ children }) {
     login,
     logout,
     resetPassword,
-    updatePassword,
+    resetPasswordWithCode,
     updateDisplayName,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {/* Only render children when authentication is not loading */}
       {!loading && children}
     </AuthContext.Provider>
   );

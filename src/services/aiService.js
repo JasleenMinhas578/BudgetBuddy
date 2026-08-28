@@ -1,4 +1,5 @@
 import { DEFAULT_CATEGORIES as DEFAULT_CATEGORY_OBJECTS } from '../utils/getCategoryIcon';
+import { todayString } from '../utils/formatDate';
 
 const GEMINI_MODEL = 'gemini-3.6-flash';
 const AI_PROXY_URL = '/api/ai';
@@ -22,8 +23,7 @@ const DAILY_LIMIT = 50;
 const USAGE_KEY = 'bb_ai_usage';
 
 const checkAndIncrementUsage = () => {
-  const _d = new Date();
-  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  const today = todayString();
   let usage = { date: today, count: 0 };
 
   try {
@@ -43,8 +43,8 @@ const checkAndIncrementUsage = () => {
 };
 
 export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null, currencyInfo = null) => {
-  const _d = new Date();
-  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  checkAndIncrementUsage();
+  const today = todayString();
 
   const allCategories = [
     ...DEFAULT_CATEGORIES,
@@ -230,7 +230,7 @@ Rules:
 - For CURRENCY_CONVERT: Use the LIVE EXCHANGE RATES section to calculate. If the user does not specify a FROM currency, assume the home currency (${currencyInfo?.homeCurrency ?? 'USD'}). Compute the rate using the rates (all relative to USD as bridge: rate = (toRate / fromRate)). Format the "message" as ONLY the conversion result — no full sentences, just the value. Examples: "1 CAD = 0.7234 USD" or "100 EUR = 8,312.40 INR". If a specific amount was given, show the converted total. If no amount, show the rate for 1 unit.
 - If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, answer spending questions and budget status for any time period, and check live currency conversion rates
 
-User message: "${userMessage.replace(/"/g, '\\"').replace(/[\n\r]/g, ' ')}"`;
+User message: "${userMessage.replace(/[\n\r]/g, ' ')}"`;
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
@@ -252,9 +252,6 @@ User message: "${userMessage.replace(/"/g, '\\"').replace(/[\n\r]/g, ' ')}"`;
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
 
-  // Only count a successful, non-empty response against the daily quota
-  checkAndIncrementUsage();
-
   // Find the JSON object — look for {"intent": specifically to skip any leading reasoning text
   const intentIdx = text.indexOf('{"intent"');
   const searchText = intentIdx !== -1 ? text.slice(intentIdx) : text;
@@ -271,8 +268,8 @@ User message: "${userMessage.replace(/"/g, '\\"').replace(/[\n\r]/g, ' ')}"`;
 };
 
 export const generateSummary = async (expenses, filterLabel, currencyInfo = null) => {
-  const _d = new Date();
-  const today = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+  checkAndIncrementUsage();
+  const today = todayString();
   const trimmed = expenses
     .slice(-200)
     .map(e => ({ title: e.title, amount: e.amount, category: e.category, date: e.date }));
@@ -314,9 +311,6 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from AI');
-
-  // Only count a successful, non-empty response against the daily quota
-  checkAndIncrementUsage();
 
   return text;
 };

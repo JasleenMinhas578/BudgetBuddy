@@ -5,7 +5,6 @@ import {
 } from 'react-icons/lu';
 
 export default function SpendingInsightsBlock({
-  exportDropdownRef,
   handleGenerateSummary,
   aiSummaryLoading,
   aiSummary,
@@ -26,7 +25,7 @@ export default function SpendingInsightsBlock({
             <span>Spending Insights</span>
           </span>
         </button>
-        <div className="spending-insights-toggle-right" ref={exportDropdownRef}>
+        <div className="spending-insights-toggle-right">
           <button
             onClick={handleGenerateSummary}
             disabled={aiSummaryLoading || !hasExpenses}

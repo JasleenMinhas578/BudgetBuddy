@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { collection, query, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { subscribeToExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
-import { addCategory, deleteCategory, updateCategory } from '../services/categoryService';
+import { addCategory, deleteCategory, updateCategory, subscribeToCategories } from '../services/categoryService';
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
@@ -64,7 +62,7 @@ const getPendingReminder = (currentMessages, homeSymbol = '$') => {
 
 export function useAIChat() {
   const { currentUser } = useAuth();
-  const { homeCurrency, currency, CURRENCIES, liveRates } = useCurrency();
+  const { homeCurrency, currency, homeSymbol, currencySymbol: displaySymbol, liveRates } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -73,6 +71,7 @@ export function useAIChat() {
   const [customCategories, setCustomCategories] = useState([]);
   const [sessionDateRange, setSessionDateRange] = useState(null);
   const [budgets, setBudgets] = useState({ monthly: null, categories: {} });
+  const [dataReady, setDataReady] = useState(false);
 
   // Ref so sendMessage can read current messages without stale closure
   const messagesRef = useRef([]);
@@ -80,8 +79,6 @@ export function useAIChat() {
 
   // Ref so callbacks always have fresh currency info without adding it to all deps
   const currencyInfoRef = useRef({});
-  const homeSymbol = CURRENCIES?.find(c => c.code === homeCurrency)?.symbol ?? '$';
-  const displaySymbol = CURRENCIES?.find(c => c.code === currency)?.symbol ?? '$';
   currencyInfoRef.current = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
 
   // Persist chat across page navigations within the same tab
@@ -97,17 +94,27 @@ export function useAIChat() {
     catch {}
   }, [messages]);
 
+  // Reset dataReady when chat closes so the next open waits for fresh data
+  useEffect(() => {
+    if (!isOpen) setDataReady(false);
+  }, [isOpen]);
+
   // Live-subscribe to expenses, categories, and budgets when chat opens
   useEffect(() => {
     if (!isOpen || !currentUser) return;
     let unsubExpenses = () => {};
     try {
-      unsubExpenses = subscribeToExpenses(currentUser.uid, setExpenses);
+      unsubExpenses = subscribeToExpenses(currentUser.uid, (data, err) => {
+        if (!err && data !== null) {
+          setExpenses(data);
+          setDataReady(true);
+        }
+      });
     } catch {}
-    const q = query(collection(db, 'users', currentUser.uid, 'categories'));
-    const unsubCats = onSnapshot(q, (snap) =>
-      setCustomCategories(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
-    );
+    let unsubCats = () => {};
+    try {
+      unsubCats = subscribeToCategories(currentUser.uid, setCustomCategories);
+    } catch {}
     let unsubBudgets = () => {};
     try {
       unsubBudgets = subscribeToBudgets(currentUser.uid, setBudgets);
@@ -117,7 +124,7 @@ export function useAIChat() {
 
   const sendMessage = useCallback(async (text) => {
     const trimmed = text?.trim();
-    if (!trimmed || loading) return;
+    if (!trimmed || loading || !dataReady) return;
 
     const hadPendingBefore = messagesRef.current.some(
       (m) => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
@@ -165,7 +172,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, expenses, customCategories, sessionDateRange, budgets]);
+  }, [loading, dataReady, expenses, customCategories, sessionDateRange, budgets]);
 
   const handleDismiss = useCallback((idx) => {
     setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg)));
@@ -249,6 +256,7 @@ export function useAIChat() {
     messages,
     input, setInput,
     loading,
+    dataReady,
     sessionDateRange, setSessionDateRange,
     sendMessage,
     handleDismiss,

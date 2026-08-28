@@ -74,7 +74,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
       <ConfirmMessage content={msg.content}>
         <div className="ai-expense-card">
           {msg.expensesData.map((e, i) => (
-            <div key={i} className="ai-expense-row ai-multi-row">
+            <div key={`${e.title}-${e.date}-${i}`} className="ai-expense-row ai-multi-row">
               <span>{e.title}</span>
               <strong>{formatAmount(Number(e.amount))} · {e.category}</strong>
             </div>

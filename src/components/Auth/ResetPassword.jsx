@@ -14,7 +14,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [oobCode, setOobCode] = useState(null);
   const { error, setError, loading, setLoading } = useAuthForm();
-  const { updatePassword } = useAuth();
+  const { resetPasswordWithCode } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -49,7 +49,7 @@ export default function ResetPassword() {
       }
 
       setLoading(true);
-      await updatePassword(oobCode, password);
+      await resetPasswordWithCode(oobCode, password);
       navigate('/login', {
         state: { message: 'Password reset successful! Please login with your new password.' }
       });

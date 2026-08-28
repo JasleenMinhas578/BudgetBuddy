@@ -48,6 +48,7 @@ export function CurrencyProvider({ children }) {
 
   const formatAmount = (amount) => utilFormatAmount(amount, currency, liveRates, homeCurrency);
   const currencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol ?? '$';
+  const homeSymbol = CURRENCIES.find(c => c.code === homeCurrency)?.symbol ?? '$';
 
   // Rate of the display currency against the USD base
   const displayRate = liveRates?.[currency] ?? (CURRENCIES.find(c => c.code === currency)?.fallbackRate ?? 1);
@@ -66,7 +67,7 @@ export function CurrencyProvider({ children }) {
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, homeCurrency, setHomeCurrency, formatAmount, currencySymbol, CURRENCIES, liveRates, ratesLoading, toDisplayAmount, toHomeAmount }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, homeCurrency, setHomeCurrency, formatAmount, currencySymbol, homeSymbol, CURRENCIES, liveRates, ratesLoading, toDisplayAmount, toHomeAmount }}>
       {children}
     </CurrencyContext.Provider>
   );

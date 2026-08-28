@@ -30,6 +30,11 @@ jest.mock('../firebaseConfig', () => ({
   db: 'db-instance'
 }));
 
+jest.mock('../context/CurrencyContext', () => ({
+  useCurrency: () => ({ homeSymbol: '$' }),
+  CurrencyProvider: ({ children }) => children,
+}));
+
 const { useAuth } = require('../context/AuthContext');
 const { addExpense } = require('../services/expenseService');
 const { onSnapshot, query } = require('firebase/firestore');

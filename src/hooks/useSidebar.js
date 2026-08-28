@@ -28,23 +28,16 @@ export function useSidebar() {
     setSidebarOpen(false);
   };
 
-  const handleTouchStart = (e) => {
+  const startDrag = (x, e) => {
     if (!isMobile()) return;
-    const target = e.target.closest('.sidebar-link, .sidebar-close, .sidebar-toggle, button');
-    if (!target) {
-      setDragStartX(e.touches[0].clientX);
+    if (!e.target.closest('.sidebar-link, .sidebar-close, .sidebar-toggle, button')) {
+      setDragStartX(x);
       dragTimerRef.current = setTimeout(() => setIsDragging(true), 50);
     }
   };
 
-  const handleMouseDown = (e) => {
-    if (!isMobile()) return;
-    const target = e.target.closest('.sidebar-link, .sidebar-close, .sidebar-toggle, button');
-    if (!target) {
-      setDragStartX(e.clientX);
-      dragTimerRef.current = setTimeout(() => setIsDragging(true), 50);
-    }
-  };
+  const handleTouchStart = (e) => startDrag(e.touches[0].clientX, e);
+  const handleMouseDown = (e) => startDrag(e.clientX, e);
 
   const handleTouchMove = useCallback((e) => {
     if (!isDragging || !isMobile()) return;
@@ -84,8 +77,7 @@ export function useSidebar() {
 
   useEffect(() => {
     if (!isMobile()) return;
-    const handleEdgeTouch = (e) => {
-      const x = e.touches[0].clientX;
+    const openFromEdge = (x) => {
       if (x <= 20 && !sidebarOpen) {
         setShowEdgeIndicator(true);
         clearTimeout(edgeTimerRef.current);
@@ -93,14 +85,8 @@ export function useSidebar() {
         setSidebarOpen(true);
       }
     };
-    const handleEdgeMouse = (e) => {
-      if (e.clientX <= 20 && !sidebarOpen) {
-        setShowEdgeIndicator(true);
-        clearTimeout(edgeTimerRef.current);
-        edgeTimerRef.current = setTimeout(() => setShowEdgeIndicator(false), 2000);
-        setSidebarOpen(true);
-      }
-    };
+    const handleEdgeTouch = (e) => openFromEdge(e.touches[0].clientX);
+    const handleEdgeMouse = (e) => openFromEdge(e.clientX);
     const handleEdgeMouseMove = (e) => {
       setShowEdgeIndicator(e.clientX <= 20 && !sidebarOpen);
     };

@@ -20,3 +20,8 @@ export function safeFormatDate(dateStr, fmt) {
 }
 
 export const toAmount = (v) => (typeof v === 'number' ? v : 0);
+
+export const todayString = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
