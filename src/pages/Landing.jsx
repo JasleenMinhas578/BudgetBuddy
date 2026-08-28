@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { LuBarChart2, LuTrendingUp, LuBot, LuShieldCheck, LuSparkles } from 'react-icons/lu';
+import { LuBarChart2, LuTrendingUp, LuBot, LuSparkles, LuTarget } from 'react-icons/lu';
 import '../styles/main.css';
 import BudgetBuddyLogo from '../components/UI/BudgetBuddyLogo';
 
@@ -125,7 +125,7 @@ export default function Landing() {
             <div className="step-card">
               <div className="step-number">2</div>
               <h3 className="step-title">Log Your Expenses</h3>
-              <p className="step-desc">Add transactions manually. Smart categorization does the sorting for you.</p>
+              <p className="step-desc">Add transactions manually. Get smart category suggestions as you type.</p>
             </div>
             <div className="step-connector">→</div>
             <div className="step-card">
@@ -140,7 +140,7 @@ export default function Landing() {
         <div className="stats-bar">
           <div className="stat-pill">No hidden fees</div>
           <div className="stat-pill">Works on all devices</div>
-          <div className="stat-pill">Bank-level encryption</div>
+          <div className="stat-pill">10 currencies supported</div>
         </div>
 
         {/* Features */}
@@ -196,13 +196,13 @@ export default function Landing() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
               viewport={{ once: true }}
               className="feature-card"
             >
-              <div className="feature-icon"><LuShieldCheck size={32} /></div>
-              <h3>Secure & Private</h3>
-              <p>Your financial data is protected with bank-level security and complete privacy controls.</p>
+              <div className="feature-icon"><LuTarget size={32} /></div>
+              <h3>Budget Goals & Targets</h3>
+              <p>Set spending limits for any category and track your progress in real time with visual budget bars that show exactly how much runway you have left.</p>
             </motion.div>
           </div>
         </motion.div>

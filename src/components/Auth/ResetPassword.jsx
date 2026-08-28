@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { LuKey, LuShieldCheck } from 'react-icons/lu';
+import { LuShieldCheck } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
@@ -75,7 +75,6 @@ export default function ResetPassword() {
   return (
     <AuthLayout
       backTo="/login"
-      logoIcon={<LuKey size={32} />}
       title="Set New Password"
       subtitle="Enter your new password below"
       error={error}

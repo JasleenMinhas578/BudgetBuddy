@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LuLock, LuMail, LuCheckCircle } from 'react-icons/lu';
+import { LuMail, LuCheckCircle } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import AuthLayout from './AuthLayout';
@@ -67,7 +67,6 @@ export default function ForgotPassword() {
   return (
     <AuthLayout
       backTo="/login"
-      logoIcon={<LuLock size={32} />}
       title="Reset Password"
       subtitle="Enter your email to receive password reset instructions"
       error={error}

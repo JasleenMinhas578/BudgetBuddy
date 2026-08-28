@@ -17,7 +17,7 @@ export default function GoalCard({
   onSave,
   onRemove,
 }) {
-  const pct = prog?.pct !== null ? Math.min(prog.pct, 100) : 0;
+  const pct = Math.min(prog?.pct ?? 0, 100);
   const isDragging = draggingIndex === index;
   const isDragOver = dragOverIndex === index && draggingIndex !== index;
   const isOk = !prog?.status || prog.status === 'ok';

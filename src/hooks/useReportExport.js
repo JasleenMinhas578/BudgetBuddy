@@ -61,6 +61,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
 
   const generatePDF = async () => {
     setIsGeneratingPDF(true);
+    setPdfError(null);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();

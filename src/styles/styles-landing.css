@@ -138,33 +138,6 @@
     gap: 1.5rem;
   }
 
-  .nav-link {
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-weight: var(--font-weight-medium);
-    transition: var(--transition-base);
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius);
-  }
-
-  .nav-link:hover {
-    color: var(--text-primary);
-    background-color: var(--glass-05);
-  }
-
-  .nav-link.primary {
-    background: var(--accent-teal);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 12px var(--teal-30);
-  }
-
-  .nav-link.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px var(--teal-40);
-  }
-
   /* Main Content */
   .landing-main {
     position: relative;
@@ -211,68 +184,6 @@
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-  }
-
-  .btn-hero {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1.125rem 2.25rem;
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-semibold);
-    border-radius: var(--border-radius);
-    text-decoration: none;
-    transition: var(--transition-base);
-    position: relative;
-    overflow: hidden;
-    border: none;
-    cursor: pointer;
-  }
-
-  .btn-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-shimmer);
-    transition: var(--transition-slide);
-  }
-
-  .btn-hero:hover::before {
-    left: 100%;
-  }
-
-  .btn-hero:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px var(--overlay-30);
-  }
-
-  /* Primary Hero Button (Start Your Journey) */
-  .btn-hero.btn-primary {
-    background: var(--accent-teal);
-    color: white;
-    box-shadow: 0 8px 25px var(--teal-40);
-  }
-
-  .btn-hero.btn-primary:hover {
-    background: var(--gradient-primary-hover);
-    box-shadow: 0 15px 40px var(--teal-60);
-  }
-
-  /* Secondary Hero Button (Sign In) */
-  .btn-hero.btn-secondary {
-    background: var(--glass-10);
-    color: var(--text-primary);
-    border: 1px solid var(--glass-20);
-    backdrop-filter: blur(10px);
-  }
-
-  .btn-hero.btn-secondary:hover {
-    background: var(--glass-15);
-    border-color: var(--glass-30);
-    box-shadow: 0 15px 35px var(--overlay-20);
   }
 
   /* Hero Visual */
@@ -403,6 +314,10 @@
     text-align: center;
     transition: var(--transition-base);
     backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .feature-card:hover {

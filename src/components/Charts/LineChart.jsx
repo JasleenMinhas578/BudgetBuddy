@@ -3,76 +3,46 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { useCurrency } from '../../context/CurrencyContext';
 import '../../styles/main.css';
 
-/**
- * Register Chart.js components required for line charts
- * This must be done before using any Chart.js components
- */
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-/**
- * LineChart Component
- * 
- * A reusable line chart component built with Chart.js that displays
- * time-series data in a linear format. Perfect for showing:
- * - Monthly spending trends
- * - Budget vs actual spending over time
- * - Any data that changes over time
- * 
- * Features:
- * - Responsive design that adapts to container size
- * - Smooth curved lines with tension
- * - Interactive tooltips on hover
- * - Grid lines for better readability
- * - Consistent styling with the app theme
- * 
- * @param {Object} props - Component props
- * @param {Object} props.data - Chart.js data object containing labels and datasets
- * @returns {JSX.Element} Rendered line chart component
- */
+function getChartColors() {
+  const theme = document.documentElement.dataset.theme;
+  const isDark = theme === 'dark' || (theme !== 'light' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  return {
+    text: isDark ? '#e2e8f0' : '#334155',
+    grid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+  };
+}
+
 export default function LineChart({ data }) {
   const { formatAmount } = useCurrency();
+  const { text, grid } = getChartColors();
   const options = {
-    responsive: true, // Make chart responsive to container size
-    maintainAspectRatio: false, // Allow chart to fill container height
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top', // Place legend at the top
+        position: 'top',
         labels: {
-          color: '#e2e8f0', // Light gray text color for dark theme compatibility
-          font: {
-            family: "'Inter', sans-serif" // Consistent font with app design
-          }
-        }
+          color: text,
+          font: { family: "'Inter', sans-serif" },
+        },
       },
     },
     scales: {
       x: {
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)' // Subtle grid lines
-        },
-        ticks: {
-          color: '#e2e8f0' // Light gray text color
-        }
+        grid: { color: grid },
+        ticks: { color: text },
       },
       y: {
         beginAtZero: true,
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        },
+        grid: { color: grid },
         ticks: {
-          color: '#e2e8f0',
-          callback: (value) => formatAmount(value)
-        }
-      }
-    }
+          color: text,
+          callback: (value) => formatAmount(value),
+        },
+      },
+    },
   };
 
   return <Line data={data} options={options} />;

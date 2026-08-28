@@ -7,14 +7,18 @@ export default function BudgetRowNoGoal({ prog, setCategoryBudget }) {
   const { formatAmount, toHomeAmount } = useCurrency();
   const [isEditing, setIsEditing] = useState(false);
   const [goalInput, setGoalInput] = useState('');
+  const [goalError, setGoalError] = useState('');
 
   const handleSave = () => {
     const amount = parseFloat(goalInput);
-    if (!isNaN(amount) && amount > 0) {
-      setCategoryBudget(prog.name, toHomeAmount(amount));
+    if (isNaN(amount) || amount <= 0) {
+      setGoalError('Please enter an amount greater than 0');
+      return;
     }
+    setCategoryBudget(prog.name, toHomeAmount(amount));
     setIsEditing(false);
     setGoalInput('');
+    setGoalError('');
   };
 
   return (
@@ -31,29 +35,34 @@ export default function BudgetRowNoGoal({ prog, setCategoryBudget }) {
         {formatAmount(prog.spent)}
       </span>
       {isEditing ? (
-        <div className="budget-panel-set-goal-inline">
-          <input
-            className="budget-panel-set-goal-input"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Amount"
-            value={goalInput}
-            autoFocus
-            onChange={(e) => setGoalInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSave();
-              if (e.key === 'Escape') { setIsEditing(false); setGoalInput(''); }
-            }}
-          />
-          <button
-            className="budget-panel-set-goal-confirm"
-            onClick={handleSave}
-            aria-label="Save goal"
-          >
-            <LuCheck size={14} />
-          </button>
-        </div>
+        <>
+          <div className="budget-panel-set-goal-inline">
+            <input
+              className={`budget-panel-set-goal-input${goalError ? ' input-error' : ''}`}
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Amount"
+              value={goalInput}
+              autoFocus
+              onChange={(e) => { setGoalInput(e.target.value); setGoalError(''); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSave();
+                if (e.key === 'Escape') { setIsEditing(false); setGoalInput(''); setGoalError(''); }
+              }}
+            />
+            <button
+              className="budget-panel-set-goal-confirm"
+              onClick={handleSave}
+              aria-label="Save goal"
+            >
+              <LuCheck size={14} />
+            </button>
+          </div>
+          {goalError && (
+            <span className="field-error" style={{ gridColumn: '1 / -1', fontSize: '0.75rem' }}>{goalError}</span>
+          )}
+        </>
       ) : (
         <button
           className="budget-panel-set-goal-btn"

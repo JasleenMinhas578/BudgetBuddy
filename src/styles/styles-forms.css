@@ -222,39 +222,6 @@
     color: var(--text-primary);
   }
   
-  .category-form {
-    background: none;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 0;
-    margin: 0;
-    max-width: 100%;
-  }
-  
-  .category-form .form-group {
-    margin-bottom: 1.5rem;
-  }
-  
-  .category-form .form-actions {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--glass-07);
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-  }
-  
-  .category-form .form-group input {
-    background: var(--surface-card);
-    border: 1px solid var(--glass-08);
-    color: var(--text-primary);
-  }
-  
-  .category-form .form-group input:focus {
-    border-color: var(--accent-teal);
-    background: var(--surface-card-alt);
-  }
-  
   .btn-primary, .btn-secondary {
     min-width: 120px;
     font-size: var(--font-size-base);
@@ -332,60 +299,7 @@
     border: 2px solid rgba(255,255,255,0.15);
   }
   
-  /* Category Form Styles (aligned with Expense Form) */
-  .category-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    background: none;
-    color: var(--text-primary);
-  }
-  
-  .category-form .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .category-form .form-group label {
-    display: block;
-    color: var(--text-primary);
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: 0.5rem;
-    font-size: var(--font-size-sm);
-  }
-  
-  .category-form .form-group input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: var(--glass-05);
-    border: 1px solid var(--glass-10);
-    border-radius: var(--border-radius);
-    color: var(--text-primary);
-    font-size: var(--font-size-sm);
-    transition: var(--transition-base);
-  }
-  
-  .category-form .form-group input:focus {
-    outline: none;
-    border-color: var(--accent-teal);
-    background: var(--glass-10);
-    box-shadow: 0 0 0 3px var(--teal-10);
-  }
-  
-  .category-form .form-group input::placeholder {
-    color: var(--text-secondary);
-  }
-  
-  .category-form .form-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-    padding-top: 1rem;
-    border-top: 1px solid var(--glass-10);
-  }
-  
-  /* Improved Category Form Modal Styles */
+  /* Category Form */
   .category-form {
     display: flex;
     flex-direction: column;
@@ -396,39 +310,22 @@
     max-width: 400px;
     margin: 0 auto;
   }
-  
-  /* Modal content for category form */
-  .modal-content form.category-form {
-    padding: 2rem 1.5rem 1.5rem 1.5rem;
-    background: var(--bg-light);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    margin: 0 auto;
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  .modal-header {
-    padding: 1.5rem 1.5rem 0.5rem 1.5rem;
-    background: var(--bg-light);
-    border-radius: var(--border-radius) var(--border-radius) 0 0;
-    border-bottom: none;
-  }
-  
+
   .category-form .form-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin-bottom: 1.5rem;
   }
-  
+
   .category-form .form-group label {
     display: block;
     color: var(--text-primary);
     font-weight: var(--font-weight-semibold);
     margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
   }
-  
+
   .category-form .form-group input {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -436,25 +333,26 @@
     border: 1px solid var(--glass-10);
     border-radius: var(--border-radius);
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
     transition: var(--transition-base);
   }
-  
+
   .category-form .form-group input:focus {
     outline: none;
     border-color: var(--accent-teal);
     background: var(--glass-10);
     box-shadow: 0 0 0 3px var(--teal-10);
   }
-  
+
   .category-form .form-group input::placeholder {
     color: var(--text-secondary);
   }
-  
+
   .category-form .form-actions {
     display: flex;
     gap: 1rem;
     justify-content: flex-end;
+    margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid var(--glass-10);
   }

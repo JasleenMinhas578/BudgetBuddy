@@ -791,7 +791,6 @@ This beta round confirmed that the core functionality is usable and clearly iden
 
 ### AI-Powered Features
 - 🔜 Predictive analytics for spending patterns
-- 🔜 Budget alerts when nearing category limits
 
 ### Advanced Financial Features
 - Bill reminders & notifications

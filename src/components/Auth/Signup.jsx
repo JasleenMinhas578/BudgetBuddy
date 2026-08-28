@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LuWallet, LuUserPlus } from 'react-icons/lu';
+import { LuUserPlus } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
@@ -23,6 +23,11 @@ export default function Signup() {
 
     if (!displayName.trim()) {
       setError('Please enter a display name');
+      return;
+    }
+
+    if (displayName.trim().length > 15) {
+      setError('Display name must be 15 characters or fewer');
       return;
     }
 
@@ -69,7 +74,6 @@ export default function Signup() {
   return (
     <AuthLayout
       backTo="/"
-      logoIcon={<LuWallet size={32} />}
       title="Join BudgetBuddy"
       subtitle="Create your account and start tracking your finances"
       error={error}
@@ -85,7 +89,7 @@ export default function Signup() {
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="What should we call you?"
-              maxLength={50}
+              maxLength={15}
               required
             />
           </div>

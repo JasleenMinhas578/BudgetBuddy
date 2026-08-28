@@ -290,7 +290,7 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Incorrect password')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
     });
 
@@ -313,7 +313,7 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('No account found with this email')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
     });
 
@@ -644,7 +644,7 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('No account found with this email')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
 
       // Navigate to signup (simulated by changing the form)

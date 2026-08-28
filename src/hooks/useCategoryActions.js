@@ -4,6 +4,7 @@ import {
   updateCategory,
   reassignAndDeleteCategory,
   reassignCategoryExpenses,
+  renameCategoryExpenses,
   hideDefaultCategory,
 } from '../services/categoryService';
 
@@ -72,6 +73,7 @@ export function useCategoryActions(currentUser, allCategories, showToast) {
     setIsLoading(true);
     try {
       await updateCategory(currentUser.uid, id, { name: trimmed });
+      await renameCategoryExpenses(currentUser.uid, name, trimmed);
       showToast(`Category renamed to "${trimmed}"!`, 'success');
     } catch {
       showToast('Failed to rename category. Please try again.', 'error');

@@ -6,13 +6,15 @@ const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabi
 
 export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
   const modalRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
 
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === 'Tab') {
@@ -39,13 +41,13 @@ export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
     firstFocusable?.focus();
 
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
   const dialogLabel = title || ariaLabel || 'Modal dialog';
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={() => onCloseRef.current()}>
       <div
         ref={modalRef}
         className="modal-content"
@@ -60,7 +62,7 @@ export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
           type="button"
           className="modal-close"
           aria-label="Close dialog"
-          onClick={onClose}
+          onClick={() => onCloseRef.current()}
         >
           <LuX size={18} aria-hidden="true" />
           <span className="sr-only">Close</span>

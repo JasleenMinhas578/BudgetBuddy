@@ -89,6 +89,25 @@ export const reassignCategoryExpenses = async (userId, categoryName) => {
   }
 };
 
+// Renames all expenses that reference oldName to use newName.
+// Called after a category is renamed so existing expense records stay consistent.
+export const renameCategoryExpenses = async (userId, oldName, newName) => {
+  const expSnap = await getDocs(
+    query(collection(db, 'users', userId, 'expenses'), where('category', '==', oldName))
+  );
+  const expDocs = expSnap.docs;
+  if (expDocs.length === 0) return;
+
+  const BATCH_SIZE = 500;
+  for (let i = 0; i < expDocs.length; i += BATCH_SIZE) {
+    const batch = writeBatch(db);
+    expDocs.slice(i, i + BATCH_SIZE).forEach(d =>
+      batch.update(d.ref, { category: newName, updatedAt: serverTimestamp() })
+    );
+    await batch.commit();
+  }
+};
+
 // Deletes a category and reassigns all its expenses to "Other" instead of deleting them.
 export const reassignAndDeleteCategory = async (userId, categoryId, categoryName) => {
   const expSnap = await getDocs(

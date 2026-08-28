@@ -41,7 +41,7 @@ export default function DisplayNameCard() {
             id="displayName"
             type="text"
             value={displayName}
-            onChange={e => setDisplayName(e.target.value)}
+            onChange={e => { setDisplayName(e.target.value); setMsg({ text: '', type: '' }); }}
             placeholder="Enter your display name"
             maxLength={15}
           />

@@ -27,7 +27,7 @@ export function DateRangeProvider({ children }) {
       if (settings.defaultDateFilter) {
         setDateFilter(settings.defaultDateFilter);
       }
-    });
+    }).catch(() => {});
   }, [currentUser]);
 
   return (

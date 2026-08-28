@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LuWallet, LuLogIn, LuEye, LuEyeOff } from 'react-icons/lu';
+import { LuLogIn, LuEye, LuEyeOff } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import AuthLayout from './AuthLayout';
@@ -32,13 +32,9 @@ export default function Login() {
     } catch (error) {
       switch (error.code) {
         case 'auth/invalid-credential':
-          setError('Invalid email or password');
-          break;
         case 'auth/user-not-found':
-          setError('No account found with this email');
-          break;
         case 'auth/wrong-password':
-          setError('Incorrect password');
+          setError('Invalid email or password');
           break;
         case 'auth/invalid-email':
           setError('Invalid email format');
@@ -57,7 +53,6 @@ export default function Login() {
   return (
     <AuthLayout
       backTo="/"
-      logoIcon={<LuWallet size={32} />}
       title="Welcome Back"
       subtitle="Sign in to your BudgetBuddy account"
       error={error}

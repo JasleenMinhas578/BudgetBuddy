@@ -289,7 +289,7 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('No account found with this email')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
     });
 
@@ -312,7 +312,7 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Incorrect password')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
     });
 
@@ -382,7 +382,7 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('No account found with this email')).toBeInTheDocument();
+        expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
 
       // Now mock a successful login
@@ -390,7 +390,7 @@ describe('Login Component', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.queryByText('No account found with this email')).not.toBeInTheDocument();
+        expect(screen.queryByText('Invalid email or password')).not.toBeInTheDocument();
       });
     });
   });

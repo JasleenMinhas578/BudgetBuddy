@@ -69,7 +69,11 @@ export function useDateFilter(expenses, defaultFilter = 'all', external = null) 
       }
       case 'custom': {
         const { startDate, endDate } = customDateRange;
-        filtered = expenses.filter(e => e.date >= startDate && e.date <= endDate);
+        if (!startDate || !endDate) {
+          filtered = expenses;
+        } else {
+          filtered = expenses.filter(e => e.date >= startDate && e.date <= endDate);
+        }
         break;
       }
       default:

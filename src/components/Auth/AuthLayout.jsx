@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import BudgetBuddyLogo from '../UI/BudgetBuddyLogo';
 import '../../styles/main.css';
 
-export default function AuthLayout({ backTo, logoIcon, title, subtitle, error, message, footer, children }) {
+export default function AuthLayout({ backTo, title, subtitle, error, message, footer, children }) {
   const navigate = useNavigate();
   const backLabel = backTo === '/' ? 'Go back to home' : 'Go back';
 

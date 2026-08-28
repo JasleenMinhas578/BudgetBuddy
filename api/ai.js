@@ -19,12 +19,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid model' });
   }
 
-  const geminiUrl = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
+  const geminiUrl = `${GEMINI_BASE}/${model}:generateContent`;
 
   try {
     const geminiRes = await fetch(geminiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({ contents, generationConfig }),
     });
 
