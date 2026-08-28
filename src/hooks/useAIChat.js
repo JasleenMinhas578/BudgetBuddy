@@ -81,6 +81,10 @@ export function useAIChat() {
   const currencyInfoRef = useRef({});
   currencyInfoRef.current = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
 
+  // Ref so handleConfirmAction always reads the latest budgets without stale closure
+  const budgetsRef = useRef(budgets);
+  useEffect(() => { budgetsRef.current = budgets; }, [budgets]);
+
   // Persist chat across page navigations within the same tab
   useEffect(() => {
     try {
@@ -173,7 +177,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, dataReady, expenses, customCategories, sessionDateRange, budgets]);
+  }, [loading, dataReady, expenses, customCategories, sessionDateRange, budgets, currentUser]);
 
   const handleDismiss = useCallback((idx) => {
     setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg)));
@@ -214,7 +218,7 @@ export function useAIChat() {
         const { id, name: oldName, newName } = msg.editCategoryData;
         await updateCategory(currentUser.uid, id, { name: newName });
         await renameCategoryExpenses(currentUser.uid, oldName, newName);
-        const oldBudget = budgets?.categories?.[oldName];
+        const oldBudget = budgetsRef.current?.categories?.[oldName];
         if (oldBudget != null) {
           await updateCategoryBudget(currentUser.uid, newName, oldBudget);
           await updateCategoryBudget(currentUser.uid, oldName, null);
@@ -249,7 +253,9 @@ export function useAIChat() {
 
     setLoading(true);
     try {
-      const idToken = await currentUser?.getIdToken().catch(() => null);
+      const idToken = currentUser
+        ? await currentUser.getIdToken().catch(() => null)
+        : null;
       const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets, currencyInfoRef.current, idToken);
       setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
     } catch (err) {
@@ -260,7 +266,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [expenses, customCategories, budgets]);
+  }, [expenses, customCategories, budgets, currentUser]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }

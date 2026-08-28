@@ -10,7 +10,8 @@ export function useCategories() {
     if (!currentUser) return;
     let unsub = () => {};
     try {
-      unsub = subscribeToCategories(currentUser.uid, (data) => {
+      unsub = subscribeToCategories(currentUser.uid, (data, err) => {
+        if (err) { console.error('Category subscription error:', err); return; }
         if (data !== null) setCategories(data);
       });
     } catch (error) {

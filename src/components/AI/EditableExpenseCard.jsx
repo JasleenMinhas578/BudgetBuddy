@@ -23,7 +23,7 @@ export default function EditableExpenseCard({ data, customCategories = [], onCon
     if (!title.trim()) { setValidationError('Title is required'); return; }
     if (!parsedAmount || parsedAmount <= 0) { setValidationError('Amount must be greater than 0'); return; }
     if (!date) { setValidationError('Date is required'); return; }
-    if (category && !allCategoryNames.includes(category)) {
+    if (!category || !allCategoryNames.includes(category)) {
       setValidationError('Please select a valid category'); return;
     }
     setValidationError('');

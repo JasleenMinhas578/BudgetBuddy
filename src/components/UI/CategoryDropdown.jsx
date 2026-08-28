@@ -79,15 +79,18 @@ export default function CategoryDropdown({
             className="category-suggestion-accept"
             onClick={async () => {
               const exists = allCategories.some(c => c.name === suggestion);
-              if (!exists && currentUser) {
+              if (exists) {
+                setCategory(suggestion);
+                setSuggestion(null);
+              } else if (currentUser) {
                 try {
                   await addCategory(currentUser.uid, { name: suggestion });
+                  setCategory(suggestion);
+                  setSuggestion(null);
                 } catch {
-                  // Category creation failed — expense still saves with that name
+                  // Leave suggestion visible so user can retry or pick from dropdown
                 }
               }
-              setCategory(suggestion);
-              setSuggestion(null);
             }}
           >
             Use it

@@ -120,26 +120,36 @@ function bare(s) {
 // Returns a suggested category name for the given expense title.
 // Pass the user's full category list (array of { name: string }) so custom
 // categories like "Health & Fitness" or "Personal Care" are matched first.
+function resolveIntent(intent, categories) {
+  if (categories.length > 0) {
+    const intentTokens = intent.split('-');
+    const match = categories.find(cat =>
+      intentTokens.every(token => bare(cat.name).includes(token))
+    );
+    if (match) return match.name;
+  }
+  return INTENT_DEFAULT[intent] ?? 'Other';
+}
+
 export function suggestCategory(title, categories = []) {
   if (!title || typeof title !== 'string') return null;
-  const words = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/);
+  const words = title.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+  if (!words.length) return null;
+
+  // Check compound tokens (bigrams then trigrams) before single words.
+  // "Uber Eats" → "ubereats" → food, not "uber" → transport.
+  for (let len = Math.min(words.length, 3); len > 1; len--) {
+    for (let i = 0; i <= words.length - len; i++) {
+      const compound = words.slice(i, i + len).join('');
+      const intent = KEYWORD_MAP[compound];
+      if (intent) return resolveIntent(intent, categories);
+    }
+  }
 
   for (const word of words) {
     const intent = word && KEYWORD_MAP[word];
     if (!intent) continue;
-
-    // Try to find a user category whose name contains the intent words.
-    // e.g. intent 'health' matches "Health & Fitness", "My Health", etc.
-    // intent 'personal-care' matches "Personal Care", "PersonalCare", etc.
-    if (categories.length > 0) {
-      const intentTokens = intent.split('-'); // ['personal', 'care']
-      const match = categories.find(cat =>
-        intentTokens.every(token => bare(cat.name).includes(token))
-      );
-      if (match) return match.name;
-    }
-
-    return INTENT_DEFAULT[intent] ?? 'Other';
+    return resolveIntent(intent, categories);
   }
   return null;
 }

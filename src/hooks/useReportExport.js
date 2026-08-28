@@ -29,7 +29,9 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
     setAiSummaryError(null);
     setAiSummary(null);
     try {
-      const idToken = await currentUser?.getIdToken().catch(() => null);
+      const idToken = currentUser
+        ? await currentUser.getIdToken().catch(() => null)
+        : null;
       const raw = await generateSummary(filteredExpenses, getFilterLabel(), currencyInfo, idToken);
       setAiSummary(raw.charAt(0).toUpperCase() + raw.slice(1));
     } catch (err) {

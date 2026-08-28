@@ -18,6 +18,7 @@ export default function ExpenseTable({
   emptyMessage = 'No expenses found',
   emptySubMessage = '',
   emptyAction,
+  filterResetKey,
 }) {
   const { formatAmount } = useCurrency();
   const hide = new Set(hiddenColumns);
@@ -26,11 +27,13 @@ export default function ExpenseTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState('');
 
-  // Clear stale category filter when the expenses dataset changes (e.g. date range switch)
+  // Clear stale category filter when the caller signals a date/filter reset.
+  // Depends on filterResetKey (e.g. dateFilter + pickedMonth) rather than expenses
+  // so a Firestore real-time update doesn't silently wipe the user's active filter.
   useEffect(() => {
     setCategoryFilter('');
     setCurrentPage(1);
-  }, [expenses]);
+  }, [filterResetKey]);
 
   useEffect(() => {
     setCurrentPage(1);
