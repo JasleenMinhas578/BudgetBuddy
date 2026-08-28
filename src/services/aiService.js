@@ -43,7 +43,7 @@ const incrementUsage = (usage) => {
   try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
 };
 
-export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null, currencyInfo = null) => {
+export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null, currencyInfo = null, idToken = null) => {
   const usage = checkUsage();
   const today = todayString();
 
@@ -235,7 +235,10 @@ User message: <user_input>${userMessage.replace(/[\n\r<>]/g, ' ')}</user_input>`
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+    },
     body: JSON.stringify({
       model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],
@@ -270,7 +273,7 @@ User message: <user_input>${userMessage.replace(/[\n\r<>]/g, ' ')}</user_input>`
   }
 };
 
-export const generateSummary = async (expenses, filterLabel, currencyInfo = null) => {
+export const generateSummary = async (expenses, filterLabel, currencyInfo = null, idToken = null) => {
   const usage = checkUsage();
   const today = todayString();
   const trimmed = expenses
@@ -297,7 +300,10 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
+    },
     body: JSON.stringify({
       model: GEMINI_MODEL,
       contents: [{ parts: [{ text: prompt }] }],

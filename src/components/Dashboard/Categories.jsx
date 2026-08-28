@@ -127,7 +127,7 @@ export default function Categories() {
     confirmEditCategory,
     handleDeleteCategory,
     confirmDeleteCategory,
-  } = useCategoryActions(currentUser, allCategories, showToast);
+  } = useCategoryActions(currentUser, allCategories, showToast, budgets);
 
   const toggleCategory = (name) => {
     setExpandedCategories((prev) => {

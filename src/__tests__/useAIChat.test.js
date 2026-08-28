@@ -27,6 +27,8 @@ jest.mock('../services/categoryService', () => ({
   addCategory: jest.fn(),
   deleteCategory: jest.fn(),
   updateCategory: jest.fn(),
+  subscribeToCategories: jest.fn(() => jest.fn()),
+  renameCategoryExpenses: jest.fn(),
 }));
 
 jest.mock('../services/budgetService', () => ({

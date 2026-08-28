@@ -7,8 +7,9 @@ import {
   renameCategoryExpenses,
   hideDefaultCategory,
 } from '../services/categoryService';
+import { updateCategoryBudget } from '../services/budgetService';
 
-export function useCategoryActions(currentUser, allCategories, showToast) {
+export function useCategoryActions(currentUser, allCategories, showToast, budgets) {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingDeleteCategory, setPendingDeleteCategory] = useState(null);
   const [pendingEditCategory, setPendingEditCategory] = useState(null);
@@ -74,6 +75,11 @@ export function useCategoryActions(currentUser, allCategories, showToast) {
     try {
       await updateCategory(currentUser.uid, id, { name: trimmed });
       await renameCategoryExpenses(currentUser.uid, name, trimmed);
+      const oldBudget = budgets?.categories?.[name];
+      if (oldBudget != null) {
+        await updateCategoryBudget(currentUser.uid, trimmed, oldBudget);
+        await updateCategoryBudget(currentUser.uid, name, null);
+      }
       showToast(`Category renamed to "${trimmed}"!`, 'success');
     } catch {
       showToast('Failed to rename category. Please try again.', 'error');

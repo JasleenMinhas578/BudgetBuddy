@@ -6,6 +6,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const idToken = req.headers['authorization']?.replace('Bearer ', '');
+  if (!idToken) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    const tokenRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    if (!tokenRes.ok) throw new Error('invalid token');
+    const claims = await tokenRes.json();
+    const expectedAud = process.env.FIREBASE_PROJECT_ID;
+    if (expectedAud && claims.aud !== expectedAud) throw new Error('wrong audience');
+  } catch {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(500).json({ error: 'AI service not configured' });

@@ -45,6 +45,7 @@ export default function AIChat() {
     input, setInput,
     loading,
     sessionDateRange, setSessionDateRange,
+    customCategories,
     sendMessage,
     handleDismiss,
     handleConfirmAction,
@@ -186,6 +187,7 @@ export default function AIChat() {
                   onConfirm={handleConfirmAction}
                   onDismiss={handleDismiss}
                   onPickDateRange={handlePickDateRange}
+                  customCategories={customCategories}
                 />
               </div>
             ))}

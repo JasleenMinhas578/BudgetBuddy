@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { LuGlobe } from 'react-icons/lu';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext';
+import { saveUserSettings } from '../../services/settingsService';
 
 export default function CurrencyCard() {
+  const { currentUser } = useAuth();
   const { currency, setCurrency, homeCurrency, setHomeCurrency, CURRENCIES, liveRates, ratesLoading } = useCurrency();
   const [selectedHomeCurrency, setSelectedHomeCurrency] = useState(homeCurrency);
   const [selectedCurrency, setSelectedCurrency] = useState(currency);
@@ -11,9 +14,17 @@ export default function CurrencyCard() {
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setHomeCurrency(selectedHomeCurrency);
     setCurrency(selectedCurrency);
+    if (currentUser) {
+      try {
+        await saveUserSettings(currentUser.uid, {
+          currency: selectedCurrency,
+          homeCurrency: selectedHomeCurrency,
+        });
+      } catch {}
+    }
     setMsg({ text: 'Currency settings updated!', type: 'success' });
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setMsg({ text: '', type: '' }), 3000);

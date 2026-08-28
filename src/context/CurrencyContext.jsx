@@ -1,17 +1,34 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { formatAmount as utilFormatAmount, CURRENCIES } from '../utils/currencyUtils';
+import { getUserSettings } from '../services/settingsService';
+import { useAuth } from './AuthContext';
 
 const EXCHANGE_RATE_URL = 'https://open.er-api.com/v6/latest/USD';
 
 const CurrencyContext = createContext();
 
 export function CurrencyProvider({ children }) {
+  const { currentUser } = useAuth();
   const [currency, setCurrencyState] = useState(() => {
     try { return localStorage.getItem('currency') || 'USD'; } catch { return 'USD'; }
   });
   const [homeCurrency, setHomeCurrencyState] = useState(() => {
     try { return localStorage.getItem('homeCurrency') || 'USD'; } catch { return 'USD'; }
   });
+
+  useEffect(() => {
+    if (!currentUser) return;
+    getUserSettings(currentUser.uid).then(settings => {
+      if (settings.currency) {
+        try { localStorage.setItem('currency', settings.currency); } catch {}
+        setCurrencyState(settings.currency);
+      }
+      if (settings.homeCurrency) {
+        try { localStorage.setItem('homeCurrency', settings.homeCurrency); } catch {}
+        setHomeCurrencyState(settings.homeCurrency);
+      }
+    }).catch(() => {});
+  }, [currentUser]);
   const [liveRates, setLiveRates] = useState(null);
   const [ratesLoading, setRatesLoading] = useState(true);
 

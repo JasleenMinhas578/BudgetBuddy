@@ -6,8 +6,19 @@ const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabi
 
 export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
   const modalRef = useRef(null);
+  const triggerRef = useRef(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; });
+
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement;
+      const firstFocusable = modalRef.current?.querySelector(FOCUSABLE);
+      firstFocusable?.focus();
+    } else {
+      triggerRef.current?.focus();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -37,9 +48,6 @@ export default function Modal({ isOpen, onClose, title, ariaLabel, children }) {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    const firstFocusable = modalRef.current?.querySelector(FOCUSABLE);
-    firstFocusable?.focus();
-
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 

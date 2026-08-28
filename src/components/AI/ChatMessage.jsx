@@ -27,7 +27,7 @@ function ConfirmMessage({ content, children }) {
   );
 }
 
-export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDateRange }) {
+export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDateRange, customCategories = [] }) {
   const { formatAmount } = useCurrency();
   const active = !msg.confirmed && !msg.dismissed;
 
@@ -62,6 +62,7 @@ export default function ChatMessage({ msg, index, onConfirm, onDismiss, onPickDa
       <ConfirmMessage content={msg.content}>
         <EditableExpenseCard
           data={msg.expenseData}
+          customCategories={customCategories}
           onConfirm={(editedData) => onConfirm({ ...msg, expenseData: editedData }, index)}
           onDismiss={() => onDismiss(index)}
         />

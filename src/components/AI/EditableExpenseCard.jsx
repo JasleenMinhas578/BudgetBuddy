@@ -1,18 +1,31 @@
 import { useState } from 'react';
 import { LuCheck } from 'react-icons/lu';
+import { DEFAULT_CATEGORIES } from '../../utils/getCategoryIcon';
 
-export default function EditableExpenseCard({ data, onConfirm, onDismiss }) {
+const DEFAULT_CATEGORY_NAMES = DEFAULT_CATEGORIES.map(c => c.name);
+
+export default function EditableExpenseCard({ data, customCategories = [], onConfirm, onDismiss }) {
   const [title, setTitle] = useState(data.title || '');
   const [amount, setAmount] = useState(String(data.amount ?? ''));
   const [category, setCategory] = useState(data.category || '');
   const [date, setDate] = useState(data.date || '');
   const [validationError, setValidationError] = useState('');
 
+  const allCategoryNames = [
+    ...DEFAULT_CATEGORY_NAMES,
+    ...customCategories
+      .filter(c => !DEFAULT_CATEGORY_NAMES.includes(c.name))
+      .map(c => c.name),
+  ];
+
   const handleConfirm = () => {
     const parsedAmount = parseFloat(amount);
     if (!title.trim()) { setValidationError('Title is required'); return; }
     if (!parsedAmount || parsedAmount <= 0) { setValidationError('Amount must be greater than 0'); return; }
     if (!date) { setValidationError('Date is required'); return; }
+    if (category && !allCategoryNames.includes(category)) {
+      setValidationError('Please select a valid category'); return;
+    }
     setValidationError('');
     onConfirm({ ...data, title: title.trim(), amount: parsedAmount, category, date });
   };
@@ -20,10 +33,20 @@ export default function EditableExpenseCard({ data, onConfirm, onDismiss }) {
   return (
     <div className="ai-expense-card">
       {[
-        { label: 'Title',    el: <input className="ai-edit-input" value={title}    onChange={e => setTitle(e.target.value)} /> },
-        { label: 'Amount',   el: <input className="ai-edit-input" type="number" min="0" step="0.01" value={amount}   onChange={e => setAmount(e.target.value)} /> },
-        { label: 'Category', el: <input className="ai-edit-input" value={category} onChange={e => setCategory(e.target.value)} /> },
-        { label: 'Date',     el: <input className="ai-edit-input" type="date"  value={date}     onChange={e => setDate(e.target.value)} /> },
+        { label: 'Title',  el: <input className="ai-edit-input" value={title}  onChange={e => setTitle(e.target.value)} /> },
+        { label: 'Amount', el: <input className="ai-edit-input" type="number" min="0" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} /> },
+        {
+          label: 'Category',
+          el: (
+            <select className="ai-edit-input" value={category} onChange={e => setCategory(e.target.value)}>
+              <option value="">— none —</option>
+              {allCategoryNames.map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+          ),
+        },
+        { label: 'Date', el: <input className="ai-edit-input" type="date" value={date} onChange={e => setDate(e.target.value)} /> },
       ].map(({ label, el }) => (
         <div key={label} className="ai-expense-row">
           <span>{label}</span>

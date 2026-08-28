@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { subscribeToExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
-import { addCategory, deleteCategory, updateCategory, subscribeToCategories } from '../services/categoryService';
+import { addCategory, deleteCategory, updateCategory, subscribeToCategories, renameCategoryExpenses } from '../services/categoryService';
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
@@ -135,7 +135,8 @@ export function useAIChat() {
     setLoading(true);
 
     try {
-      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets, currencyInfoRef.current);
+      const idToken = await currentUser.getIdToken().catch(() => null);
+      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets, currencyInfoRef.current, idToken);
 
       const mapped = INTENT_MAP[result.intent];
       if (mapped && result[mapped.dataKey]) {
@@ -209,7 +210,16 @@ export function useAIChat() {
       else if (type === 'delete_expense_confirm')  await deleteExpense(currentUser.uid, msg.deleteExpenseData.id);
       else if (type === 'edit_expense_confirm')    await updateExpense(currentUser.uid, msg.editExpenseData.id, msg.editExpenseData.updates);
       else if (type === 'delete_category_confirm') await deleteCategory(currentUser.uid, msg.deleteCategoryData.id);
-      else if (type === 'edit_category_confirm')   await updateCategory(currentUser.uid, msg.editCategoryData.id, { name: msg.editCategoryData.newName });
+      else if (type === 'edit_category_confirm') {
+        const { id, name: oldName, newName } = msg.editCategoryData;
+        await updateCategory(currentUser.uid, id, { name: newName });
+        await renameCategoryExpenses(currentUser.uid, oldName, newName);
+        const oldBudget = budgets?.categories?.[oldName];
+        if (oldBudget != null) {
+          await updateCategoryBudget(currentUser.uid, newName, oldBudget);
+          await updateCategoryBudget(currentUser.uid, oldName, null);
+        }
+      }
       else if (type === 'set_budget_confirm')      await updateCategoryBudget(currentUser.uid, msg.budgetData.categoryName, msg.budgetData.amount);
       else if (type === 'remove_budget_confirm')   await updateCategoryBudget(currentUser.uid, msg.budgetData.categoryName, null);
 
@@ -239,7 +249,8 @@ export function useAIChat() {
 
     setLoading(true);
     try {
-      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets, currencyInfoRef.current);
+      const idToken = await currentUser?.getIdToken().catch(() => null);
+      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets, currencyInfoRef.current, idToken);
       setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
     } catch (err) {
       setMessages((prev) => [
@@ -262,6 +273,7 @@ export function useAIChat() {
     loading,
     dataReady,
     sessionDateRange, setSessionDateRange,
+    customCategories,
     sendMessage,
     handleDismiss,
     handleConfirmAction,
