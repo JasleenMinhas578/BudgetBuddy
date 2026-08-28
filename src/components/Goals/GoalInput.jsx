@@ -24,9 +24,12 @@ export default function GoalInput({ categoryName, initialValue, onSave }) {
       setError('Enter a positive amount up to 1,000,000');
       return;
     }
+    if (value !== '' && parsed === 0) {
+      setError('Enter an amount greater than 0, or clear the field to remove this goal');
+      return;
+    }
     setError('');
-    // $0 is treated the same as no goal — removes the budget entry
-    onSave(categoryName, parsed === 0 ? null : parsed);
+    onSave(categoryName, parsed === null ? null : parsed);
   };
 
   return (

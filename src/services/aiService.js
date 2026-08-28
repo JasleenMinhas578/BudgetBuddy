@@ -22,10 +22,9 @@ const fetchWithRetry = async (url, options) => {
 const DAILY_LIMIT = 50;
 const USAGE_KEY = 'bb_ai_usage';
 
-const checkAndIncrementUsage = () => {
+const checkUsage = () => {
   const today = todayString();
   let usage = { date: today, count: 0 };
-
   try {
     const stored = localStorage.getItem(USAGE_KEY);
     if (stored) {
@@ -33,17 +32,19 @@ const checkAndIncrementUsage = () => {
       if (parsed.date === today) usage = parsed;
     }
   } catch {}
-
   if (usage.count >= DAILY_LIMIT) {
     throw new Error(`Daily AI limit of ${DAILY_LIMIT} requests reached. Resets at midnight.`);
   }
+  return usage;
+};
 
+const incrementUsage = (usage) => {
   usage.count += 1;
   try { localStorage.setItem(USAGE_KEY, JSON.stringify(usage)); } catch {}
 };
 
 export const processMessage = async (userMessage, expenses = [], customCategories = [], sessionDateRange = null, budgets = null, currencyInfo = null) => {
-  checkAndIncrementUsage();
+  const usage = checkUsage();
   const today = todayString();
 
   const allCategories = [
@@ -230,7 +231,7 @@ Rules:
 - For CURRENCY_CONVERT: Use the LIVE EXCHANGE RATES section to calculate. If the user does not specify a FROM currency, assume the home currency (${currencyInfo?.homeCurrency ?? 'USD'}). Compute the rate using the rates (all relative to USD as bridge: rate = (toRate / fromRate)). Format the "message" as ONLY the conversion result — no full sentences, just the value. Examples: "1 CAD = 0.7234 USD" or "100 EUR = 8,312.40 INR". If a specific amount was given, show the converted total. If no amount, show the rate for 1 unit.
 - If the user asks what you can do, your capabilities are, or similar: use CHAT intent and list: add expenses, add categories, delete expenses, edit expenses (change amount/title/category/date), delete custom categories, rename custom categories, set/update/remove budget goals by category, answer spending questions and budget status for any time period, and check live currency conversion rates
 
-User message: <user_input>${userMessage.replace(/[\n\r]/g, ' ')}</user_input>`;
+User message: <user_input>${userMessage.replace(/[\n\r<>]/g, ' ')}</user_input>`;
 
   const res = await fetchWithRetry(AI_PROXY_URL, {
     method: 'POST',
@@ -247,6 +248,8 @@ User message: <user_input>${userMessage.replace(/[\n\r]/g, ' ')}</user_input>`;
     if (res.status === 429) throw new Error('Too many requests right now — please wait a moment and try again.');
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
+
+  incrementUsage(usage);
 
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
@@ -268,7 +271,7 @@ User message: <user_input>${userMessage.replace(/[\n\r]/g, ' ')}</user_input>`;
 };
 
 export const generateSummary = async (expenses, filterLabel, currencyInfo = null) => {
-  checkAndIncrementUsage();
+  const usage = checkUsage();
   const today = todayString();
   const trimmed = expenses
     .slice(-200)
@@ -307,6 +310,8 @@ Reply with ONLY the paragraph — no headings, no bullet points, no JSON, no mar
     if (res.status === 429) throw new Error('Too many requests right now — please wait a moment and try again.');
     throw new Error(err.error?.message || `Gemini API error ${res.status}`);
   }
+
+  incrementUsage(usage);
 
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();

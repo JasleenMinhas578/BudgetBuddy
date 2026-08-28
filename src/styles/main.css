@@ -4,27 +4,31 @@
  * Do not add rules here; add them to the appropriate partial below.
  *
  * tokens.css               — :root design tokens (colours, fonts, spacing, shadows)
- * styles-landing.css       — Landing page, auth, base reset + shared components
+ * styles-landing.css       — Landing page only: nav, hero, features, CTA, footer, animations
+ * styles-auth.css           — Auth pages: container, card, form, button, error states
  * styles-components.css    — Shared: buttons, modals, forms, tables, auth, nav, hero
  * styles-dashboard.css     — Dashboard layout, sidebar, navbar, overview cards, charts
  * styles-categories.css    — Categories grid, kebab menu, progress bar, budget labels
  * styles-forms.css         — Toast, responsive, expense form, category form modal
  * styles-goals.css         — Goals page
  * styles-dashboard-extras.css — Budget panel, dashboard features, export modal
- * styles-additions.css     — Date filter bar, filter controls, chart cards, insights, pagination, 404, keyframes
+ * styles-reports.css        — Reports page, filter controls, AI summary, chart cards, export
+ * styles-404.css            — 404 not found page
  * styles-settings.css      — Settings page, sidebar footer
  * styles-ai-chat.css       — Floating AI chat widget and panel
  */
 
 @import './tokens.css';
 @import './styles-landing.css';
+@import './styles-auth.css';
 @import './styles-components.css';
 @import './styles-dashboard.css';
 @import './styles-categories.css';
 @import './styles-forms.css';
 @import './styles-goals.css';
 @import './styles-dashboard-extras.css';
-@import './styles-additions.css';
+@import './styles-reports.css';
+@import './styles-404.css';
 @import './styles-settings.css';
 @import './styles-ai-chat.css';
 

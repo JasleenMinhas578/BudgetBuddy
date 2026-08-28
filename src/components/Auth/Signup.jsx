@@ -40,7 +40,11 @@ export default function Signup() {
     try {
       setLoading(true);
       await signup(email, password);
-      await updateDisplayName(displayName.trim());
+      try {
+        await updateDisplayName(displayName.trim());
+      } catch {
+        // Account created — name update failed, user can set it in Settings
+      }
       navigate('/dashboard');
     } catch (error) {
       switch (error.code) {

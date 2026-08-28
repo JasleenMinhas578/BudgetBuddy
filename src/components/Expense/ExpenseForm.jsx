@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { LuTag } from 'react-icons/lu';
+import { todayString } from '../../utils/formatDate';
 import { useAuth } from '../../context/AuthContext';
 import { addExpense } from '../../services/expenseService';
 import { useHiddenCategories } from '../../hooks/useHiddenCategories';
@@ -55,8 +56,7 @@ export default function ExpenseForm({
    */
   useEffect(() => {
     if (!initialExpense) {
-      const today = new Date().toISOString().split('T')[0];
-      setDate(today);
+      setDate(todayString());
     }
   }, [initialExpense]);
 
@@ -83,7 +83,7 @@ export default function ExpenseForm({
       setAmount('');
       setTitle('');
       setCategory('Food');
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(todayString());
     }
     if (!preserveMessage) {
       setMessage('');
@@ -132,9 +132,8 @@ export default function ExpenseForm({
       return { isValid: false, message: 'Please select a date' };
     }
     
-    // Check if date is not in the future (string compare is timezone-safe for yyyy-MM-dd)
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (date > todayStr) {
+    // String compare is safe for yyyy-MM-dd; use local date to avoid UTC-offset mismatch
+    if (date > todayString()) {
       return { isValid: false, message: 'Date cannot be in the future' };
     }
     

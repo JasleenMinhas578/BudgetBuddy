@@ -12,20 +12,30 @@ export const subscribeToBudgets = (userId, callback) => {
   );
 };
 
-export const updateCategoryBudget = (userId, categoryName, amount) => {
+export const updateCategoryBudget = async (userId, categoryName, amount) => {
   const value = amount === null || amount === undefined || amount === '' ? deleteField() : Number(amount);
-  return setDoc(
-    budgetRef(userId),
-    { categories: { [categoryName]: value }, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
+  try {
+    return await setDoc(
+      budgetRef(userId),
+      { categories: { [categoryName]: value }, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error('Failed to update category budget:', err);
+    throw new Error('Failed to save budget goal. Please try again.');
+  }
 };
 
-export const updateMonthlyBudget = (userId, amount) => {
+export const updateMonthlyBudget = async (userId, amount) => {
   const value = amount === null || amount === undefined || amount === '' ? null : Number(amount);
-  return setDoc(
-    budgetRef(userId),
-    { monthly: value, updatedAt: serverTimestamp() },
-    { merge: true }
-  );
+  try {
+    return await setDoc(
+      budgetRef(userId),
+      { monthly: value, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error('Failed to update monthly budget:', err);
+    throw new Error('Failed to save monthly budget. Please try again.');
+  }
 };

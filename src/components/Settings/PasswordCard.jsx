@@ -11,7 +11,17 @@ export default function PasswordCard() {
     setLoading(true);
     setMsg({ text: '', type: '' });
     try {
-      await resetPassword(currentUser.email);
+      const resetUrl = `${window.location.origin}/reset-password`;
+      const actionCodeSettings = { url: resetUrl, handleCodeInApp: false };
+      try {
+        await resetPassword(currentUser.email, actionCodeSettings);
+      } catch (urlError) {
+        if (urlError.code === 'auth/unauthorized-continue-uri' || urlError.code === 'auth/invalid-continue-uri') {
+          await resetPassword(currentUser.email);
+        } else {
+          throw urlError;
+        }
+      }
       setMsg({
         text: `A password reset link has been sent to ${currentUser.email}. Check your inbox and click the link to set a new password.`,
         type: 'success',

@@ -273,7 +273,15 @@ src/
 │   ├── settingsService.js   # User settings (read/write preferences)
 │   ├── aiService.js         # Gemini API — processMessage, generateSummary
 │   └── budgetService.js     # Budget goals — read/write per-category monthly limits
-├── styles/            # main.css (design tokens), modal.css, modal-forms.css
+├── styles/            # CSS partials loaded via main.css:
+│   │                  #   tokens.css (design tokens), styles-landing.css,
+│   │                  #   styles-auth.css, styles-components.css,
+│   │                  #   styles-dashboard.css, styles-categories.css,
+│   │                  #   styles-forms.css, styles-goals.css,
+│   │                  #   styles-dashboard-extras.css, styles-reports.css,
+│   │                  #   styles-404.css, styles-settings.css,
+│   │                  #   styles-ai-chat.css, modal.css, modal-forms.css,
+│   │                  #   confirm-dialog.css
 ├── utils/
 │   ├── getCategoryIcon.js   # Returns Lucide icon JSX for a given category name
 │   ├── getCategoryColor.js  # Deterministic colour per category (used by charts)

@@ -469,3 +469,170 @@
     margin-top: 0.25rem;
   }
 
+
+/* ── Categories Grid & Card (moved from styles-additions) ─────── */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.category-card {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid var(--glass-10);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: var(--transition-base);
+  position: relative;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--overlay-20);
+  border-color: var(--teal-30);
+}
+
+.category-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.category-icon-large {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+}
+
+.category-info {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.category-info h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.category-amount {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--accent-teal);
+  margin: 0;
+}
+
+/* Category Menu */
+.category-menu {
+  position: relative;
+}
+
+.menu-trigger {
+  background: none;
+  border: none;
+  color: var(--glass-60);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--radius-full);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+.menu-trigger:hover {
+  background: var(--glass-10);
+  color: #ffffff;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid var(--glass-10);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 25px var(--overlay-30);
+  backdrop-filter: blur(10px);
+  z-index: var(--z-sticky);
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  transition: var(--transition-base);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.menu-item:hover {
+  background: var(--glass-05);
+}
+
+.menu-item.delete {
+  color: var(--danger);
+}
+
+.menu-item.delete:hover {
+  background: var(--danger-10);
+}
+
+/* Progress Bar */
+.category-progress {
+  margin-top: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--glass-10);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--gradient-primary-h);
+  border-radius: var(--radius-sm);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: var(--font-size-xs);
+  color: var(--glass-60);
+}
+
+@media (max-width: 1024px) {
+  .categories-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+}

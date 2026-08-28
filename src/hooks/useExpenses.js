@@ -13,6 +13,7 @@ export function useExpenses() {
       setLoading(false);
       return;
     }
+    setLoading(true);
     let unsubscribe = () => {};
     try {
       unsubscribe = subscribeToExpenses(currentUser.uid, (data, err) => {

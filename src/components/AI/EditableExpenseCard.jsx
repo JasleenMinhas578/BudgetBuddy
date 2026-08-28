@@ -6,10 +6,14 @@ export default function EditableExpenseCard({ data, onConfirm, onDismiss }) {
   const [amount, setAmount] = useState(String(data.amount ?? ''));
   const [category, setCategory] = useState(data.category || '');
   const [date, setDate] = useState(data.date || '');
+  const [validationError, setValidationError] = useState('');
 
   const handleConfirm = () => {
     const parsedAmount = parseFloat(amount);
-    if (!title.trim() || !parsedAmount || parsedAmount <= 0 || !date) return;
+    if (!title.trim()) { setValidationError('Title is required'); return; }
+    if (!parsedAmount || parsedAmount <= 0) { setValidationError('Amount must be greater than 0'); return; }
+    if (!date) { setValidationError('Date is required'); return; }
+    setValidationError('');
     onConfirm({ ...data, title: title.trim(), amount: parsedAmount, category, date });
   };
 
@@ -26,6 +30,11 @@ export default function EditableExpenseCard({ data, onConfirm, onDismiss }) {
           {el}
         </div>
       ))}
+      {validationError && (
+        <p style={{ color: 'var(--color-error, #ef4444)', fontSize: '0.8rem', margin: '4px 0 0' }}>
+          {validationError}
+        </p>
+      )}
       <div className="ai-expense-actions">
         <button className="btn-confirm" onClick={handleConfirm}><LuCheck size={14} /> Add Expense</button>
         <button className="btn-dismiss" onClick={onDismiss}>Cancel</button>

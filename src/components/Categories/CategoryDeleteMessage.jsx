@@ -16,9 +16,7 @@ export default function CategoryDeleteMessage({ pendingDeleteCategory, expenses,
         <div className="cd-expense-warning-block">
           <p className="cd-expense-warning-title">
             <LuTrash2 size={14} />
-            {pendingDeleteCategory.isDefault
-              ? `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will keep their label (category hidden, not deleted):`
-              : `${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will be reassigned to "Other":`}
+            {`${catExpenses.length} expense${catExpenses.length !== 1 ? 's' : ''} will be reassigned to "Other":`}
           </p>
           <ul className={`cd-expense-list${catExpenses.length > 10 ? ' cd-expense-list--scrollable' : ''}`}>
             {catExpenses.map((e) => (

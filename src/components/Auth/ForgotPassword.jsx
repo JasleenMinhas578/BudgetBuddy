@@ -40,7 +40,9 @@ export default function ForgotPassword() {
       console.error('Password reset error:', error);
       switch (error.code) {
         case 'auth/invalid-credential':
-          setError('No account found with this email');
+        case 'auth/user-not-found':
+          // Don't reveal whether the account exists — show the same success message
+          setMessage('Check your email for password reset instructions. If you don\'t see it, check your spam folder.');
           break;
         case 'auth/invalid-email':
           setError('Invalid email format');

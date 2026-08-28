@@ -303,7 +303,7 @@ export default function Categories() {
       />
 
       {pendingEditCategory && (
-        <Modal isOpen={true} onClose={() => setPendingEditCategory(null)} title="Edit Category">
+        <Modal isOpen={true} onClose={() => { setPendingEditCategory(null); setEditName(''); }} title="Edit Category">
           <form
             onSubmit={(e) => { e.preventDefault(); confirmEditCategory(editName); }}
             className="category-form"
@@ -322,7 +322,7 @@ export default function Categories() {
               />
             </div>
             <div className="form-actions">
-              <button type="button" onClick={() => setPendingEditCategory(null)} className="btn btn-secondary">
+              <button type="button" onClick={() => { setPendingEditCategory(null); setEditName(''); }} className="btn btn-secondary">
                 Cancel
               </button>
               <button type="submit" className="btn btn-primary gradient-btn" disabled={isLoading}>

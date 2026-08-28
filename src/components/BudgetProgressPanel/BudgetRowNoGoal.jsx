@@ -4,14 +4,14 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { getCategoryColor } from '../../utils/getCategoryColor';
 
 export default function BudgetRowNoGoal({ prog, setCategoryBudget }) {
-  const { formatAmount } = useCurrency();
+  const { formatAmount, toHomeAmount } = useCurrency();
   const [isEditing, setIsEditing] = useState(false);
   const [goalInput, setGoalInput] = useState('');
 
   const handleSave = () => {
     const amount = parseFloat(goalInput);
     if (!isNaN(amount) && amount > 0) {
-      setCategoryBudget(prog.name, amount);
+      setCategoryBudget(prog.name, toHomeAmount(amount));
     }
     setIsEditing(false);
     setGoalInput('');

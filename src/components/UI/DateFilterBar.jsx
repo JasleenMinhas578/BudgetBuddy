@@ -126,6 +126,11 @@ export default function DateFilterBar({
               />
             </div>
           </div>
+          {customDateRange.startDate && customDateRange.endDate && customDateRange.endDate < customDateRange.startDate && (
+            <p style={{ color: 'var(--color-error, #ef4444)', fontSize: '0.8rem', marginTop: '6px', gridColumn: '1/-1' }}>
+              End date must be on or after the start date.
+            </p>
+          )}
         </div>
       )}
     </div>
