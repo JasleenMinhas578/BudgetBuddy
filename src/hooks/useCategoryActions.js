@@ -2,9 +2,8 @@ import { useState } from 'react';
 import {
   addCategory,
   updateCategory,
-  reassignAndDeleteCategory,
+  deleteCategory,
   reassignCategoryExpenses,
-  renameCategoryExpenses,
   hideDefaultCategory,
 } from '../services/categoryService';
 import { updateCategoryBudget } from '../services/budgetService';
@@ -74,7 +73,6 @@ export function useCategoryActions(currentUser, allCategories, showToast, budget
     setIsLoading(true);
     try {
       await updateCategory(currentUser.uid, id, { name: trimmed });
-      await renameCategoryExpenses(currentUser.uid, name, trimmed);
       const oldBudget = budgets?.categories?.[name];
       if (oldBudget != null) {
         await updateCategoryBudget(currentUser.uid, trimmed, oldBudget);
@@ -106,7 +104,7 @@ export function useCategoryActions(currentUser, allCategories, showToast, budget
         await hideDefaultCategory(currentUser.uid, name);
         await reassignCategoryExpenses(currentUser.uid, name);
       } else {
-        await reassignAndDeleteCategory(currentUser.uid, id, name);
+        await deleteCategory(currentUser.uid, id);
       }
       const expenseNote = expenseCount > 0
         ? `. ${expenseCount} expense${expenseCount !== 1 ? 's' : ''} reassigned to "Other"`

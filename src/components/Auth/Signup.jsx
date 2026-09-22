@@ -14,7 +14,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { error, setError, loading, setLoading } = useAuthForm();
-  const { signup, updateDisplayName } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -44,22 +44,19 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await signup(email, password);
-      try {
-        await updateDisplayName(displayName.trim());
-      } catch {
-        // Account created — name update failed, user can set it in Settings
-      }
-      navigate('/dashboard');
+      await signup(email, password, displayName.trim());
+      // Cognito requires confirming the emailed code before the account can
+      // log in — unlike Firebase, which considered signup immediately complete.
+      navigate('/confirm-signup', { state: { email } });
     } catch (error) {
       switch (error.code) {
-        case 'auth/email-already-in-use':
+        case 'UsernameExistsException':
           setError('An account with this email already exists');
           break;
-        case 'auth/invalid-email':
+        case 'InvalidParameterException':
           setError('Please enter a valid email address');
           break;
-        case 'auth/weak-password':
+        case 'InvalidPasswordException':
           setError('Password is too weak. Please choose a stronger password');
           break;
         default:

@@ -5,10 +5,8 @@ import { generateSummary } from '../services/aiService';
 import { safeFormatDate } from '../utils/formatDate';
 import { getDateFilterFlatLabel } from '../utils/dateFilterLabel';
 import { useCurrency } from '../context/CurrencyContext';
-import { useAuth } from '../context/AuthContext';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
-  const { currentUser } = useAuth();
   const { formatAmount, homeCurrency, currency, homeSymbol, currencySymbol: displaySymbol, liveRates } = useCurrency();
   const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -29,10 +27,7 @@ export function useReportExport({ filteredExpenses, dateFilter, customDateRange,
     setAiSummaryError(null);
     setAiSummary(null);
     try {
-      const idToken = currentUser
-        ? await currentUser.getIdToken().catch(() => null)
-        : null;
-      const raw = await generateSummary(filteredExpenses, getFilterLabel(), currencyInfo, idToken);
+      const raw = await generateSummary(filteredExpenses, getFilterLabel(), currencyInfo);
       setAiSummary(raw.charAt(0).toUpperCase() + raw.slice(1));
     } catch (err) {
       setAiSummaryError(err.message);

@@ -8,27 +8,8 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import Dashboard from '../pages/Dashboard';
 
-// ── Firebase stubs ─────────────────────────────────────────────────────────────
-jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: jest.fn(() => () => {}),
-  getAuth: jest.fn(() => ({})),
-}));
-
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  query: jest.fn(),
-  onSnapshot: jest.fn(() => () => {}),
-  addDoc: jest.fn(),
-  orderBy: jest.fn(),
-  serverTimestamp: jest.fn(() => new Date()),
-  doc: jest.fn(),
-  setDoc: jest.fn(),
-  deleteField: jest.fn(),
-}));
-
-jest.mock('../firebaseConfig', () => ({ auth: {}, db: {} }));
-
-// ── Auth ───────────────────────────────────────────────────────────────────────
+// ── Auth — mocked directly at the module level, so the real Cognito-backed
+// AuthContext never loads and doesn't need its own mock here ───────────────────
 jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({
     currentUser: { uid: 'test-uid', email: 'test@example.com' },

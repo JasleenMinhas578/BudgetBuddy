@@ -1,10 +1,10 @@
 // Behavioral tests for the `ExpenseForm` component.
-// - Mocks `AuthContext`, the database service, Firestore category listener, and Firebase config so only form logic is exercised.
+// - Mocks `AuthContext`, the expense/category services so only form logic is exercised.
 // - Verifies default values for new expenses (today's date, default category) and correct filling from `initialExpense` in edit mode.
 // - Covers validation rules for amount, title, and date (including future and missing dates) and ensures helpful error messages.
 // - Checks that submissions call `addExpense` or `onExpenseEdited` with correctly shaped payloads and that optional callbacks are handled safely.
 // - Tests UI-only behaviors like numeric-only amount input, category selection, loading states ("Adding Expense...", "Saving..."), and cancel behavior during loading.
-// - Ensures Firestore category listener errors and cleanup are logged/handled without breaking unmount, including non-function unsubscribe return values.
+// - Ensures the category subscription's errors and cleanup are logged/handled without breaking unmount, including non-function unsubscribe return values.
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import ExpenseForm from '../components/Expense/ExpenseForm';
 
@@ -16,18 +16,9 @@ jest.mock('../services/expenseService', () => ({
   addExpense: jest.fn(),
 }));
 
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(() => 'collection-ref'),
-  query: jest.fn(() => 'query-ref'),
-  onSnapshot: jest.fn(),
-  orderBy: jest.fn(() => 'order-ref'),
-  serverTimestamp: jest.fn(() => new Date()),
-  doc: jest.fn(() => 'doc-ref'),
-  where: jest.fn(() => 'where-clause'),
-}));
-
-jest.mock('../firebaseConfig', () => ({
-  db: 'db-instance'
+jest.mock('../services/categoryService', () => ({
+  subscribeToCategories: jest.fn(),
+  subscribeToUserPreferences: jest.fn(() => jest.fn()),
 }));
 
 jest.mock('../context/CurrencyContext', () => ({
@@ -37,7 +28,7 @@ jest.mock('../context/CurrencyContext', () => ({
 
 const { useAuth } = require('../context/AuthContext');
 const { addExpense } = require('../services/expenseService');
-const { onSnapshot, query } = require('firebase/firestore');
+const { subscribeToCategories } = require('../services/categoryService');
 
 const setup = (props = {}) =>
   render(
@@ -54,14 +45,8 @@ describe('ExpenseForm component', () => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ currentUser: { uid: 'user-123' } });
     addExpense.mockResolvedValue('new-expense');
-    onSnapshot.mockImplementation((ref, callback) => {
-      // Snapshot satisfies both QuerySnapshot (forEach) and DocumentSnapshot (exists/data)
-      callback({
-        exists: () => false,
-        data: () => ({}),
-        forEach: (fn) =>
-          fn({ id: 'custom-cat', data: () => ({ name: 'Travel' }) }),
-      });
+    subscribeToCategories.mockImplementation((userId, callback) => {
+      callback([{ id: 'custom-cat', name: 'Travel' }]);
       return jest.fn();
     });
   });
@@ -235,7 +220,7 @@ describe('ExpenseForm component', () => {
 
   it('logs errors when listener setup fails', () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    query.mockImplementationOnce(() => {
+    subscribeToCategories.mockImplementationOnce(() => {
       throw new Error('boom');
     });
 
@@ -247,7 +232,7 @@ describe('ExpenseForm component', () => {
 
   it('logs errors when unsubscribe throws during cleanup', () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    onSnapshot.mockImplementationOnce(() => () => {
+    subscribeToCategories.mockImplementationOnce(() => () => {
       throw new Error('cleanup fail');
     });
 
@@ -261,11 +246,11 @@ describe('ExpenseForm component', () => {
   it('does not set up listeners when there is no authenticated user', () => {
     useAuth.mockReturnValue({ currentUser: null });
     setup();
-    expect(onSnapshot).not.toHaveBeenCalled();
+    expect(subscribeToCategories).not.toHaveBeenCalled();
   });
 
   it('handles non-function unsubscribe return values gracefully', () => {
-    onSnapshot.mockImplementationOnce(() => null);
+    subscribeToCategories.mockImplementationOnce(() => null);
     const view = setup();
     expect(() => view.unmount()).not.toThrow();
   });
@@ -297,15 +282,9 @@ describe('ExpenseForm component', () => {
     expect(screen.getByRole('button', { name: /Food/i })).toBeInTheDocument();
   });
 
-  it('renders custom categories even when Firestore id is missing', () => {
-    onSnapshot.mockImplementationOnce((_, callback) => {
-      callback({
-        forEach: (fn) =>
-          fn({
-            id: '',
-            data: () => ({ name: 'Misc' })
-          })
-      });
+  it('renders custom categories even when the id is missing', () => {
+    subscribeToCategories.mockImplementationOnce((userId, callback) => {
+      callback([{ id: '', name: 'Misc' }]);
       return jest.fn();
     });
 

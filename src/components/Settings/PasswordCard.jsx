@@ -11,23 +11,13 @@ export default function PasswordCard() {
     setLoading(true);
     setMsg({ text: '', type: '' });
     try {
-      const resetUrl = `${window.location.origin}/reset-password`;
-      const actionCodeSettings = { url: resetUrl, handleCodeInApp: false };
-      try {
-        await resetPassword(currentUser.email, actionCodeSettings);
-      } catch (urlError) {
-        if (urlError.code === 'auth/unauthorized-continue-uri' || urlError.code === 'auth/invalid-continue-uri') {
-          await resetPassword(currentUser.email);
-        } else {
-          throw urlError;
-        }
-      }
+      await resetPassword(currentUser.email);
       setMsg({
-        text: `A password reset link has been sent to ${currentUser.email}. Check your inbox and click the link to set a new password.`,
+        text: `A password reset code has been sent to ${currentUser.email}. Use it on the "Reset Password" page to set a new one.`,
         type: 'success',
       });
     } catch {
-      setMsg({ text: 'Failed to send reset email. Please try again.', type: 'error' });
+      setMsg({ text: 'Failed to send reset code. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -40,13 +30,13 @@ export default function PasswordCard() {
         <div>
           <h2 className="settings-card-title">Change Password</h2>
           <p className="settings-card-desc">
-            We'll send a secure link to <strong>{currentUser?.email}</strong>. Open the email and click the link to choose a new password.
+            We'll send a code to <strong>{currentUser?.email}</strong>. Use it on the "Reset Password" page to choose a new one.
           </p>
         </div>
       </div>
       {msg.text && <p className={`settings-feedback ${msg.type}`}>{msg.text}</p>}
       <button className="btn btn-primary settings-btn" onClick={handleSend} disabled={loading}>
-        {loading ? 'Sending...' : 'Send Reset Email'}
+        {loading ? 'Sending...' : 'Send Reset Code'}
       </button>
     </div>
   );

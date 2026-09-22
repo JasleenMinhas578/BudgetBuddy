@@ -1,25 +1,29 @@
-import { doc, onSnapshot, setDoc, deleteField, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { apiFetch } from './apiClient';
+import { createSubscribable } from './pubsub';
 
-const budgetRef = (userId) => doc(db, 'users', userId, 'budgets', 'config');
+const { subscribe, notify } = createSubscribable(() => apiFetch('/api/budgets'));
 
 export const subscribeToBudgets = (userId, callback) => {
   if (!userId || typeof callback !== 'function') throw new Error('Invalid parameters');
-  return onSnapshot(
-    budgetRef(userId),
-    (snap) => callback(snap.exists?.() ? snap.data() : { monthly: null, categories: {} }),
-    (err) => { console.error('Budget listener error:', err); callback({ monthly: null, categories: {} }); }
-  );
+  // Matches the old Firestore listener's error fallback shape so callers
+  // (e.g. useBudgets.js) can safely do `budgets.categories` unconditionally.
+  return subscribe(userId, (data, err) => {
+    if (err) {
+      console.error('Budget listener error:', err);
+      callback({ monthly: null, categories: {} });
+    } else {
+      callback(data);
+    }
+  });
 };
 
 export const updateCategoryBudget = async (userId, categoryName, amount) => {
-  const value = amount === null || amount === undefined || amount === '' ? deleteField() : Number(amount);
   try {
-    return await setDoc(
-      budgetRef(userId),
-      { categories: { [categoryName]: value }, updatedAt: serverTimestamp() },
-      { merge: true }
-    );
+    await apiFetch(`/api/budgets/categories/${encodeURIComponent(categoryName)}`, {
+      method: 'PUT',
+      body: JSON.stringify({ amount }),
+    });
+    notify(userId);
   } catch (err) {
     console.error('Failed to update category budget:', err);
     throw new Error('Failed to save budget goal. Please try again.');
@@ -27,13 +31,12 @@ export const updateCategoryBudget = async (userId, categoryName, amount) => {
 };
 
 export const updateMonthlyBudget = async (userId, amount) => {
-  const value = amount === null || amount === undefined || amount === '' ? null : Number(amount);
   try {
-    return await setDoc(
-      budgetRef(userId),
-      { monthly: value, updatedAt: serverTimestamp() },
-      { merge: true }
-    );
+    await apiFetch('/api/budgets/monthly', {
+      method: 'PUT',
+      body: JSON.stringify({ monthly: amount ?? null }),
+    });
+    notify(userId);
   } catch (err) {
     console.error('Failed to update monthly budget:', err);
     throw new Error('Failed to save monthly budget. Please try again.');

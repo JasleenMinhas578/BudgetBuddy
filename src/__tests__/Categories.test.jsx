@@ -1,8 +1,8 @@
 // High-level tests for the `Categories` dashboard widget.
-// - Mocks Firebase Auth/Firestore, charts, toast, modal, and framer-motion to focus on UI logic and data wiring.
+// - Mocks Cognito (for AuthContext), the category/expense/budget services, charts, toast, modal, and framer-motion to focus on UI logic and data wiring.
 // - Covers rendering basics, modal open/close behavior, form interaction, and resetting state between openings.
-// - Verifies happy-path category addition, loading behavior, success toasts, and correct Firestore calls.
-// - Exercises error states for missing Firebase config, unauthenticated users, Firestore failures, and listener errors.
+// - Verifies happy-path category addition, loading behavior, success toasts, and correct service calls.
+// - Exercises error states for API failures, unauthenticated users, and listener errors.
 // - Confirms listeners are only attached when a user is authenticated and that unsubscribe cleanup is performed on unmount/rerender.
 // - Checks that form validation and toast notifications behave correctly for edge cases like empty names.
 import React from 'react';
@@ -13,29 +13,27 @@ import { BrowserRouter } from 'react-router-dom';
 import Categories from '../components/Dashboard/Categories';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Firebase Auth before importing components
-jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(() => ({})),
+// Mock Cognito so the real AuthContext resolves to a logged-in (or logged-out) user
+jest.mock('amazon-cognito-identity-js');
+const { __mockUserPoolInstance } = require('amazon-cognito-identity-js');
+
+jest.mock('../services/categoryService', () => ({
+  addCategory: jest.fn(),
+  updateCategory: jest.fn(),
+  deleteCategory: jest.fn(),
+  subscribeToCategories: jest.fn(),
+  subscribeToUserPreferences: jest.fn(),
+  hideDefaultCategory: jest.fn(),
+  reassignCategoryExpenses: jest.fn(),
 }));
 
-// Mock Firebase Firestore before importing components
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  query: jest.fn(),
-  onSnapshot: jest.fn(),
-  addDoc: jest.fn(),
-  orderBy: jest.fn(() => 'mock-order-by'),
-  serverTimestamp: jest.fn(() => new Date()),
-  doc: jest.fn(() => 'mock-doc-ref'),
-  setDoc: jest.fn(() => Promise.resolve()),
-  deleteField: jest.fn(),
+jest.mock('../services/expenseService', () => ({
+  subscribeToExpenses: jest.fn(),
 }));
 
-// Mock Firebase config
-jest.mock('../firebaseConfig', () => ({
-  auth: {},
-  db: {},
+jest.mock('../services/budgetService', () => ({
+  subscribeToBudgets: jest.fn(),
+  updateCategoryBudget: jest.fn(),
 }));
 
 // Mock Chart.js components to prevent DOM errors
@@ -111,14 +109,9 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Get the mocked functions
-const {
-  collection,
-  query,
-  onSnapshot,
-  addDoc,
-  serverTimestamp,
-} = require('firebase/firestore');
-const { onAuthStateChanged } = require('firebase/auth');
+const { addCategory, subscribeToCategories, subscribeToUserPreferences } = require('../services/categoryService');
+const { subscribeToExpenses } = require('../services/expenseService');
+const { subscribeToBudgets } = require('../services/budgetService');
 
 // Test wrapper component
 const TestWrapper = ({ children }) => (
@@ -128,6 +121,16 @@ const TestWrapper = ({ children }) => (
     </AuthProvider>
   </BrowserRouter>
 );
+
+function mockLoggedIn(mockUser) {
+  __mockUserPoolInstance.getCurrentUser.mockReturnValue({
+    getSession: (cb) => cb(null, { isValid: () => true }),
+    getUserAttributes: (cb) => cb(null, [
+      { getName: () => 'email', getValue: () => mockUser.email },
+    ]),
+    getUsername: () => mockUser.uid,
+  });
+}
 
 describe('Categories Component', () => {
   const mockUser = { uid: 'test-user-123', email: 'test@example.com' };
@@ -141,40 +144,29 @@ describe('Categories Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Reset db to avoid test contamination from the "Firebase not configured" test
-    require('../firebaseConfig').db = {};
+    mockLoggedIn(mockUser);
 
-    // Re-apply serverTimestamp mock after clearAllMocks
-    serverTimestamp.mockReturnValue(new Date());
-
-    // Mock Firebase functions
-    collection.mockReturnValue('mock-collection');
-    query.mockReturnValue('mock-query');
-
-    // No act() here — calling it inside onSnapshot causes nested act() issues in React 18
-    onSnapshot.mockImplementation((query, callback) => {
-      callback({
-        forEach: () => {},
-        exists: () => false,
-        data: () => ({}),
-      });
-      return () => {}; // Return unsubscribe function
+    subscribeToCategories.mockImplementation((userId, callback) => {
+      callback([]);
+      return () => {};
+    });
+    subscribeToExpenses.mockImplementation((userId, callback) => {
+      callback([]);
+      return () => {};
+    });
+    subscribeToBudgets.mockImplementation((userId, callback) => {
+      callback({ monthly: null, categories: {} });
+      return () => {};
+    });
+    subscribeToUserPreferences.mockImplementation((userId, callback) => {
+      callback({ hiddenDefaultCategories: [] });
+      return () => {};
     });
 
-    // Mock Firebase Auth
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-      act(() => {
-        callback(mockUser);
-      });
-      return () => {}; // Return unsubscribe function
-    });
-
-    // Mock successful Firebase operations
-    addDoc.mockResolvedValue({ id: 'new-category-id' });
+    addCategory.mockResolvedValue('new-category-id');
   });
 
   afterAll(() => {
-    // Restore console methods
     console.error.mockRestore();
     console.warn.mockRestore();
   });
@@ -190,7 +182,7 @@ describe('Categories Component', () => {
       await waitFor(() => {
         expect(screen.getByText('Categories')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
       expect(screen.getByText('Add Category')).toBeInTheDocument();
     });
@@ -205,11 +197,8 @@ describe('Categories Component', () => {
       await waitFor(() => {
         expect(screen.getByText('Categories')).toBeInTheDocument();
       });
-      
-      // Check section subtitle
+
       expect(screen.getByText('Analyze your spending by category')).toBeInTheDocument();
-      
-      // Check add button
       expect(screen.getByText('Add Category')).toBeInTheDocument();
     });
   });
@@ -222,18 +211,15 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Initially no modal
       expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
 
-      // Click add button
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
-      // Modal should open
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Add New Category')).toBeInTheDocument();
     });
 
@@ -244,19 +230,15 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
       });
 
-      // Close modal
-      const closeButton = screen.getByText('Close Modal');
-      fireEvent.click(closeButton);
+      fireEvent.click(screen.getByText('Close Modal'));
 
-      // Modal should close
       await waitFor(() => {
         expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
       });
@@ -269,19 +251,15 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByTestId('modal')).toBeInTheDocument();
       });
 
-      // Click cancel button
-      const cancelButton = screen.getByText('Cancel');
-      fireEvent.click(cancelButton);
+      fireEvent.click(screen.getByText('Cancel'));
 
-      // Modal should close
       await waitFor(() => {
         expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
       });
@@ -296,14 +274,13 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByPlaceholderText('Enter category name')).toBeInTheDocument();
       expect(screen.getByText('Cancel')).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: /add category/i })).toHaveLength(2);
@@ -316,14 +293,13 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       fireEvent.change(input, { target: { value: 'Test Category' } });
       expect(input.value).toBe('Test Category');
@@ -336,28 +312,23 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal and enter text
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       fireEvent.change(input, { target: { value: 'Test Category' } });
       expect(input.value).toBe('Test Category');
 
-      // Close modal
-      const closeButton = screen.getByText('Close Modal');
-      fireEvent.click(closeButton);
-
-      // Reopen modal and check if form is reset
+      fireEvent.click(screen.getByText('Close Modal'));
       fireEvent.click(addButton);
 
       await waitFor(() => {
-        const input = screen.getByLabelText('Category Name');
-        expect(input.value).toBe('');
+        const reopenedInput = screen.getByLabelText('Category Name');
+        expect(reopenedInput.value).toBe('');
       });
     });
   });
@@ -370,28 +341,21 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      fireEvent.click(submitButtons[1]);
 
       await waitFor(() => {
-        expect(addDoc).toHaveBeenCalledWith(
-          'mock-collection',
-          expect.objectContaining({
-            name: 'Test Category',
-            createdAt: expect.any(Date)
-          })
-        );
+        expect(addCategory).toHaveBeenCalledWith(mockUser.uid, { name: 'Test Category' });
       });
     });
 
@@ -402,24 +366,23 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      fireEvent.click(submitButtons[1]);
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Category "Test Category" added successfully!')).toBeInTheDocument();
       expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'success');
     });
@@ -431,28 +394,26 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      fireEvent.click(submitButtons[1]);
 
       await waitFor(() => {
         expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
       });
     });
 
-    it('shows loading state during category addition', async () => {
-      // Mock a delayed response
-      addDoc.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
+    it('initiates category addition on submit', async () => {
+      addCategory.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve('id'), 100)));
 
       render(
         <TestWrapper>
@@ -460,33 +421,27 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      
-      // Check that submit button is disabled during loading (before clicking)
-      expect(submitButtons[1]).not.toBeDisabled(); // Should not be disabled initially
-      
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
-      
-      // The modal closes immediately after submission, so we can't check the disabled state
-      // But we can verify that the form submission was initiated
-      expect(addDoc).toHaveBeenCalled();
+      expect(submitButtons[1]).not.toBeDisabled();
+
+      fireEvent.click(submitButtons[1]);
+      expect(addCategory).toHaveBeenCalled();
     });
   });
 
   describe('Error Handling Tests', () => {
-    it('handles Firebase addDoc error', async () => {
-      addDoc.mockRejectedValue(new Error('Firebase error'));
+    it('handles addCategory API error', async () => {
+      addCategory.mockRejectedValue(new Error('API error'));
 
       render(
         <TestWrapper>
@@ -494,40 +449,7 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
-      fireEvent.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
-      });
-      
-      const input = screen.getByLabelText('Category Name');
-      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
-      fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
-
-      await waitFor(() => {
-        expect(screen.getByTestId('toast')).toBeInTheDocument();
-      });
-      
-      expect(screen.getByText('Failed to add category. Please try again.')).toBeInTheDocument();
-      expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
-    });
-
-    it('handles Firebase not configured error', async () => {
-      // Simulate Firebase addDoc failure (e.g. Firebase not configured)
-      addDoc.mockRejectedValueOnce(new Error('Firebase not configured'));
-
-      render(
-        <TestWrapper>
-          <Categories />
-        </TestWrapper>
-      );
-
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
@@ -538,7 +460,7 @@ describe('Categories Component', () => {
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
 
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      fireEvent.click(submitButtons[1]);
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
@@ -549,13 +471,7 @@ describe('Categories Component', () => {
     });
 
     it('handles user not logged in error', async () => {
-      // Mock no user
-      onAuthStateChanged.mockImplementation((auth, callback) => {
-        act(() => {
-          callback(null);
-        });
-        return () => {};
-      });
+      __mockUserPoolInstance.getCurrentUser.mockReturnValue(null);
 
       render(
         <TestWrapper>
@@ -563,32 +479,30 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
+
       fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
+      fireEvent.click(submitButtons[1]);
 
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
       });
-      
+
       expect(screen.getByText('Please log in to add categories.')).toBeInTheDocument();
       expect(screen.getByTestId('toast')).toHaveAttribute('data-type', 'error');
     });
 
-    it('handles Firebase listener errors gracefully', async () => {
-      onSnapshot.mockImplementation((query, callback) => {
-        // Simulate error
-        throw new Error('Firebase connection failed');
+    it('handles subscribeToCategories listener errors gracefully', async () => {
+      subscribeToCategories.mockImplementation(() => {
+        throw new Error('Connection failed');
       });
 
       render(
@@ -597,13 +511,12 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Component should still render without crashing
-      expect(screen.getByText('Categories')).toBeInTheDocument();
+      expect(await screen.findByText('Categories')).toBeInTheDocument();
     });
   });
 
-  describe('Firebase Integration Tests', () => {
-    it('calls Firebase functions with correct parameters', async () => {
+  describe('Service Integration Tests', () => {
+    it('calls subscribeToCategories/subscribeToExpenses with the current user id', async () => {
       render(
         <TestWrapper>
           <Categories />
@@ -611,16 +524,18 @@ describe('Categories Component', () => {
       );
 
       await waitFor(() => {
-        expect(collection).toHaveBeenCalledWith({}, 'users', 'test-user-123', 'expenses');
+        expect(subscribeToCategories).toHaveBeenCalledWith(mockUser.uid, expect.any(Function));
       });
-      
-      expect(query).toHaveBeenCalled();
-      expect(onSnapshot).toHaveBeenCalled();
+
+      expect(subscribeToExpenses).toHaveBeenCalledWith(mockUser.uid, expect.any(Function));
     });
 
-    it('handles Firebase unsubscribe correctly', async () => {
+    it('handles unsubscribe correctly', async () => {
       const mockUnsubscribe = jest.fn();
-      onSnapshot.mockReturnValue(mockUnsubscribe);
+      subscribeToCategories.mockImplementation((userId, callback) => {
+        callback([]);
+        return mockUnsubscribe;
+      });
 
       const { unmount } = render(
         <TestWrapper>
@@ -629,24 +544,16 @@ describe('Categories Component', () => {
       );
 
       await waitFor(() => {
-        expect(onSnapshot).toHaveBeenCalled();
+        expect(subscribeToCategories).toHaveBeenCalled();
       });
 
-      // Unmount component
       unmount();
 
-      // Unsubscribe should be called
       expect(mockUnsubscribe).toHaveBeenCalled();
     });
 
-    it('sets up listeners only when user is authenticated', async () => {
-      // Mock no user initially
-      onAuthStateChanged.mockImplementation((auth, callback) => {
-        act(() => {
-          callback(null);
-        });
-        return () => {};
-      });
+    it('does not call services when no user is authenticated', async () => {
+      __mockUserPoolInstance.getCurrentUser.mockReturnValue(null);
 
       render(
         <TestWrapper>
@@ -654,28 +561,16 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Should not call Firebase functions when no user
-      expect(collection).not.toHaveBeenCalled();
-      expect(query).not.toHaveBeenCalled();
-      expect(onSnapshot).not.toHaveBeenCalled();
+      await screen.findByText('Categories');
+      expect(subscribeToCategories).not.toHaveBeenCalled();
+      expect(subscribeToExpenses).not.toHaveBeenCalled();
     });
   });
 
   describe('Data Loading Tests', () => {
-    it('loads and displays categories from Firebase', async () => {
-      const mockCategories = [
-        { id: '1', name: 'Food', createdAt: new Date() },
-        { id: '2', name: 'Transportation', createdAt: new Date() }
-      ];
-
-      onSnapshot.mockImplementation((query, callback) => {
-        act(() => {
-          callback({
-            forEach: (fn) => mockCategories.forEach(cat => fn({ id: cat.id, data: () => cat })),
-            exists: () => false,
-            data: () => ({})
-          });
-        });
+    it('loads and displays categories from the API', async () => {
+      subscribeToCategories.mockImplementation((userId, callback) => {
+        callback([{ id: '1', name: 'Food' }, { id: '2', name: 'Transportation' }]);
         return () => {};
       });
 
@@ -685,29 +580,17 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Note: The current component doesn't display categories in the UI
-      // This test verifies that the data is loaded from Firebase
       await waitFor(() => {
-        expect(collection).toHaveBeenCalled();
+        expect(subscribeToCategories).toHaveBeenCalled();
       });
-      
-      expect(onSnapshot).toHaveBeenCalled();
     });
 
-    it('loads and displays expenses from Firebase', async () => {
-      const mockExpenses = [
-        { id: '1', title: 'Lunch', amount: 15.50, category: 'Food' },
-        { id: '2', title: 'Bus fare', amount: 2.50, category: 'Transportation' }
-      ];
-
-      onSnapshot.mockImplementation((query, callback) => {
-        callback({
-          forEach: (fn) => {
-            mockExpenses.forEach(expense => fn({ id: expense.id, data: () => expense }));
-          },
-          exists: () => false,
-          data: () => ({})
-        });
+    it('loads expenses from the API', async () => {
+      subscribeToExpenses.mockImplementation((userId, callback) => {
+        callback([
+          { id: '1', title: 'Lunch', amount: 15.50, category: 'Food' },
+          { id: '2', title: 'Bus fare', amount: 2.50, category: 'Transportation' },
+        ]);
         return () => {};
       });
 
@@ -717,12 +600,9 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Verify that expenses are loaded
       await waitFor(() => {
-        expect(collection).toHaveBeenCalledWith({}, 'users', 'test-user-123', 'expenses');
+        expect(subscribeToExpenses).toHaveBeenCalledWith(mockUser.uid, expect.any(Function));
       });
-
-      expect(onSnapshot).toHaveBeenCalled();
     });
   });
 
@@ -734,20 +614,18 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getAllByRole('button', { name: /add category/i })).toHaveLength(2);
       });
-      
-      // Click the submit button (the one in the form)
-      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
-      // useCategoryActions returns early on empty name — addDoc should not be called
-      expect(addDoc).not.toHaveBeenCalled();
+      const submitButtons = screen.getAllByRole('button', { name: /add category/i });
+      fireEvent.click(submitButtons[1]);
+
+      // useCategoryActions returns early on empty name — addCategory should not be called
+      expect(addCategory).not.toHaveBeenCalled();
     });
 
     it('requires category name input', async () => {
@@ -757,16 +635,14 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
-      const input = screen.getByLabelText('Category Name');
-      expect(input).toHaveAttribute('required');
+
+      expect(screen.getByLabelText('Category Name')).toHaveAttribute('required');
     });
   });
 
@@ -778,30 +654,25 @@ describe('Categories Component', () => {
         </TestWrapper>
       );
 
-      // Open modal and add category
-      const addButton = screen.getByRole('button', { name: /add category/i });
+      const addButton = await screen.findByRole('button', { name: /add category/i });
       fireEvent.click(addButton);
 
       await waitFor(() => {
         expect(screen.getByLabelText('Category Name')).toBeInTheDocument();
       });
-      
+
       const input = screen.getByLabelText('Category Name');
       const submitButtons = screen.getAllByRole('button', { name: /add category/i });
-      
-      fireEvent.change(input, { target: { value: 'Test Category' } });
-      fireEvent.click(submitButtons[1]); // Second button is the submit button
 
-      // Wait for toast to appear
+      fireEvent.change(input, { target: { value: 'Test Category' } });
+      fireEvent.click(submitButtons[1]);
+
       await waitFor(() => {
         expect(screen.getByTestId('toast')).toBeInTheDocument();
       });
 
-      // Click close button
-      const closeButton = screen.getByText('Close');
-      fireEvent.click(closeButton);
+      fireEvent.click(screen.getByText('Close'));
 
-      // Toast should disappear
       await waitFor(() => {
         expect(screen.queryByTestId('toast')).not.toBeInTheDocument();
       });
@@ -809,9 +680,12 @@ describe('Categories Component', () => {
   });
 
   describe('Component Lifecycle Tests', () => {
-    it('cleans up event listeners on unmount', async () => {
+    it('cleans up listeners on unmount', async () => {
       const mockUnsubscribe = jest.fn();
-      onSnapshot.mockReturnValue(mockUnsubscribe);
+      subscribeToCategories.mockImplementation((userId, callback) => {
+        callback([]);
+        return mockUnsubscribe;
+      });
 
       const { unmount } = render(
         <TestWrapper>
@@ -820,13 +694,10 @@ describe('Categories Component', () => {
       );
 
       await waitFor(() => {
-        expect(onSnapshot).toHaveBeenCalled();
+        expect(subscribeToCategories).toHaveBeenCalled();
       });
 
-      // Unmount component
       unmount();
-
-      // Unsubscribe should be called
       expect(mockUnsubscribe).toHaveBeenCalled();
     });
 
@@ -841,14 +712,12 @@ describe('Categories Component', () => {
         expect(screen.getByText('Categories')).toBeInTheDocument();
       });
 
-      // Re-render component
       rerender(
         <TestWrapper>
           <Categories />
         </TestWrapper>
       );
 
-      // Component should still work correctly
       expect(screen.getByText('Categories')).toBeInTheDocument();
     });
   });

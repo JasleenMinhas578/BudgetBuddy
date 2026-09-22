@@ -1,6 +1,6 @@
 /* istanbul ignore file */
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LuShieldCheck } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
@@ -10,22 +10,14 @@ import AuthSubmitButton from './AuthSubmitButton';
 import PasswordInput from '../UI/PasswordInput';
 
 export default function ResetPassword() {
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.email || '');
+  const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [oobCode, setOobCode] = useState(null);
   const { error, setError, loading, setLoading } = useAuthForm();
   const { resetPasswordWithCode } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  useEffect(() => {
-    const code = searchParams.get('oobCode');
-    if (code) {
-      setOobCode(code);
-    } else {
-      setError('Invalid or missing reset link. Please request a new password reset.');
-    }
-  }, [searchParams, setError]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -43,25 +35,25 @@ export default function ResetPassword() {
         return;
       }
 
-      if (!oobCode) {
-        setError('Invalid reset code. Please request a new password reset.');
+      if (!email || !code) {
+        setError('Email and code are required.');
         return;
       }
 
       setLoading(true);
-      await resetPasswordWithCode(oobCode, password);
+      await resetPasswordWithCode(email, code, password);
       navigate('/login', {
         state: { message: 'Password reset successful! Please login with your new password.' }
       });
     } catch (error) {
       switch (error.code) {
-        case 'auth/expired-action-code':
-          setError('The password reset link has expired. Please request a new one.');
+        case 'ExpiredCodeException':
+          setError('This code has expired. Please request a new one.');
           break;
-        case 'auth/invalid-action-code':
-          setError('Invalid reset link. Please request a new password reset.');
+        case 'CodeMismatchException':
+          setError('Incorrect code. Please check your email and try again.');
           break;
-        case 'auth/weak-password':
+        case 'InvalidPasswordException':
           setError('Password is too weak. Please choose a stronger password');
           break;
         default:
@@ -76,11 +68,40 @@ export default function ResetPassword() {
     <AuthLayout
       backTo="/login"
       title="Set New Password"
-      subtitle="Enter your new password below"
+      subtitle="Enter the code we emailed you and your new password"
       error={error}
       footer={<p>Remember your password? <Link to="/login" className="auth-link">Sign In</Link></p>}
     >
       <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="email">Email Address</label>
+          <div className="input-wrapper">
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="code">Reset Code</label>
+          <div className="input-wrapper">
+            <input
+              type="text"
+              id="code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="6-digit code"
+              inputMode="numeric"
+              required
+            />
+          </div>
+        </div>
+
         <PasswordInput
           id="password"
           label="New Password"
@@ -97,7 +118,7 @@ export default function ResetPassword() {
           placeholder="Re-enter your new password"
         />
 
-        <AuthSubmitButton loading={loading} loadingText="Resetting password..." disabled={!oobCode}>
+        <AuthSubmitButton loading={loading} loadingText="Resetting password...">
           <LuShieldCheck size={16} />
           Reset Password
         </AuthSubmitButton>

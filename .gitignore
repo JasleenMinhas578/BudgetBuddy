@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+server/node_modules
 /.pnp
 .pnp.js
 
@@ -49,3 +50,9 @@ Documents/CI_e2e_run/reports/*
 Thumbs.db
 .vercel
 .env*
+
+# secrets
+serviceAccountKey.json
+
+# downloaded artifacts
+global-bundle.pem

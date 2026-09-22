@@ -1,8 +1,10 @@
-// Unit tests for the Firestore-backed `database` service functions.
-// - Mocks Firestore and the shared `db` reference so tests only verify queries, writes, and listeners.
-// - Covers CRUD operations for expenses and categories, including required-field validation and timestamp metadata.
-// - Verifies subscription helpers that stream expenses and categories, including error callbacks and invalid-parameter guards.
-// - Ensures that service functions rethrow Firestore failures so calling code can respond appropriately.
+// Unit tests for the REST-backed `expenseService`/`categoryService` functions.
+// - Mocks `../cognito`'s getIdToken and the global `fetch` so tests only verify
+//   request method/path/body and response handling, not a real network call.
+// - Covers CRUD operations for expenses and categories, including required-field
+//   validation (which happens before any network call) and error propagation.
+// - Verifies the pub/sub subscription helpers (replacing Firestore's onSnapshot):
+//   an initial fetch on subscribe, and error callbacks on a failed fetch.
 import {
   addExpense,
   updateExpense,
@@ -16,84 +18,48 @@ import {
   subscribeToCategories,
 } from '../services/categoryService';
 
-jest.mock('../firebaseConfig', () => ({
-  db: 'db-instance'
+jest.mock('../cognito', () => ({
+  getIdToken: jest.fn(() => Promise.resolve('test-token')),
 }));
 
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  addDoc: jest.fn(),
-  getDocs: jest.fn(),
-  query: jest.fn(),
-  where: jest.fn(),
-  doc: jest.fn(),
-  updateDoc: jest.fn(),
-  deleteDoc: jest.fn(),
-  onSnapshot: jest.fn(),
-  orderBy: jest.fn(),
-  serverTimestamp: jest.fn()
-}));
+function mockFetchOnce(status, body) {
+  global.fetch.mockResolvedValueOnce({
+    status,
+    ok: status >= 200 && status < 300,
+    json: () => Promise.resolve(body),
+  });
+}
 
-const {
-  collection,
-  query,
-  where,
-  orderBy,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp
-} = require('firebase/firestore');
+// Lets a subscribe()'s internal fire-and-forget fetch/callback resolve
+// before assertions run.
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-describe('database service', () => {
+describe('service layer (REST API client)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    collection.mockReturnValue('collection-ref');
-    query.mockReturnValue('query-ref');
-    where.mockReturnValue('where-clause');
-    doc.mockReturnValue('doc-ref');
-    orderBy.mockReturnValue('order-by');
-    serverTimestamp.mockReturnValue('timestamp');
-    addDoc.mockResolvedValue({ id: 'doc-id' });
-    getDocs.mockResolvedValue({
-      docs: [{ id: '1', data: () => ({ amount: 10 }) }]
-    });
-    onSnapshot.mockImplementation((q, onNext) => {
-      onNext({
-        docs: [{ id: '1', data: () => ({ amount: 15 }) }]
-      });
-      return jest.fn();
-    });
+    global.fetch = jest.fn();
   });
 
   describe('expenses CRUD', () => {
-    it('adds expense with metadata', async () => {
+    it('adds expense and returns its id', async () => {
+      mockFetchOnce(201, { id: 42, title: 'Coffee' });
+
       const id = await addExpense('user-1', {
-        title: 'Coffee',
-        amount: 5,
-        category: 'Food',
-        date: '2024-02-01'
+        title: 'Coffee', amount: 5, category: 'Food', date: '2024-02-01',
       });
 
-      expect(addDoc).toHaveBeenCalledWith(
-        'collection-ref',
-        expect.objectContaining({
-          title: 'Coffee',
-          userId: 'user-1',
-          createdAt: 'timestamp',
-          updatedAt: 'timestamp'
-        })
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/expenses'),
+        expect.objectContaining({ method: 'POST' })
       );
-      expect(id).toBe('doc-id');
+      expect(id).toBe('42');
     });
 
     it('throws when required expense data missing', async () => {
       await expect(addExpense('user', { amount: 5 })).rejects.toThrow(
         'Missing required expense data'
       );
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('throws when amount is null', async () => {
@@ -120,46 +86,63 @@ describe('database service', () => {
       })).rejects.toThrow('Amount must be a positive number');
     });
 
-    it('updates expense with timestamp', async () => {
+    it('updates expense via PUT', async () => {
+      mockFetchOnce(200, { id: 'exp-1', title: 'Updated' });
       await updateExpense('user-1', 'exp-1', { title: 'Updated' });
-      expect(doc).toHaveBeenCalledWith('db-instance', 'users', 'user-1', 'expenses', 'exp-1');
-      expect(updateDoc).toHaveBeenCalledWith('doc-ref', {
-        title: 'Updated',
-        updatedAt: 'timestamp'
-      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/expenses/exp-1'),
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify({ title: 'Updated' }) })
+      );
     });
 
     it('throws when updateExpense missing parameters', async () => {
       await expect(updateExpense(null, null, {})).rejects.toThrow('Missing required parameters');
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    it('deletes expense', async () => {
+    it('deletes expense via DELETE', async () => {
+      mockFetchOnce(204, null);
       await deleteExpense('user-1', 'exp-1');
-      expect(deleteDoc).toHaveBeenCalledWith('doc-ref');
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/expenses/exp-1'),
+        expect.objectContaining({ method: 'DELETE' })
+      );
     });
 
     it('throws when deleteExpense missing parameters', async () => {
       await expect(deleteExpense(null, null)).rejects.toThrow('Missing required parameters');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('propagates server errors', async () => {
+      mockFetchOnce(500, { error: 'boom' });
+      await expect(deleteExpense('user-1', 'exp-1')).rejects.toThrow('boom');
     });
   });
 
   describe('category CRUD', () => {
     it('adds category with metadata', async () => {
+      mockFetchOnce(201, { id: 7, name: 'Travel' });
       const id = await addCategory('user-1', { name: 'Travel' });
-      expect(addDoc).toHaveBeenCalled();
-      expect(id).toBe('doc-id');
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/categories'),
+        expect.objectContaining({ method: 'POST' })
+      );
+      expect(id).toBe('7');
     });
 
     it('throws when category data missing', async () => {
       await expect(addCategory('user', {})).rejects.toThrow('Missing required category data');
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('updates category', async () => {
+      mockFetchOnce(200, { id: 'cat-1', name: 'Updated' });
       await updateCategory('user-1', 'cat-1', { name: 'Updated' });
-      expect(updateDoc).toHaveBeenCalledWith('doc-ref', {
-        name: 'Updated',
-        updatedAt: 'timestamp'
-      });
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/categories/cat-1'),
+        expect.objectContaining({ method: 'PUT' })
+      );
     });
 
     it('throws when updateCategory missing params', async () => {
@@ -167,8 +150,12 @@ describe('database service', () => {
     });
 
     it('deletes category', async () => {
+      mockFetchOnce(204, null);
       await deleteCategory('user-1', 'cat-1');
-      expect(deleteDoc).toHaveBeenCalledWith('doc-ref');
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/categories/cat-1'),
+        expect.objectContaining({ method: 'DELETE' })
+      );
     });
 
     it('throws when deleteCategory missing params', async () => {
@@ -177,23 +164,22 @@ describe('database service', () => {
   });
 
   describe('subscriptions', () => {
-    it('subscribes to expenses and returns unsubscribe', () => {
+    it('subscribes to expenses, fetches once, and returns unsubscribe', async () => {
+      mockFetchOnce(200, [{ id: 1, amount: 15 }]);
       const callback = jest.fn();
       const unsubscribe = subscribeToExpenses('user-1', callback);
-      expect(onSnapshot).toHaveBeenCalled();
-      expect(callback).toHaveBeenCalledWith([{ id: '1', amount: 15 }]);
+      await flush();
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/expenses'), expect.anything());
+      expect(callback).toHaveBeenCalledWith([{ id: 1, amount: 15 }]);
       expect(typeof unsubscribe).toBe('function');
     });
 
-    it('invokes error callback when expenses listener fails', () => {
-      const listenError = new Error('listener');
-      onSnapshot.mockImplementationOnce((q, onNext, onError) => {
-        onError(listenError);
-        return jest.fn();
-      });
+    it('invokes error callback when the expenses fetch fails', async () => {
+      mockFetchOnce(500, { error: 'listener' });
       const callback = jest.fn();
       subscribeToExpenses('user-1', callback);
-      expect(callback).toHaveBeenCalledWith([], listenError);
+      await flush();
+      expect(callback).toHaveBeenCalledWith(undefined, expect.any(Error));
     });
 
     it('throws if subscribeToExpenses called with invalid args', () => {
@@ -202,21 +188,21 @@ describe('database service', () => {
       );
     });
 
-    it('subscribes to categories', () => {
+    it('subscribes to categories', async () => {
+      mockFetchOnce(200, [{ id: 1, name: 'Food' }]);
       const callback = jest.fn();
       subscribeToCategories('user-1', callback);
-      expect(onSnapshot).toHaveBeenCalled();
+      await flush();
+      expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/api/categories'), expect.anything());
+      expect(callback).toHaveBeenCalledWith([{ id: 1, name: 'Food' }]);
     });
 
-    it('invokes error callback when category listener fails', () => {
-      const listenError = new Error('categories');
-      onSnapshot.mockImplementationOnce((q, onNext, onError) => {
-        onError(listenError);
-        return jest.fn();
-      });
+    it('invokes error callback when the categories fetch fails', async () => {
+      mockFetchOnce(500, { error: 'categories' });
       const callback = jest.fn();
       subscribeToCategories('user-1', callback);
-      expect(callback).toHaveBeenCalledWith([], listenError);
+      await flush();
+      expect(callback).toHaveBeenCalledWith(undefined, expect.any(Error));
     });
 
     it('throws when subscribeToCategories missing params', () => {
@@ -224,7 +210,5 @@ describe('database service', () => {
         'Invalid parameters for category subscription'
       );
     });
-
   });
 });
-

@@ -11,5 +11,9 @@ export function validatePassword(password) {
   if (!/\d/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one number' };
   }
+  // Matches Cognito's default password policy, which requires a symbol.
+  if (!/[\^$*.[\]{}()?"!@#%&/\\,><':;|_~`+=-]/.test(password)) {
+    return { isValid: false, message: 'Password must contain at least one special character' };
+  }
   return { isValid: true, message: 'Password meets all requirements' };
 }

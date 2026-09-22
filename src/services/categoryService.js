@@ -1,155 +1,81 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot,
-  orderBy,
-  serverTimestamp,
-  arrayUnion,
-  writeBatch,
-} from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { snapshotToArray } from '../utils/firebaseUtils';
+import { apiFetch } from './apiClient';
+import { createSubscribable } from './pubsub';
+
+const { subscribe: subscribeCategories, notify: notifyCategories } =
+  createSubscribable(() => apiFetch('/api/categories'));
+const { subscribe: subscribePrefs, notify: notifyPrefs } =
+  createSubscribable(() => apiFetch('/api/settings').then((s) => ({ hiddenDefaultCategories: s.hiddenDefaultCategories })));
 
 export const addCategory = async (userId, categoryData) => {
   try {
-    if (!db) throw new Error('Firebase not configured. Please set up your Firebase project.');
     if (!userId || !categoryData.name) throw new Error('Missing required category data');
-    const categoryWithMetadata = {
-      ...categoryData,
-      userId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
-    const docRef = await addDoc(collection(db, 'users', userId, 'categories'), categoryWithMetadata);
-    return docRef.id;
+    const created = await apiFetch('/api/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    });
+    notifyCategories(userId);
+    return String(created.id);
   } catch (error) {
     console.error('Error adding category:', error);
     throw new Error(`Failed to add category: ${error.message}`);
   }
 };
 
+// Renaming cascades onto every expense referencing the old name — handled
+// server-side in one transaction now, so no separate "rename expenses" call
+// is needed here (Firestore's version required two round-trips).
 export const updateCategory = async (userId, categoryId, updateData) => {
   try {
     if (!userId || !categoryId) throw new Error('Missing required parameters');
-    const categoryRef = doc(db, 'users', userId, 'categories', categoryId);
-    await updateDoc(categoryRef, { ...updateData, updatedAt: serverTimestamp() });
+    await apiFetch(`/api/categories/${categoryId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    });
+    notifyCategories(userId);
   } catch (error) {
     console.error('Error updating category:', error);
     throw new Error(`Failed to update category: ${error.message}`);
   }
 };
 
+// Deletes the category AND reassigns its expenses to "Other" — also one
+// transaction server-side now.
 export const deleteCategory = async (userId, categoryId) => {
   try {
     if (!userId || !categoryId) throw new Error('Missing required parameters');
-    await deleteDoc(doc(db, 'users', userId, 'categories', categoryId));
+    await apiFetch(`/api/categories/${categoryId}`, { method: 'DELETE' });
+    notifyCategories(userId);
   } catch (error) {
     console.error('Error deleting category:', error);
     throw new Error(`Failed to delete category: ${error.message}`);
   }
 };
 
+export const subscribeToCategories = (userId, callback) => {
+  if (!userId || typeof callback !== 'function') {
+    throw new Error('Invalid parameters for category subscription');
+  }
+  return subscribeCategories(userId, callback);
+};
+
 export const subscribeToUserPreferences = (userId, callback) => {
-  const prefRef = doc(db, 'users', userId, 'preferences', 'general');
-  return onSnapshot(
-    prefRef,
-    (snap) => callback(snap.exists() ? snap.data() : {}),
-    () => callback({})
-  );
+  return subscribePrefs(userId, callback);
 };
 
 export const hideDefaultCategory = async (userId, categoryName) => {
-  const prefRef = doc(db, 'users', userId, 'preferences', 'general');
-  await setDoc(prefRef, { hiddenDefaultCategories: arrayUnion(categoryName) }, { merge: true });
+  await apiFetch('/api/settings/hide-category', {
+    method: 'POST',
+    body: JSON.stringify({ categoryName }),
+  });
+  notifyPrefs(userId);
 };
 
-// Reassigns all expenses with the given category name to "Other".
-// Used when hiding a default category so existing expenses don't keep a hidden label.
+// Reassigns expenses in a category to "Other" without deleting anything —
+// used for default categories (Food, Rent, ...), which were never rows in
+// the `categories` table to begin with.
 export const reassignCategoryExpenses = async (userId, categoryName) => {
-  const expSnap = await getDocs(
-    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
-  );
-  const expDocs = expSnap.docs;
-  if (expDocs.length === 0) return;
-
-  const BATCH_SIZE = 500;
-  for (let i = 0; i < expDocs.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
-    expDocs.slice(i, i + BATCH_SIZE).forEach(d =>
-      batch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
-    );
-    await batch.commit();
-  }
-};
-
-// Renames all expenses that reference oldName to use newName.
-// Called after a category is renamed so existing expense records stay consistent.
-export const renameCategoryExpenses = async (userId, oldName, newName) => {
-  const expSnap = await getDocs(
-    query(collection(db, 'users', userId, 'expenses'), where('category', '==', oldName))
-  );
-  const expDocs = expSnap.docs;
-  if (expDocs.length === 0) return;
-
-  const BATCH_SIZE = 500;
-  for (let i = 0; i < expDocs.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
-    expDocs.slice(i, i + BATCH_SIZE).forEach(d =>
-      batch.update(d.ref, { category: newName, updatedAt: serverTimestamp() })
-    );
-    await batch.commit();
-  }
-};
-
-// Deletes a category and reassigns all its expenses to "Other" instead of deleting them.
-export const reassignAndDeleteCategory = async (userId, categoryId, categoryName) => {
-  const expSnap = await getDocs(
-    query(collection(db, 'users', userId, 'expenses'), where('category', '==', categoryName))
-  );
-  const expDocs = expSnap.docs;
-  const BATCH_SIZE = 500;
-
-  // First batch: delete the category doc + reassign up to 499 expenses
-  const firstBatch = writeBatch(db);
-  firstBatch.delete(doc(db, 'users', userId, 'categories', categoryId));
-  expDocs.slice(0, BATCH_SIZE - 1).forEach(d =>
-    firstBatch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
-  );
-  await firstBatch.commit();
-
-  // Remaining expenses in subsequent batches of 500
-  const remaining = expDocs.slice(BATCH_SIZE - 1);
-  for (let i = 0; i < remaining.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
-    remaining.slice(i, i + BATCH_SIZE).forEach(d =>
-      batch.update(d.ref, { category: 'Other', updatedAt: serverTimestamp() })
-    );
-    await batch.commit();
-  }
-};
-
-export const subscribeToCategories = (userId, callback) => {
-  try {
-    if (!userId || typeof callback !== 'function') {
-      throw new Error('Invalid parameters for category subscription');
-    }
-    const q = query(collection(db, 'users', userId, 'categories'), orderBy('createdAt', 'desc'));
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        callback(snapshotToArray(snapshot));
-      },
-      (error) => { console.error('Error listening to categories:', error); callback([], error); }
-    );
-  } catch (error) {
-    console.error('Error setting up category subscription:', error);
-    throw new Error(`Failed to subscribe to categories: ${error.message}`);
-  }
+  await apiFetch('/api/categories/reassign', {
+    method: 'POST',
+    body: JSON.stringify({ categoryName }),
+  });
 };

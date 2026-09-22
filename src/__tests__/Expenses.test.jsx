@@ -1,8 +1,8 @@
 // High-level tests for the `Expenses` dashboard page.
-// - Mocks Firebase Auth/Firestore, chart components, Toast, Modal, ExpenseForm, and framer-motion to isolate page logic.
+// - Mocks Cognito (for AuthContext), expenseService, chart components, Toast, Modal, ExpenseForm, and framer-motion to isolate page logic.
 // - Verifies base layout (headers, summary cards, and empty-state messaging) for users with no expenses.
 // - Exercises opening/closing the expense entry modal from both the header "Add Expense" and empty-state "Add First Expense" CTAs.
-// - Confirms correct wiring to Firebase listeners, including unsubscribe cleanup on unmount and graceful handling of connection errors.
+// - Confirms correct wiring to the subscribeToExpenses pub/sub, including unsubscribe cleanup on unmount and graceful handling of connection errors.
 // - Ensures summary statistics and empty-state card values remain consistent with the underlying (mocked) expense data.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -12,28 +12,9 @@ import { BrowserRouter } from 'react-router-dom';
 import Expenses from '../components/Dashboard/Expenses';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Firebase Auth before importing components
-jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(() => ({})),
-}));
-
-// Mock Firebase Firestore before importing components
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  query: jest.fn(),
-  onSnapshot: jest.fn(),
-  deleteDoc: jest.fn(),
-  doc: jest.fn(),
-  orderBy: jest.fn(),
-  updateDoc: jest.fn(),
-}));
-
-// Mock Firebase config
-jest.mock('../firebaseConfig', () => ({
-  auth: {},
-  db: {},
-}));
+// Mock Cognito so the real AuthContext resolves to a logged-in user
+jest.mock('amazon-cognito-identity-js');
+const { __mockUserPoolInstance } = require('amazon-cognito-identity-js');
 
 // Mock Chart.js components to prevent DOM errors
 jest.mock('react-chartjs-2', () => ({
@@ -129,16 +110,6 @@ jest.mock('framer-motion', () => ({
 global.confirm = jest.fn();
 
 // Get the mocked functions
-const {
-  collection,
-  query,
-  onSnapshot,
-  deleteDoc,
-  doc,
-  orderBy,
-  updateDoc
-} = require('firebase/firestore');
-const { onAuthStateChanged } = require('firebase/auth');
 const { subscribeToExpenses } = require('../services/expenseService');
 
 // Test wrapper component
@@ -162,36 +133,21 @@ describe('Expenses Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // Mock Firebase functions
-    collection.mockReturnValue('mock-collection');
-    query.mockReturnValue('mock-query');
-    orderBy.mockReturnValue('mock-order-by');
-    doc.mockReturnValue('mock-doc');
-
-    // subscribeToExpenses must return a function so the component can call it on unmount
-    subscribeToExpenses.mockReturnValue(() => {});
-    
-    // Mock onSnapshot to simulate empty Firebase listener (empty state)
-    onSnapshot.mockImplementation((query, callback) => {
-      act(() => {
-        callback({
-          forEach: (fn) => [] // Empty array to simulate no expenses
-        });
-      });
-      return () => {}; // Return unsubscribe function
+    // subscribeToExpenses must return a function so the component can call it on unmount,
+    // and by default simulates the empty-state case (no expenses yet).
+    subscribeToExpenses.mockImplementation((userId, callback) => {
+      callback([]);
+      return () => {};
     });
 
-    // Mock Firebase Auth
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-      act(() => {
-        callback(mockUser);
-      });
-      return () => {}; // Return unsubscribe function
+    // Real AuthContext + mocked Cognito resolves to a logged-in user on mount.
+    __mockUserPoolInstance.getCurrentUser.mockReturnValue({
+      getSession: (cb) => cb(null, { isValid: () => true }),
+      getUserAttributes: (cb) => cb(null, [
+        { getName: () => 'email', getValue: () => mockUser.email },
+      ]),
+      getUsername: () => mockUser.uid,
     });
-
-    // Mock successful Firebase operations
-    deleteDoc.mockResolvedValue({});
-    updateDoc.mockResolvedValue({});
   });
 
   afterAll(() => {
@@ -255,7 +211,7 @@ describe('Expenses Component', () => {
         </TestWrapper>
       );
 
-      const addButton = screen.getByText('Add Expense');
+      const addButton = await screen.findByText('Add Expense');
       fireEvent.click(addButton);
 
       await waitFor(() => {
@@ -288,10 +244,10 @@ describe('Expenses Component', () => {
   });
 
   describe('Error Handling Tests', () => {
-    it('handles Firebase connection errors gracefully', async () => {
-      onSnapshot.mockImplementation((query, callback) => {
-        // Simulate error
-        throw new Error('Firebase connection failed');
+    it('handles API connection errors gracefully', async () => {
+      subscribeToExpenses.mockImplementation((userId, callback) => {
+        callback(undefined, new Error('API connection failed'));
+        return () => {};
       });
 
       render(
@@ -301,7 +257,7 @@ describe('Expenses Component', () => {
       );
 
       // Component should still render without crashing
-      expect(screen.getByText('Expenses')).toBeInTheDocument();
+      expect(await screen.findByText('Expenses')).toBeInTheDocument();
     });
   });
 
@@ -353,7 +309,7 @@ describe('Expenses Component', () => {
       expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
 
       // Click add button
-      const addButton = screen.getByText('Add Expense');
+      const addButton = await screen.findByText('Add Expense');
       fireEvent.click(addButton);
 
       // Modal should open
@@ -374,8 +330,8 @@ describe('Expenses Component', () => {
     });
   });
 
-  describe('Firebase Integration Tests', () => {
-    it('calls Firebase functions with correct parameters', async () => {
+  describe('Service Integration Tests', () => {
+    it('calls subscribeToExpenses with correct parameters', async () => {
       render(
         <TestWrapper>
           <Expenses />
@@ -387,7 +343,7 @@ describe('Expenses Component', () => {
       });
     });
 
-    it('handles Firebase unsubscribe correctly', async () => {
+    it('handles unsubscribe correctly', async () => {
       const mockUnsubscribe = jest.fn();
       subscribeToExpenses.mockReturnValue(mockUnsubscribe);
 

@@ -28,7 +28,6 @@ jest.mock('../services/categoryService', () => ({
   deleteCategory: jest.fn(),
   updateCategory: jest.fn(),
   subscribeToCategories: jest.fn(() => jest.fn()),
-  renameCategoryExpenses: jest.fn(),
 }));
 
 jest.mock('../services/budgetService', () => ({
@@ -42,14 +41,6 @@ jest.mock('../services/aiService', () => ({
 
 jest.mock('../hooks/useDateFilter', () => ({
   getDateRangeForPreset: jest.fn(),
-}));
-
-jest.mock('../firebaseConfig', () => ({ db: {} }));
-
-jest.mock('firebase/firestore', () => ({
-  collection: jest.fn(),
-  query: jest.fn(),
-  onSnapshot: jest.fn(() => jest.fn()),
 }));
 
 const { addExpense } = require('../services/expenseService');

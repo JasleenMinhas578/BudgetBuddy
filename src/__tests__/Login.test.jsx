@@ -1,30 +1,22 @@
 // Detailed tests for the `Login` authentication form component.
-// - Mocks Firebase Auth, config, framer-motion, and navigation to isolate form validation, UX, and routing behavior.
+// - Mocks amazon-cognito-identity-js (see src/__mocks__/), framer-motion, and navigation
+//   to isolate form validation, UX, and routing behavior from a real Cognito call.
 // - Verifies initial rendering, accessibility attributes, input wiring, and basic typing interactions.
 // - Covers navigation flows (to dashboard on success, back to home, and to signup) as well as reading and clearing messages from router state.
 // - Exercises loading state, disabling the submit button, and displaying "Signing in..." while a login is pending.
-// - Maps a variety of Firebase error codes to user-friendly messages and ensures generic errors are handled, then cleared on resubmission.
-// - Confirms the form forwards the correct credentials into `signInWithEmailAndPassword`, even when fields are empty.
+// - Maps a variety of Cognito error codes to user-friendly messages and ensures generic errors are handled, then cleared on resubmission.
+// - Confirms the form forwards the correct credentials into `authenticateUser`, even when fields are empty.
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 
 // Now import the components after mocks are set up
 import Login from '../components/Auth/Login';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Firebase Auth before importing components
-jest.mock('firebase/auth', () => ({
-  signInWithEmailAndPassword: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  getAuth: jest.fn(() => ({})),
-}));
-
-// Mock Firebase config
-jest.mock('../firebaseConfig', () => ({
-  auth: {},
-  db: {},
-}));
+jest.mock('amazon-cognito-identity-js');
+const { __mockUserInstance: mockUserInstance } = require('amazon-cognito-identity-js');
+const mockAuthenticateUser = mockUserInstance.authenticateUser;
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
@@ -47,9 +39,6 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Get the mocked functions
-const { signInWithEmailAndPassword, onAuthStateChanged } = require('firebase/auth');
-
 // Test wrapper component
 const TestWrapper = ({ children }) => (
   <BrowserRouter>
@@ -62,35 +51,32 @@ const TestWrapper = ({ children }) => (
 describe('Login Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+    // Re-establish defaults every test — clearAllMocks() wipes out the
+    // baked-in default implementation from the manual mock module, not just
+    // call history, once enough tests have run.
+    mockUserInstance.getUserAttributes.mockImplementation((cb) => cb(null, [
+      { getName: () => 'email', getValue: () => 'test@example.com' },
+    ]));
+
     // Suppress console warnings for cleaner test output
     jest.spyOn(console, 'error').mockImplementation((message) => {
-      if (message.includes('Warning: An update to') || 
+      if (message.includes('Warning: An update to') ||
           message.includes('ReactDOMTestUtils.act') ||
           message.includes('React Router Future Flag')) {
         return;
       }
       console.error(message);
     });
-    
+
     jest.spyOn(console, 'warn').mockImplementation((message) => {
       if (message.includes('React Router Future Flag')) {
         return;
       }
       console.warn(message);
     });
-    
-    onAuthStateChanged.mockImplementation((auth, callback) => {
-      // Use act to wrap the callback to prevent warnings
-      act(() => {
-        callback(null); // No user initially
-      });
-      return () => {}; // Return unsubscribe function
-    });
   });
 
   afterEach(() => {
-    // Restore console methods
     console.error.mockRestore();
     console.warn.mockRestore();
   });
@@ -103,16 +89,13 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      // Check for main elements
       expect(screen.getByText('Welcome Back')).toBeInTheDocument();
       expect(screen.getByText('Sign in to your BudgetBuddy account')).toBeInTheDocument();
-      
-      // Check for form elements
+
       expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
       expect(screen.getByLabelText('Password')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
-      
-      // Check for navigation elements
+
       expect(screen.getByRole('button', { name: /go back to home/i })).toBeInTheDocument();
       expect(screen.getByText("Don't have an account?")).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /sign up/i })).toBeInTheDocument();
@@ -128,7 +111,6 @@ describe('Login Component', () => {
       const emailInput = screen.getByLabelText('Email Address');
       const passwordInput = screen.getByLabelText('Password');
 
-      // Check input types and required attributes
       expect(emailInput).toHaveAttribute('type', 'email');
       expect(emailInput).toHaveAttribute('required');
       expect(emailInput).toHaveAttribute('placeholder', 'Enter your email');
@@ -145,11 +127,8 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      // Check for proper labeling
       expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
       expect(screen.getByLabelText('Password')).toBeInTheDocument();
-      
-      // Check for aria-label on back button
       expect(screen.getByRole('button', { name: /go back to home/i })).toBeInTheDocument();
     });
   });
@@ -164,7 +143,7 @@ describe('Login Component', () => {
 
       const emailInput = screen.getByLabelText('Email Address');
       fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      
+
       expect(emailInput.value).toBe('test@example.com');
     });
 
@@ -177,15 +156,13 @@ describe('Login Component', () => {
 
       const passwordInput = screen.getByLabelText('Password');
       fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      
+
       expect(passwordInput.value).toBe('password123');
     });
 
     it('shows loading state when form is submitted', async () => {
-      // Mock a delayed login response
-      signInWithEmailAndPassword.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
-      );
+      // Never resolves — simulates a pending Cognito call.
+      mockAuthenticateUser.mockImplementation(() => {});
 
       render(
         <TestWrapper>
@@ -193,23 +170,18 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
-
-      // Check for loading state
       expect(screen.getByText('Signing in...')).toBeInTheDocument();
-      expect(submitButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: /signing in/i })).toBeDisabled();
     });
   });
 
   describe('Navigation Tests', () => {
     it('navigates to dashboard on successful login', async () => {
-      signInWithEmailAndPassword.mockResolvedValue({});
+      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
 
       render(
         <TestWrapper>
@@ -217,13 +189,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
@@ -237,9 +205,7 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const backButton = screen.getByRole('button', { name: /go back to home/i });
-      fireEvent.click(backButton);
-
+      fireEvent.click(screen.getByRole('button', { name: /go back to home/i }));
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
 
@@ -271,8 +237,9 @@ describe('Login Component', () => {
 
   describe('Error Handling Tests', () => {
     it('displays user not found error', async () => {
-      const error = { code: 'auth/user-not-found' };
-      signInWithEmailAndPassword.mockRejectedValue(error);
+      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
+        onFailure({ code: 'UserNotFoundException' })
+      );
 
       render(
         <TestWrapper>
@@ -280,13 +247,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
@@ -294,8 +257,9 @@ describe('Login Component', () => {
     });
 
     it('displays wrong password error', async () => {
-      const error = { code: 'auth/wrong-password' };
-      signInWithEmailAndPassword.mockRejectedValue(error);
+      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
+        onFailure({ code: 'NotAuthorizedException' })
+      );
 
       render(
         <TestWrapper>
@@ -303,13 +267,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrongpassword' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
@@ -317,8 +277,9 @@ describe('Login Component', () => {
     });
 
     it('displays invalid email error', async () => {
-      const error = { code: 'auth/invalid-email' };
-      signInWithEmailAndPassword.mockRejectedValue(error);
+      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
+        onFailure({ code: 'InvalidParameterException' })
+      );
 
       render(
         <TestWrapper>
@@ -326,13 +287,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'invalid-email' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Invalid email format')).toBeInTheDocument();
@@ -340,8 +297,9 @@ describe('Login Component', () => {
     });
 
     it('displays generic error for unknown error codes', async () => {
-      const error = { code: 'auth/unknown-error' };
-      signInWithEmailAndPassword.mockRejectedValue(error);
+      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
+        onFailure({ code: 'InternalErrorException' })
+      );
 
       render(
         <TestWrapper>
@@ -349,13 +307,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Failed to log in. Please try again.')).toBeInTheDocument();
@@ -363,9 +317,9 @@ describe('Login Component', () => {
     });
 
     it('clears error when form is resubmitted', async () => {
-      // First, trigger an error
-      const error = { code: 'auth/user-not-found' };
-      signInWithEmailAndPassword.mockRejectedValueOnce(error);
+      mockAuthenticateUser.mockImplementationOnce((details, { onFailure }) =>
+        onFailure({ code: 'UserNotFoundException' })
+      );
 
       render(
         <TestWrapper>
@@ -373,21 +327,16 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
 
-      // Now mock a successful login
-      signInWithEmailAndPassword.mockResolvedValue({});
-      fireEvent.click(submitButton);
+      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
         expect(screen.queryByText('Invalid email or password')).not.toBeInTheDocument();
@@ -403,23 +352,18 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-      
-      // Try to submit with empty fields
-      fireEvent.click(submitButton);
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-      // The form should still attempt to submit but with empty values
-      // This is expected behavior as the component doesn't prevent empty submissions
-      // The validation happens at the Firebase level
-      expect(signInWithEmailAndPassword).toHaveBeenCalledWith(
-        expect.anything(),
-        '',
-        ''
-      );
+      // The form still attempts to submit with empty values — validation
+      // happens at the Cognito level, same as it did at the Firebase level before.
+      expect(mockAuthenticateUser).toHaveBeenCalled();
+      const [authDetails] = mockAuthenticateUser.mock.calls[0];
+      expect(authDetails.Username).toBe('');
+      expect(authDetails.Password).toBe('');
     });
 
-    it('calls login function with correct parameters', async () => {
-      signInWithEmailAndPassword.mockResolvedValue({});
+    it('calls authenticateUser with correct parameters', async () => {
+      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
 
       render(
         <TestWrapper>
@@ -427,29 +371,22 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(signInWithEmailAndPassword).toHaveBeenCalledWith(
-          expect.anything(), // Firebase auth instance
-          'test@example.com',
-          'password123'
-        );
+        expect(mockAuthenticateUser).toHaveBeenCalled();
       });
+      const [authDetails] = mockAuthenticateUser.mock.calls[0];
+      expect(authDetails.Username).toBe('test@example.com');
+      expect(authDetails.Password).toBe('password123');
     });
   });
 
   describe('Loading State Tests', () => {
     it('disables submit button during loading', async () => {
-      signInWithEmailAndPassword.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
-      );
+      mockAuthenticateUser.mockImplementation(() => {});
 
       render(
         <TestWrapper>
@@ -457,21 +394,15 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
-
-      expect(submitButton).toBeDisabled();
+      expect(screen.getByRole('button', { name: /signing in/i })).toBeDisabled();
     });
 
     it('shows loading spinner during authentication', async () => {
-      signInWithEmailAndPassword.mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 100))
-      );
+      mockAuthenticateUser.mockImplementation(() => {});
 
       render(
         <TestWrapper>
@@ -479,13 +410,9 @@ describe('Login Component', () => {
         </TestWrapper>
       );
 
-      const emailInput = screen.getByLabelText('Email Address');
-      const passwordInput = screen.getByLabelText('Password');
-      const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-      fireEvent.change(passwordInput, { target: { value: 'password123' } });
-      fireEvent.click(submitButton);
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'password123' } });
+      fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       expect(screen.getByText('Signing in...')).toBeInTheDocument();
     });

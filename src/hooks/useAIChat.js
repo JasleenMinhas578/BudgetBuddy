@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { subscribeToExpenses, addExpense, deleteExpense, updateExpense } from '../services/expenseService';
-import { addCategory, deleteCategory, updateCategory, subscribeToCategories, renameCategoryExpenses } from '../services/categoryService';
+import { addExpense, deleteExpense, updateExpense } from '../services/expenseService';
+import { addCategory, deleteCategory, updateCategory, subscribeToCategories } from '../services/categoryService';
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
@@ -67,11 +67,9 @@ export function useAIChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [expenses, setExpenses] = useState([]);
   const [customCategories, setCustomCategories] = useState([]);
   const [sessionDateRange, setSessionDateRange] = useState(null);
   const [budgets, setBudgets] = useState({ monthly: null, categories: {} });
-  const [dataReady, setDataReady] = useState(false);
 
   // Ref so sendMessage can read current messages without stale closure
   const messagesRef = useRef([]);
@@ -98,23 +96,12 @@ export function useAIChat() {
     catch {}
   }, [messages]);
 
-  // Reset dataReady when chat closes so the next open waits for fresh data
-  useEffect(() => {
-    if (!isOpen) setDataReady(false);
-  }, [isOpen]);
-
-  // Live-subscribe to expenses, categories, and budgets when chat opens
+  // Live-subscribe to categories and budgets when chat opens. Neither is
+  // sent to the AI anymore (it looks its own up via tool calls) — these are
+  // just for rendering (the category dropdown on confirm cards, and the
+  // budget migration when a category gets renamed via handleConfirmAction).
   useEffect(() => {
     if (!isOpen || !currentUser) return;
-    let unsubExpenses = () => {};
-    try {
-      unsubExpenses = subscribeToExpenses(currentUser.uid, (data, err) => {
-        if (!err && data !== null) {
-          setExpenses(data);
-          setDataReady(true);
-        }
-      });
-    } catch {}
     let unsubCats = () => {};
     try {
       unsubCats = subscribeToCategories(currentUser.uid, setCustomCategories);
@@ -123,12 +110,12 @@ export function useAIChat() {
     try {
       unsubBudgets = subscribeToBudgets(currentUser.uid, setBudgets);
     } catch {}
-    return () => { unsubExpenses(); unsubCats(); unsubBudgets(); };
+    return () => { unsubCats(); unsubBudgets(); };
   }, [isOpen, currentUser]);
 
   const sendMessage = useCallback(async (text) => {
     const trimmed = text?.trim();
-    if (!trimmed || loading || !dataReady) return;
+    if (!trimmed || loading || !currentUser) return;
 
     const hadPendingBefore = messagesRef.current.some(
       (m) => ACTION_TYPES.includes(m.type) && !m.confirmed && !m.dismissed
@@ -139,8 +126,7 @@ export function useAIChat() {
     setLoading(true);
 
     try {
-      const idToken = await currentUser.getIdToken().catch(() => null);
-      const result = await processMessage(trimmed, expenses, customCategories, sessionDateRange, budgets, currencyInfoRef.current, idToken);
+      const result = await processMessage(trimmed, sessionDateRange, currencyInfoRef.current);
 
       const mapped = INTENT_MAP[result.intent];
       if (mapped && result[mapped.dataKey]) {
@@ -177,7 +163,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [loading, dataReady, expenses, customCategories, sessionDateRange, budgets, currentUser]);
+  }, [loading, sessionDateRange, currentUser]);
 
   const handleDismiss = useCallback((idx) => {
     setMessages((prev) => prev.map((msg, i) => (i === idx ? { ...msg, dismissed: true } : msg)));
@@ -217,7 +203,6 @@ export function useAIChat() {
       else if (type === 'edit_category_confirm') {
         const { id, name: oldName, newName } = msg.editCategoryData;
         await updateCategory(currentUser.uid, id, { name: newName });
-        await renameCategoryExpenses(currentUser.uid, oldName, newName);
         const oldBudget = budgetsRef.current?.categories?.[oldName];
         if (oldBudget != null) {
           await updateCategoryBudget(currentUser.uid, newName, oldBudget);
@@ -253,10 +238,7 @@ export function useAIChat() {
 
     setLoading(true);
     try {
-      const idToken = currentUser
-        ? await currentUser.getIdToken().catch(() => null)
-        : null;
-      const result = await processMessage(originalQuestion, expenses, customCategories, range, budgets, currencyInfoRef.current, idToken);
+      const result = await processMessage(originalQuestion, range, currencyInfoRef.current);
       setMessages((prev) => [...prev, { role: 'assistant', content: result.message, type: 'text' }]);
     } catch (err) {
       setMessages((prev) => [
@@ -266,7 +248,7 @@ export function useAIChat() {
     } finally {
       setLoading(false);
     }
-  }, [expenses, customCategories, budgets, currentUser]);
+  }, []);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
@@ -277,7 +259,6 @@ export function useAIChat() {
     messages,
     input, setInput,
     loading,
-    dataReady,
     sessionDateRange, setSessionDateRange,
     customCategories,
     sendMessage,
