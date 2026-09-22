@@ -15,8 +15,13 @@ types.setTypeParser(1082, (val) => val);
 // math expects a real number — so parse it here rather than at every call site.
 types.setTypeParser(1700, (val) => parseFloat(val));
 
+// Small max: on Vercel this pool is created per warm serverless container,
+// not once for the whole process like a traditional long-running server —
+// the default of 10 could multiply across concurrent invocations and exceed
+// RDS's connection limit.
 const pool = new Pool({
   ssl: { rejectUnauthorized: false },
+  max: 3,
 });
 
 module.exports = pool;

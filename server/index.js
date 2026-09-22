@@ -41,5 +41,13 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.status ? err.message : 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`));
+// Only bind to a port for local dev (`node server/index.js`). When Vercel's
+// serverless function imports this file, it calls the exported Express app
+// directly as a request handler instead — app.listen() would be a no-op
+// there and just waste a cold-start on a port that's never used.
+if (require.main === module) {
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, () => console.log(`API listening on http://localhost:${PORT}`));
+}
+
+module.exports = app;
