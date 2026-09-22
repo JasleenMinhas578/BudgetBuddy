@@ -42,6 +42,20 @@ async function requestModel(model, body, apiKey) {
   return { ok: false, err, canFallback: FALLBACK_STATUSES.has(res.status) };
 }
 
+// Ground truth for what a call actually cost, straight from Gemini's own
+// count — no more guessing from char-length. cachedContentTokenCount > 0
+// means the implicit-caching prefix (CHAT_INSTRUCTIONS + tool declarations,
+// see aiPrompts.js) actually got a cache hit on that call; 0 means it didn't
+// (cold start, prefix mismatch, or below the model's cache-eligibility floor).
+function logTokenUsage(model, usage) {
+  if (!usage) return;
+  const { promptTokenCount = 0, cachedContentTokenCount = 0, candidatesTokenCount = 0, totalTokenCount = 0 } = usage;
+  const cachedPct = promptTokenCount > 0 ? Math.round((cachedContentTokenCount / promptTokenCount) * 100) : 0;
+  console.log(
+    `[gemini usage] model=${model} promptTokens=${promptTokenCount} cachedTokens=${cachedContentTokenCount} (${cachedPct}%) outputTokens=${candidatesTokenCount} totalTokens=${totalTokenCount}`
+  );
+}
+
 // Calls Gemini's generateContent. `tools` is the raw functionDeclarations
 // array from aiTools.js, or null/undefined for a plain text-only prompt.
 //
@@ -50,7 +64,7 @@ async function requestModel(model, body, apiKey) {
 // but since this gets called up to 5x in one tool-calling request, that
 // compounded into multi-minute hangs on a single slow request). If a full
 // pass through every model fails, wait briefly once and do one more pass.
-async function callGemini(contents, tools, { temperature = 0.2, maxOutputTokens = 1024 } = {}) {
+async function callGemini(contents, tools, { temperature = 0.2, maxOutputTokens = 1024, systemInstruction } = {}) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     const err = new Error('AI service not configured');
@@ -58,7 +72,12 @@ async function callGemini(contents, tools, { temperature = 0.2, maxOutputTokens 
     throw err;
   }
 
+  // Sent as its own top-level field, not folded into `contents` — a
+  // structurally distinct, byte-identical-every-call field is what Gemini's
+  // caching (implicit or explicit) actually keys off, not a sub-string
+  // prefix buried inside one big text blob.
   const body = JSON.stringify({
+    ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
     contents,
     ...(tools ? { tools: [{ functionDeclarations: tools }] } : {}),
     generationConfig: { temperature, maxOutputTokens },
@@ -68,7 +87,10 @@ async function callGemini(contents, tools, { temperature = 0.2, maxOutputTokens 
   for (let pass = 0; pass < PASSES; pass++) {
     for (const model of MODELS) {
       const result = await requestModel(model, body, apiKey);
-      if (result.ok) return result.data;
+      if (result.ok) {
+        logTokenUsage(model, result.data.usageMetadata);
+        return result.data;
+      }
       lastErr = result.err;
       if (!result.canFallback) throw lastErr;
     }

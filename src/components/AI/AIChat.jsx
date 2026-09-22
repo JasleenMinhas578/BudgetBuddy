@@ -60,10 +60,10 @@ export default function AIChat() {
     {
       label: 'Currency rates',
       questions: [
-        `What's the ${homeCurrency} to USD rate?`,
-        `What's the ${homeCurrency} to EUR rate?`,
+        `What's the ${homeCurrency} to ${homeCurrency !== 'USD' ? 'USD' : 'GBP'} rate?`,
+        `What's the ${homeCurrency} to ${homeCurrency !== 'EUR' ? 'EUR' : 'GBP'} rate?`,
         `Convert 100 ${homeCurrency} to ${currency !== homeCurrency ? currency : 'INR'}`,
-        `What's 1 USD in ${homeCurrency}?`,
+        `What's 1 ${homeCurrency !== 'USD' ? 'USD' : 'CAD'} in ${homeCurrency}?`,
       ].filter((q, i, arr) => arr.indexOf(q) === i),
     },
   ];

@@ -24,3 +24,16 @@ export function formatAmount(amount, displayCurrencyCode, liveRates, homeCurrenc
   const converted = (amount ?? 0) * (displayRate / homeRate);
   return `${display.symbol}${converted.toFixed(display.decimals)}`;
 }
+
+// The exchange-rate API returns ~150+ currencies; the app only ever lets a
+// user pick from the 10 above. Used to trim liveRates before it's sent to
+// the AI chat/summary endpoints, where the full set was costing ~2,300
+// prompt tokens per call for currencies nothing in the app can select.
+export function getSupportedRates(liveRates) {
+  if (!liveRates) return liveRates;
+  const filtered = {};
+  CURRENCIES.forEach((c) => {
+    if (liveRates[c.code] != null) filtered[c.code] = liveRates[c.code];
+  });
+  return filtered;
+}

@@ -3,7 +3,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { checkAndIncrement } = require('../services/aiUsage');
 const { TOOLS, executeTool } = require('../services/aiTools');
 const { callGemini } = require('../services/geminiClient');
-const { buildChatPrompt, buildSummaryPrompt } = require('../services/aiPrompts');
+const { CHAT_INSTRUCTIONS, buildChatPrompt, buildSummaryPrompt } = require('../services/aiPrompts');
 
 const router = express.Router();
 
@@ -48,7 +48,7 @@ router.post('/chat', asyncHandler(async (req, res) => {
   for (let turn = 0; turn < 5 && finalText === null; turn++) {
     let data;
     try {
-      data = await callGemini(contents, TOOLS);
+      data = await callGemini(contents, TOOLS, { systemInstruction: CHAT_INSTRUCTIONS });
     } catch (err) {
       throw sanitizeGeminiError(err);
     }

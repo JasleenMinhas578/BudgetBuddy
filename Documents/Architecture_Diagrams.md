@@ -7,6 +7,8 @@
 
 This document provides comprehensive architecture documentation following the 4+1 architectural view model, including UML diagrams, component interactions, and deployment architecture.
 
+> ⚠️ **Historical document**: this describes the original academic-project architecture — React + Firebase Auth + Firestore, deployed to Vercel. The codebase has since migrated to a self-hosted stack: **Node/Express + AWS RDS Postgres + AWS Cognito**, with the AI chat rebuilt around real Gemini tool-calling (RAG). The diagrams/flows below (data model, auth flow, deployment) no longer match the running app. For the current architecture, see the [README's Architecture section](../README.md#️-architecture) and [`ROADMAP.md`](../ROADMAP.md); for the current API surface, see [`Documents/API_Reference.md`](API_Reference.md). Kept here as a record of the original design rather than rewritten, since it also documents diagrams (`Documents/UML/*.png`) that were never regenerated for the new stack.
+
 > 📋 **Related Documents**:  
 > - [`Documents/Requirements.md`](Documents/Requirements.md) - Functional and non-functional requirements  
 > - [`Documents/Acceptance_Tests.md`](Documents/Acceptance_Tests.md) - Requirements traceability and test coverage  

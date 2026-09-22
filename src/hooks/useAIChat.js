@@ -6,6 +6,7 @@ import { addCategory, deleteCategory, updateCategory, subscribeToCategories } fr
 import { updateCategoryBudget, subscribeToBudgets } from '../services/budgetService';
 import { processMessage } from '../services/aiService';
 import { getDateRangeForPreset } from './useDateFilter';
+import { getSupportedRates } from '../utils/currencyUtils';
 
 const ACTION_TYPES = [
   'expense_confirm', 'multiple_expense_confirm', 'category_confirm',
@@ -77,7 +78,7 @@ export function useAIChat() {
 
   // Ref so callbacks always have fresh currency info without adding it to all deps
   const currencyInfoRef = useRef({});
-  currencyInfoRef.current = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
+  currencyInfoRef.current = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates: getSupportedRates(liveRates) };
 
   // Ref so handleConfirmAction always reads the latest budgets without stale closure
   const budgetsRef = useRef(budgets);

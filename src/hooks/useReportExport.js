@@ -5,10 +5,11 @@ import { generateSummary } from '../services/aiService';
 import { safeFormatDate } from '../utils/formatDate';
 import { getDateFilterFlatLabel } from '../utils/dateFilterLabel';
 import { useCurrency } from '../context/CurrencyContext';
+import { getSupportedRates } from '../utils/currencyUtils';
 
 export function useReportExport({ filteredExpenses, dateFilter, customDateRange, totalAmount, averageAmount, categoryData, topCategory }) {
   const { formatAmount, homeCurrency, currency, homeSymbol, currencySymbol: displaySymbol, liveRates } = useCurrency();
-  const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates };
+  const currencyInfo = { homeCurrency, homeSymbol, displayCurrency: currency, displaySymbol, liveRates: getSupportedRates(liveRates) };
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [pdfError, setPdfError] = useState(null);
   const [aiSummary, setAiSummary] = useState(null);

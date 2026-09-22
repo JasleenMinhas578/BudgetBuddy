@@ -2,7 +2,9 @@
 
 ## Overview
 
-BudgetBuddy includes a floating AI chat widget (bottom-right corner) powered by **Google Gemini**. Users can add, edit, and delete expenses and categories in plain English, query their spending data with natural-language date ranges, and control the dashboard date filter — all without leaving the app.
+BudgetBuddy includes a floating AI chat widget (bottom-right corner) powered by **Google Gemini**, using real **tool-calling / retrieval-augmented generation (RAG)** rather than stuffing the user's data into the prompt. Users can add, edit, and delete expenses, categories, and budget goals in plain English, query their spending data with natural-language date ranges, and get live currency conversions — all without leaving the app.
+
+This is Phase 3 of the project's migration off Firebase/Vercel (see [`ROADMAP.md`](../ROADMAP.md)). The previous version computed every aggregate client-side in JavaScript and pasted the last 50 expenses plus the full category/budget lists into every single prompt. The current version sends a small, static instruction prompt and lets Gemini call SQL-backed tools whenever it actually needs real data.
 
 ---
 
@@ -14,374 +16,213 @@ User types a message
         ▼
 AIChat.jsx (UI shell) → delegates all logic to useAIChat.js (custom hook)
   useAIChat.js:
-  - Loads user's expenses from Firestore once on chat open (getExpenses)
-  - Subscribes to user's custom categories via Firestore onSnapshot (direct query)
-  - Holds its own sessionDateRange state (internal — separate from the dashboard filter)
-  - Owns all state: messages, input, loading, expenses, customCategories, sessionDateRange
+  - Holds chat state: messages, input, loading, sessionDateRange
+  - Subscribes to customCategories/budgets only for UI rendering (the category
+    dropdown on confirm cards, and migrating a budget limit when a category
+    is renamed) — NOT sent to the AI; the server looks its own data up
         │
         ▼
-aiService.js → Gemini API (REST call)
-  - Checks daily rate limit (50 requests/day via localStorage)
-  - Pre-aggregates spending stats over filtered expenses
-  - Builds prompt: stats + last 50 individual records + categories + session date range
-  - Sends to: gemini-3.6-flash model (with retry logic for 429 errors)
+aiService.js → POST {API_BASE}/api/ai/chat  (Cognito-authenticated, via apiClient.js)
+  body: { message, sessionDateRange, currencyInfo }
         │
         ▼
-Gemini returns structured JSON
+server/routes/ai.js  (Express, requireAuth middleware already ran)
+  1. checkAndIncrement(req.uid) — DB-backed daily limit (50/day), server/services/aiUsage.js
+  2. buildChatPrompt(...) — static instructions + this request's date/currency context only
+  3. Tool-calling loop (up to 5 turns) against server/services/geminiClient.js:
+       Gemini responds with a functionCall  →  server runs the matching SQL tool
+       (server/services/aiTools.js, scoped to WHERE user_id = req.uid)  →  the
+       result is handed back to Gemini as the next turn  →  repeat until Gemini
+       returns plain text (the final JSON) instead of a functionCall
+  4. extractJson(...) parses the final { intent, message, ...data } object
+        │
+        ▼
+Client receives the same intent/data shape as before:
   {
-    intent: "ADD_EXPENSE" | "EDIT_EXPENSE" | "DELETE_EXPENSE" |
-            "ADD_CATEGORY" | "EDIT_CATEGORY" | "DELETE_CATEGORY" |
-            "QUERY" | "SET_DATE_RANGE" | "ASK_DATE_RANGE" | "CHAT",
+    intent: "ADD_EXPENSE" | "ADD_MULTIPLE_EXPENSES" | "ADD_CATEGORY" |
+            "DELETE_EXPENSE" | "EDIT_EXPENSE" | "DELETE_CATEGORY" | "EDIT_CATEGORY" |
+            "SET_BUDGET" | "REMOVE_BUDGET" | "QUERY" | "ASK_DATE_RANGE" |
+            "SET_DATE_RANGE" | "CURRENCY_CONVERT" | "CHAT",
     message: "friendly response",
-    expenseData?:       { title, amount, category, date },
-    editExpenseData?:   { id, title, amount, category, date, updates: { title?, amount?, category?, date? } },
-    deleteExpenseData?: { id, title, amount, category, date },
-    categoryData?:      { name },
-    editCategoryData?:  { id, name, newName },
-    deleteCategoryData?:{ id, name },
-    dateRange?:         { label, from, to }
+    expenseData?, expensesData?, categoryData?, deleteExpenseData?,
+    editExpenseData?, deleteCategoryData?, editCategoryData?, dateRange?, budgetData?
   }
         │
         ▼
-AIChat.jsx handles the intent:
-  ADD_EXPENSE       → show confirmation card → user clicks "Add Expense"      → Firestore write
-  EDIT_EXPENSE      → show confirmation card → user clicks "Save Changes"     → Firestore update
-  DELETE_EXPENSE    → show confirmation card → user clicks "Delete Expense"   → Firestore delete
-  ADD_CATEGORY      → show confirmation card → user clicks "Add Category"     → Firestore write
-  EDIT_CATEGORY     → show confirmation card → user clicks "Rename"           → Firestore update
-  DELETE_CATEGORY   → show confirmation card → user clicks "Delete Category"  → Firestore delete
-  SET_DATE_RANGE    → updates the chat's own sessionDateRange (shown in header)
-                     (this does NOT change the dashboard date filter)
-  ASK_DATE_RANGE    → renders a date_range_picker card with 6 preset buttons;
-                     user picks a preset → range is set and original question is re-answered
-  QUERY             → display the computed answer as a chat bubble
-  CHAT              → display the conversational response as a chat bubble
+useAIChat.js maps the intent to a confirm-card message type (INTENT_MAP) and
+renders it via ChatMessage.jsx. Every mutating action still requires an
+explicit confirm click — the AI never writes to Postgres on its own; it only
+ever returns a proposed action for the user to approve.
 ```
 
-Every destructive or mutating action requires an explicit user confirmation click — the AI never writes to Firestore without it.
+---
 
-> **Important**: The chat's session date range (`sessionDateRange`) is **internal to the chat widget**. It is used to focus AI queries within a chosen period. It does **not** affect the dashboard's `DateRangeContext` or any other view. If the user wants to change the dashboard date filter, they use the date filter bar on each page or the Settings page default.
+## Why tool-calling instead of a data dump
+
+The old design had a real correctness bug: it could only "find" an expense or category to edit/delete by scanning the last 50 records pasted into the prompt, so anything older was invisible to the model. The new design fixes this by letting Gemini call `find_expenses`/`list_categories` against the whole table — it can locate *any* record regardless of age, and it gets the record's real id back from a live query instead of hoping the model remembered it correctly from context.
+
+It also means the prompt no longer grows with the size of the user's data — it's a fixed set of instructions plus whatever small amount of context (today's date, active date range, currency rates) is relevant to that one message.
+
+---
+
+## The Tools (`server/services/aiTools.js`)
+
+Every tool takes `req.uid` as its first argument (never trusted from the model's `args`) and runs a parameterized SQL query scoped to that user.
+
+| Tool | Purpose | Key args |
+|------|---------|----------|
+| `get_spending_summary` | Total spent, transaction count, average, and a per-category breakdown for a date range | `from`, `to` |
+| `get_monthly_totals` | Spending grouped by month, for trend/comparison questions | `from`, `to` |
+| `get_top_expenses` | Largest individual expenses in a date range, sorted descending | `from`, `to`, `limit` (default 5) |
+| `find_expenses` | Case-insensitive substring search on title, optionally filtered by category/date range — used both to answer "what did I spend on X" and to locate the real expense behind an EDIT/DELETE | `titleQuery`, `category`, `from`, `to`, `limit` (default 10) |
+| `get_budget_status` | Current month's budget goals per category, spend-to-date against each, and the overall monthly limit | — |
+| `list_categories` | The 7 built-in defaults plus the user's custom categories with their real ids | — |
+
+Gemini is instructed (in the prompt) to call the right tool before answering any QUERY, before resolving which expense/category an EDIT or DELETE refers to, and before matching a category name for ADD_CATEGORY/SET_BUDGET/REMOVE_BUDGET — never to guess a number, id, or name.
+
+---
+
+## The Tool-Calling Loop (`server/routes/ai.js`)
+
+```js
+let finalText = null;
+for (let turn = 0; turn < 5 && finalText === null; turn++) {
+  const data = await callGemini(contents, TOOLS);
+  const parts = data.candidates[0].content.parts;
+  const functionCalls = parts.filter(p => p.functionCall);
+
+  if (functionCalls.length === 0) {
+    finalText = parts.map(p => p.text || '').join('').trim();
+    break;
+  }
+
+  contents.push({ role: 'model', parts });               // record the model's own turn
+  const responseParts = functionCalls.map(({ functionCall: { name, args } }) => ({
+    functionResponse: { name, response: { result: executeTool(req.uid, name, args) } },
+  }));
+  contents.push({ role: 'user', parts: responseParts });  // hand results back
+}
+```
+
+**A real API quirk found while building this**: this model's API rejects `role: "function"` for tool results — the role name used in most Gemini function-calling examples and in older API versions. It wants the tool's response framed as the next `role: "user"` turn instead. There's a comment marking this in the code since it's easy to silently get wrong (the request doesn't fail loudly in every SDK/version).
+
+---
+
+## Prompt Design (`server/services/aiPrompts.js`)
+
+`buildChatPrompt()` returns two concatenated parts:
+
+1. **`CHAT_INSTRUCTIONS`** — a module-level constant, byte-identical on every call for every user, containing the tool list, the intent taxonomy, the required JSON output shape, and all the intent-specific rules. Kept free of any per-request interpolation (no date, no session range, no currency) on purpose — Gemini's implicit prompt caching only discounts a request when its prefix matches a prior one byte-for-byte, and this is designed to be that stable, cacheable prefix.
+2. **Per-request context** — today's date, the active session date range (or an instruction to ask for one), and currency/exchange-rate info if available. This is appended *after* `CHAT_INSTRUCTIONS`, never interpolated into it, so the cacheable prefix never changes.
+
+Intents classified: `ADD_EXPENSE`, `ADD_MULTIPLE_EXPENSES`, `ADD_CATEGORY`, `DELETE_EXPENSE`, `EDIT_EXPENSE`, `DELETE_CATEGORY`, `EDIT_CATEGORY`, `SET_BUDGET`, `REMOVE_BUDGET`, `QUERY`, `ASK_DATE_RANGE`, `SET_DATE_RANGE`, `CURRENCY_CONVERT`, `CHAT`.
+
+A separate, much simpler prompt (`buildSummaryPrompt`) powers the Reports page's AI paragraph — see [Reports summary](#reports-page-ai-summary) below.
+
+---
+
+## Model Selection and Fallback (`server/services/geminiClient.js`)
+
+```js
+const MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+```
+
+`gemini-3.6-flash` is the required primary model (see [`CLAUDE.md`](../CLAUDE.md)). The two rolling aliases behind it are Google's own "always current-gen" pointers, used only as a fallback when the primary is overloaded — never as a silent downgrade to an old pinned model version.
+
+**Retry strategy**: cycle through all 3 models fast with no per-model backoff, then if a full pass through every model fails, wait 3 seconds once and do one more full pass. (An earlier version retried the *same* overloaded model 3 times with a 5s/15s/30s backoff before falling back — since this function gets called up to 5 times in one tool-calling request, that compounded into multi-minute hangs on a single slow request. Cycling models fast and only pausing between full passes fixed that.)
+
+**Known limitation found live**: the free tier of the Gemini API has **zero** quota for the pro model (`gemini-pro-latest` resolves to `gemini-3.1-pro`, confirmed via a live "quota exceeded ... limit: 0" response) — so on a free-tier key, that fallback link never actually succeeds. It's left in place since it's harmless and free the moment the account moves off the free tier.
+
+**Error sanitization**: `callGemini`'s errors are Google's raw upstream text (e.g. the quota message above, which names an internal model id the user has no reason to know). `server/routes/ai.js` catches these, logs the real message server-side, and returns a plain "BudgetBuddy AI is busy right now, please try again in a moment" message to the client instead.
+
+**Token usage logging**: every successful call logs `promptTokenCount`, `cachedContentTokenCount` (and the resulting cache-hit %), `candidatesTokenCount`, and `totalTokenCount` straight from Gemini's own `usageMetadata` — real ground truth for what a call cost and whether the implicit-caching prefix actually got reused, not an estimate.
+
+---
+
+## Rate Limiting (`server/services/aiUsage.js`)
+
+A **daily limit of 50 AI requests per user**, tracked in a real Postgres table (`ai_usage`, columns `user_id`, `usage_date`, `request_count`) rather than client-side `localStorage` — the old design could be reset by any user via `localStorage.removeItem('bb_ai_usage')` in DevTools, and didn't survive across browsers/devices anyway. The increment is a single atomic `INSERT ... ON CONFLICT DO UPDATE` query, avoiding a check-then-write race between two requests from the same user landing at once.
+
+---
+
+## Client Side (`src/services/aiService.js`, `src/hooks/useAIChat.js`)
+
+`aiService.js` is now a thin client:
+
+```js
+export const processMessage = async (userMessage, sessionDateRange, currencyInfo) =>
+  apiFetch('/api/ai/chat', { method: 'POST', body: JSON.stringify({ message: userMessage, sessionDateRange, currencyInfo }) });
+
+export const generateSummary = async (expenses, filterLabel, currencyInfo) => {
+  const trimmed = expenses.slice(-200).map(e => ({ title: e.title, amount: e.amount, category: e.category, date: e.date }));
+  const { summary } = await apiFetch('/api/ai/summary', { method: 'POST', body: JSON.stringify({ expenses: trimmed, filterLabel, currencyInfo }) });
+  return summary;
+};
+```
+
+`apiFetch` (`src/services/apiClient.js`) attaches the Cognito ID token automatically — no manual `getIdToken()` calls needed at the call site anymore.
+
+`useAIChat.js` no longer subscribes to the user's expenses at all (removed along with the `dataReady` load-gate it used to need) — nothing client-side has to pre-fetch expense data for the AI, since retrieval happens server-side per question. It still subscribes to `customCategories` (for the category dropdown on confirm cards) and `budgets` (to migrate a budget limit client-side when a category gets renamed via AI).
+
+Every mutating action still goes through the same `INTENT_MAP` → confirm-card → `handleConfirmAction` flow as before, calling the existing `expenseService`/`categoryService`/`budgetService` REST functions once the user clicks confirm.
 
 ---
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `src/components/AI/AIChat.jsx` | UI shell — renders the panel, header, input bar, message list, and toggle button. Delegates all state/logic to `useAIChat`. |
-| `src/components/AI/ChatMessage.jsx` | Renders individual chat messages, including all 6 confirmation card types (`expense_confirm`, `category_confirm`, `delete_expense_confirm`, `edit_expense_confirm`, `delete_category_confirm`, `edit_category_confirm`), the date range picker card, reminder bubbles, and plain text bubbles. |
-| `src/components/AI/AIChat.css` | Styles for the chat widget |
-| `src/hooks/useAIChat.js` | All AI chat logic: state (`messages`, `input`, `loading`, `expenses`, `customCategories`, `sessionDateRange`), `sendMessage`, `handleConfirmAction`, `handleDismiss`, `handlePickDateRange`, `handleKeyDown`, `getPendingReminder`, `buildPresetRange`. This is the "brain" of the chat — `AIChat.jsx` is just the UI shell. |
-| `src/services/aiService.js` | Gemini API calls: `processMessage()` and `generateSummary()`. Rate limiting, retry logic. |
-| `.env` | Stores the API key as `REACT_APP_GEMINI_API_KEY` |
-
-> **Note**: `src/context/DateRangeContext.js` is **not** involved in the AI chat. `SET_DATE_RANGE` sets `sessionDateRange` state inside `useAIChat.js` only — it never touches `DateRangeContext`.
-
----
-
-## Gemini API Call
-
-### Endpoint
-
-```
-POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=YOUR_KEY
-```
-
-- **Model**: `gemini-3.6-flash` — Google's latest free-tier model (as of August 2026)
-- **API version**: `v1beta`
-- **Auth**: API key passed as a URL query parameter
-
-### Request body
-
-```json
-{
-  "contents": [
-    {
-      "parts": [{ "text": "<the full prompt>" }]
-    }
-  ],
-  "generationConfig": {
-    "temperature": 0.2,
-    "maxOutputTokens": 512,
-    "responseMimeType": "application/json"
-  }
-}
-```
-
-- `temperature: 0.2` — keeps responses factual and consistent (lower = less creative/random)
-- `maxOutputTokens: 512` — limits response length to keep latency low
-- `responseMimeType: "application/json"` — instructs the model to return structured JSON directly
-
-### Rate limiting and retry
-
-`aiService.js` enforces a **daily limit of 50 AI requests per user**, tracked in `localStorage` under the key `bb_ai_usage` (`{ date, count }`). The counter resets at midnight. If the limit is reached, an error is thrown before the API call is made.
-
-For **429 (rate limit) errors** from Gemini, the service retries up to 3 times with delays of `[5 s, 15 s, 30 s]` before giving up and surfacing the error to the user.
-
-### Response structure
-
-```json
-{
-  "candidates": [
-    {
-      "content": {
-        "parts": [{ "text": "{ \"intent\": \"QUERY\", \"message\": \"...\" }" }]
-      }
-    }
-  ]
-}
-```
-
-The model returns a JSON string inside `candidates[0].content.parts[0].text`. We extract it with a regex (`/\{[\s\S]*\}/`) to handle any accidental markdown wrapping.
-
----
-
-## The Prompt
-
-The full prompt is built in `aiService.js` at call time. Here is its structure:
-
-```
-You are BudgetBuddy AI, a helpful personal finance assistant. Today is {YYYY-MM-DD}.
-
-{ACTIVE SESSION DATE RANGE: <label> (<from> to <to>). Treat this as the default period.}
- — OR —
-{NO SESSION DATE RANGE SET. If the user asks a spending QUERY with no time period mentioned,
- respond with intent "ASK_DATE_RANGE" to ask which period they want.}
-
-SPENDING SUMMARY (all {N} records{, <label>}):
-Total spent: ${grandTotal}
-Average per transaction: ${avgPerTransaction}
-Daily average: ${dailyAvg}
-By category: { "Food": 123.45, ... }
-By month (chronological): [{ "month": "2026-07", "total": 456.78 }, ...]
-By category and month: { "Food": { "2026-07": 123.45 }, ... }
-Count by category: { "Food": 12, ... }
-Count by month: { "2026-07": 18, ... }
-Largest single expense: { id, title, amount, category, date }
-
-RECENT EXPENSES — last {≤50} individual records (use these for EDIT or DELETE):
-[{ id, title, amount, category, date }, ...]
-
-AVAILABLE CATEGORIES: Food, Transport, Entertainment, Utilities, Rent, Other, <custom...>
-CUSTOM CATEGORIES (with IDs, only these can be deleted/renamed): [{ id, name }, ...]
-
-TASK: Respond with ONLY raw JSON — no markdown, no code fences.
-
-Classify intent as one of:
-- "ADD_EXPENSE"     → log/add a new expense
-- "EDIT_EXPENSE"    → change an existing expense
-- "DELETE_EXPENSE"  → remove an expense from history
-- "ADD_CATEGORY"    → create a new custom category
-- "EDIT_CATEGORY"   → rename a custom category
-- "DELETE_CATEGORY" → delete a custom category
-- "QUERY"           → spending question AND a time period is known
-- "ASK_DATE_RANGE"  → spending question but no time period is mentioned and no session range set
-- "SET_DATE_RANGE"  → the message IS a date range / time period (e.g. "last month", "July 2026")
-- "CHAT"            → greeting, unclear, or not enough info to act
-
-Key rules:
-- For QUERY: use the SPENDING SUMMARY totals (covers all records, not just the recent 50)
-- For EDIT/DELETE: find the expense in RECENT EXPENSES by id; fuzzy-match spelling mistakes
-- Default categories (Food, Transport, etc.) cannot be renamed or deleted; use CHAT if asked
-- For ASK_DATE_RANGE: ONLY use this when no session range is set AND no period is mentioned
-- If the expense or category is ambiguous, use CHAT and list the options or ask for more detail
-- If amount or title is missing for ADD_EXPENSE, use CHAT and ask for the missing detail
-
-User message: "{user's message}"
-```
-
-**Key design decisions:**
-- The prompt pre-aggregates spending data (totals, by-category, by-month, counts, largest expense) over **all** records in the active date range — so QUERY answers are accurate even when there are thousands of records.
-- Only the **last 50 individual records** are sent for EDIT/DELETE context. This keeps the prompt small while still covering nearly all practical cases.
-- `temperature: 0.2` makes categorization and expense matching deterministic.
-- Injecting today's date lets the model interpret "yesterday", "last Monday", etc.
-- The session date range (or its absence) controls when `ASK_DATE_RANGE` fires — if a range is already set, the model always answers using it instead of asking.
-- Fuzzy matching rules in the prompt let the model handle common misspellings (e.g. "coffe" → "Coffee").
-- JSON-only output + `responseMimeType: "application/json"` makes parsing reliable; a regex fallback (`/\{[\s\S]*\}/`) handles rare cases where the model wraps the output in markdown.
+| File | Role |
+|------|------|
+| `server/routes/ai.js` | `POST /api/ai/chat` (tool-calling loop) and `POST /api/ai/summary` (Reports blurb) |
+| `server/services/aiTools.js` | The 6 SQL-backed tools + their Gemini function-declaration schemas |
+| `server/services/aiPrompts.js` | `buildChatPrompt`, `buildSummaryPrompt` |
+| `server/services/geminiClient.js` | `callGemini` — model fallback chain, retry, token-usage logging |
+| `server/services/aiUsage.js` | DB-backed daily rate limit |
+| `src/services/aiService.js` | Thin client — `processMessage`, `generateSummary` |
+| `src/hooks/useAIChat.js` | Chat state and event handling (the "brain" of the widget) |
+| `src/components/AI/AIChat.jsx` | UI shell — panel, header, input, message list |
+| `src/components/AI/ChatMessage.jsx` | Renders each message type, including all 9 confirmation card types |
 
 ---
 
 ## Intent Handling in the UI
 
-### ADD_EXPENSE
-Shows a **confirmation card** with the detected title, amount, category, and date. User must click **"Add Expense"** to write to Firestore. "Cancel" dismisses without saving.
+`useAIChat.js`'s `INTENT_MAP` maps each intent to a message type + data key, rendered by `ChatMessage.jsx` as a confirmation card:
 
-### EDIT_EXPENSE
-Shows a **confirmation card** listing the current and proposed values for every field. User clicks **"Save Changes"** to apply the update to Firestore.
+| Intent | Card / action |
+|--------|---------------|
+| `ADD_EXPENSE` | Confirm card (editable) → "Add Expense" → `addExpense()` |
+| `ADD_MULTIPLE_EXPENSES` | Card listing every expense → "Add All" → one `addExpense()` call per item (partial-failure tolerant) |
+| `ADD_CATEGORY` | Confirm card → "Add Category" → `addCategory()` |
+| `DELETE_EXPENSE` | Danger card, real id resolved via `find_expenses` → "Delete Expense" → `deleteExpense()` |
+| `EDIT_EXPENSE` | Card showing current vs. proposed values → "Save Changes" → `updateExpense()` |
+| `DELETE_CATEGORY` | Danger card, real id resolved via `list_categories` → "Delete Category" → `deleteCategory()` |
+| `EDIT_CATEGORY` | Card with current/new name → "Rename" → `updateCategory()` (+ migrates any budget limit to the new name) |
+| `SET_BUDGET` | Card with category + amount → "Set Goal" → `updateCategoryBudget()` |
+| `REMOVE_BUDGET` | Danger card showing the current limit → "Remove Goal" → `updateCategoryBudget(..., null)` |
+| `SET_DATE_RANGE` | Sets the chat's own internal `sessionDateRange` (shown in the panel header, independent of the dashboard's date filter) |
+| `ASK_DATE_RANGE` | Renders a date-range picker card (6 presets); picking one re-runs the original question |
+| `CURRENCY_CONVERT` | Plain chat bubble with the computed rate/amount |
+| `QUERY` / `CHAT` | Plain chat bubble |
 
-### DELETE_EXPENSE
-Shows a **confirmation card** with the full expense details. User clicks **"Delete Expense"** (styled as a danger button) to remove it from Firestore.
-
-### ADD_CATEGORY
-Shows a **confirmation card** with the new category name. User clicks **"Add Category"** to create it in Firestore.
-
-### EDIT_CATEGORY
-Shows a **confirmation card** with the current name and the proposed new name. User clicks **"Rename"** to save.
-
-### DELETE_CATEGORY
-Shows a **confirmation card** with the category name. User clicks **"Delete Category"** (danger button) to remove it. Only custom (user-created) categories can be deleted — attempting to delete a default category (Food, Transport, etc.) returns a CHAT response explaining why.
-
-### SET_DATE_RANGE
-Sets the **chat's own internal session date range** (`sessionDateRange` state in `AIChat.jsx`). This is displayed in the chat header: `Showing: <label> ×`. The × button clears it. This does **not** affect the dashboard date filter — it only scopes the AI's spending queries within the chat session.
-
-### ASK_DATE_RANGE
-Renders a **date range picker card** with 6 preset buttons: Today, This Week, This Month, Last Month, This Year, All Time. When the user picks one, the chat sets `sessionDateRange` and immediately re-runs the original question with the chosen period. The user can also type a custom range as a follow-up message.
-
-### QUERY
-The model uses the pre-aggregated spending summary in the prompt (totals, by-category, by-month, daily average, largest expense) to compute accurate answers. The result appears as a plain chat bubble.
-
-### CHAT
-For greetings, out-of-scope questions, or messages where the intent is unclear. The model responds conversationally or asks for clarification.
-
-### Pending action reminders
-If a user sends a new message while there are **already-unconfirmed** action cards on screen (e.g. they asked to add an expense but haven't clicked "Add Expense" yet), the AI appends a **reminder bubble** after responding, listing everything that still needs confirmation. This only fires for cards that were pending _before_ the current message — it won't remind about a card that was just created.
+Every mutating action requires an explicit confirm click — the AI never writes to the database without it.
 
 ---
 
-## `ChatMessage.jsx` — Message Types and Confirmed Labels
+## Reports Page AI Summary
 
-`ChatMessage.jsx` is a pure presentational component. It receives a `msg` object and renders the appropriate UI:
-
-| `msg.type` | Rendered as |
-|------------|-------------|
-| `text` | Plain paragraph (also used for errors when `msg.isError: true`) |
-| `reminder` | Styled reminder paragraph (`ai-reminder` CSS class) |
-| `expense_confirm` | Confirmation card with Title / Amount / Category / Date rows + "Add Expense" button |
-| `category_confirm` | Confirmation card with Category row + "Add Category" button |
-| `delete_expense_confirm` | Danger confirmation card + "Delete Expense" button |
-| `edit_expense_confirm` | Confirmation card showing **updated** field values + "Save Changes" button |
-| `delete_category_confirm` | Danger confirmation card + "Delete Category" button |
-| `edit_category_confirm` | Confirmation card with Current Name / New Name rows + "Rename" button |
-| `date_range_picker` | Preset grid with 6 buttons + "Or type a custom range below" hint |
-
-**After confirmation or dismissal**, the card is replaced with a status line:
-
-| `msg.type` after confirm | Status label |
-|--------------------------|--------------|
-| `expense_confirm` | `Done!` |
-| `category_confirm` | `Category added successfully!` |
-| `delete_expense_confirm` | `Expense deleted!` |
-| `edit_expense_confirm` | `Expense updated!` |
-| `delete_category_confirm` | `Category deleted!` |
-| `edit_category_confirm` | `Category renamed!` |
-
-After cancel, all types show `Cancelled`.
+`generateSummary(expenses, filterLabel, currencyInfo)` posts to `POST /api/ai/summary`, a much simpler endpoint than `/chat`: no tools, no loop, just one Gemini call with a fixed prompt asking for a 3–4 sentence paragraph (total spent + period, top category/notable pattern, one actionable suggestion). It shares the same `ai_usage` daily counter as the chat.
 
 ---
-
-## `useAIChat.js` — Internal Constants
-
-The hook defines several constants that control AI chat behavior:
-
-**`ACTION_TYPES`** — message types that represent pending user confirmations:
-```js
-['expense_confirm', 'category_confirm', 'delete_expense_confirm',
- 'edit_expense_confirm', 'delete_category_confirm', 'edit_category_confirm']
-```
-
-**`INTENT_MAP`** — maps AI intent → `{ type, dataKey }` for building the message object:
-```js
-ADD_EXPENSE     → { type: 'expense_confirm',         dataKey: 'expenseData' }
-ADD_CATEGORY    → { type: 'category_confirm',        dataKey: 'categoryData' }
-DELETE_EXPENSE  → { type: 'delete_expense_confirm',  dataKey: 'deleteExpenseData' }
-EDIT_EXPENSE    → { type: 'edit_expense_confirm',    dataKey: 'editExpenseData' }
-DELETE_CATEGORY → { type: 'delete_category_confirm', dataKey: 'deleteCategoryData' }
-EDIT_CATEGORY   → { type: 'edit_category_confirm',   dataKey: 'editCategoryData' }
-```
-
-**`buildPresetRange(label)`** — converts a date preset label to a `DateRange` object. Used by the date range picker card when the user clicks a preset:
-
-| Label | from | to |
-|-------|------|----|
-| `Today` | today | today |
-| `This Week` | today − 6 days | today |
-| `This Month` | 1st of current month | today |
-| `Last Month` | 1st of previous month | last day of previous month |
-| `This Year` | Jan 1 of current year | today |
-| `All Time` | `2000-01-01` | today |
-
-> **Note**: `This Week` in the AI chat date picker means **last 7 days** (today minus 6). This is different from the `thisWeek` filter in `useDateFilter.js`, which uses an ISO Monday-to-Sunday week. Be aware they can return different sets of expenses.
-
----
-
-## Suggested Questions (shown in empty state)
-
-```
-"What's my total spending this month?"
-"Which category do I spend most on?"
-"What's my highest expense this month?"
-"How much did I spend on food?"
-"What's my average daily spending?"
-"Add $25 for coffee today"
-```
-
-These are hardcoded chips in `AIChat.jsx` (`SUGGESTED_QUESTIONS` constant) that call `sendMessage()` directly when clicked. They are shown only when the conversation is empty.
 
 ## Chat message persistence
 
-Chat messages are saved to and restored from **`sessionStorage`** under the key `ai-chat-messages`. This means:
-- Messages survive page refreshes within the same browser tab.
-- Messages are cleared when the tab is closed or the user opens a new session (unlike `localStorage`, `sessionStorage` is tab-scoped).
-- The chat's `sessionDateRange` is **not** persisted — it resets when the page reloads.
-
----
-
-## Environment Setup
-
-The API key is stored in `.env`:
-
-```
-REACT_APP_GEMINI_API_KEY=your_key_here
-```
-
-CRA (Create React App) reads `.env` at **dev server startup** — if you change the key, restart the dev server (`Ctrl+C` then `npm start`).
-
-To get a key: [Google AI Studio](https://aistudio.google.com/) → Create API Key → free, no credit card required.
-
-> **Note**: If you see a "model not available" error, check which models your key supports:
-> ```bash
-> curl "https://generativelanguage.googleapis.com/v1beta/models?key=YOUR_KEY" | grep '"name"'
-> ```
-
----
-
-## `generateSummary` — Reports Page AI Summary
-
-`aiService.js` exports a second function used by the **Reports page**:
-
-```js
-generateSummary(expenses, filterLabel) → Promise<string>
-```
-
-This sends up to 200 expense records (title, amount, category, date — no ids) and the current filter label to Gemini and asks for a **3–4 sentence plain-text paragraph** that:
-1. States the total spent and the period.
-2. Identifies the top spending category and any notable pattern.
-3. Gives one actionable suggestion to reduce spending.
-
-| Config | Value |
-|--------|-------|
-| Temperature | 0.4 (slightly more creative than `processMessage`) |
-| maxOutputTokens | 256 |
-| responseMimeType | not set (plain text) |
-
-Unlike `processMessage`, this returns a raw string (not JSON) and does not include expense IDs or categories in the response. It also counts against the same 50-request daily limit.
+Chat messages are still saved to and restored from `sessionStorage` under `ai-chat-messages` — unchanged by the Phase 3 rework. Messages survive a page refresh within the same tab and clear when the tab closes. `sessionDateRange` is not persisted.
 
 ---
 
 ## Security Notes
 
-### Data isolation
-The AI chat only ever sees the logged-in user's own data. Expenses and categories are loaded with `currentUser.uid` in `useAIChat.js` before being passed to `aiService.js` — the AI service has no direct Firestore access and cannot query any other user's data.
-
-Firestore Security Rules enforce this at the backend level: `users/{userId}/{document=**}` is readable/writable only when `request.auth.uid == userId`. These rules are version-controlled in [`firestore.rules`](../firestore.rules) at the project root and deployed to Firebase.
-
-### Known limitations
-
-**Gemini API key exposed in the browser bundle**
-`REACT_APP_GEMINI_API_KEY` is compiled into the client-side JavaScript by Create React App. Anyone can find it via browser DevTools → Sources. They can then make Gemini API calls charged to your account from outside the app entirely. For a production deployment, proxy the Gemini call through a backend function so the key never leaves the server.
-
-**Daily limit is bypassable client-side**
-The 50 requests/day cap is tracked in `localStorage` under `bb_ai_usage`. A user can reset it instantly by running `localStorage.removeItem('bb_ai_usage')` in the browser console. This is a soft limit — it does not protect against abuse of the Gemini API key. A production app should enforce this limit server-side, tied to the Firebase Auth UID.
-
-**User data sent to Google**
-User expense data (titles, amounts, categories, dates) is included in the Gemini prompt. Users should be informed of this in a privacy policy for a production deployment. No personally identifiable information beyond financial records is sent — names, emails, and passwords are never included in the prompt.
+- **Auth**: every `/api/ai/*` request goes through the same `requireAuth` Cognito-JWT-verification middleware as the rest of the API (`server/middleware/auth.js`) — the AI can only ever see and act on the authenticated user's own data, enforced by `WHERE user_id = req.uid` in every tool's SQL, not by anything the client sends.
+- **API key**: `GEMINI_API_KEY` lives only in the server's `.env` and is never sent to the browser — unlike the pre-Phase-3 design, which used `REACT_APP_GEMINI_API_KEY` and compiled the key straight into the client bundle.
+- **Rate limiting**: now server-enforced and DB-backed (see above), not a client-resettable `localStorage` counter.
+- **Data sent to Google**: still just the SQL tool results relevant to that one message (e.g. a spending-by-category breakdown, a handful of matching expense rows) — never the user's full expense history in one shot, and never anything beyond financial records (no name, email, or password).

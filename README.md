@@ -1,6 +1,8 @@
 # 💸 Budget Buddy
 
-> **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/)
+> **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/) — the frontend and the Express API both deploy from this one Vercel project. The API runs as a Vercel serverless function (`api/index.js`) that directly imports and calls `server/index.js`'s Express app (no adapter needed — Express apps are valid `(req, res)` handlers), talking to the same AWS RDS Postgres + AWS Cognito backend as local dev.
+
+> 📖 **Project evolution**: sections below describing sprints, story points, and the original Firebase/Firestore architecture document the original academic group project. The tech stack has since evolved into a solo portfolio project — see [`ROADMAP.md`](ROADMAP.md) for the full migration history (self-hosted Postgres on AWS RDS, AWS Cognito auth, and a RAG-based AI chat rebuild). The **Architecture** and **How to Run** sections below reflect the current stack. A learning-focused move to a fully self-managed **EC2 + Docker Compose** deployment is still planned (see ROADMAP.md Phase 6) — Vercel serverless is the real, live deployment in the meantime, not a placeholder.
 
 ---
 
@@ -31,15 +33,15 @@
 Budget Buddy is a **free, easy-to-use web application** for managing personal expenses. Unlike many market apps that become paid after trial, Budget Buddy focuses on **cost-effectiveness, accessibility, and simplicity**.
 
 ### Core Features
-- ✅ Secure authentication (Firebase Auth)
-- ✅ Expense and category management (CRUD operations)
+- ✅ Secure authentication (AWS Cognito)
+- ✅ Expense and category management (CRUD operations, via a self-hosted Express + Postgres API)
 - ✅ Data visualization (Pie, Bar, Line charts)
 - ✅ Report generation (PDF & CSV export)
 - ✅ Responsive design (desktop, tablet, mobile)
-- ✅ Real-time data synchronization
+- ✅ Live data sync within a tab (custom pub/sub — refetches and notifies subscribers after every mutation)
 - ✅ **User settings** — update display name, send password-reset email, and save a default date-range preference that persists across sessions
 - ✅ **Shared date-range context** — a single date filter shared across Dashboard, Expenses, and Categories; loads the user's saved preference on login. Available presets: Today, This Week, This Month, Last Month, **Select Month** (pick any specific month from a dropdown), This Year, Last Year, All Time, and Custom Range
-- ✅ **AI chat assistant** — add, edit, and delete expenses/categories in plain English; query spending data with natural-language date ranges; auto-categorize expenses (powered by Google Gemini)
+- ✅ **AI chat assistant** — add, edit, and delete expenses/categories/budget goals in plain English; query spending data with natural-language date ranges (powered by Google Gemini via real tool-calling/RAG — the AI calls SQL-backed tools against your own data instead of guessing from a stuffed prompt; see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md))
 - ✅ **Budget goals** — set monthly per-category spending limits on the Goals page; real-time progress bars and alerts (on-track / near-limit / over-budget) surface on the Goals page and as an inline BudgetProgressPanel on the dashboard overview
 - ✅ **Global live search** — Navbar search bar with real-time expense and category results; highlights matching text, supports amount queries from 1 digit, and navigates directly to the matched item
 - ✅ **Multi-currency support** — choose a home currency and a display currency in Settings; live exchange rates (open.er-api.com) convert amounts app-wide with symbol-aware formatting and fallback rates
@@ -156,7 +158,7 @@ In particular, we adopted **four core XP practices** throughout the project:
 - **US-008**: AI Chat Assistant [Status: Done]
   - Add, edit, and delete expenses in plain English via Google Gemini
   - Auto-categorize expenses; query spending data with natural-language date ranges
-  - API key proxied server-side via `api/ai.js` (never exposed to the browser)
+  - Rebuilt in the AWS migration around real Gemini tool-calling (RAG) against Postgres, with the API key living only in `server/.env` — see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md)
 - **US-009**: User Settings [Status: Done]
   - Update display name, trigger password-reset email, save a default date-range preference
 - **US-010**: Budget Goals [Status: Done]
@@ -192,18 +194,19 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **React.js** | [React.dev](https://react.dev/) | Component-based architecture, virtual DOM for efficient rendering, extensive ecosystem, strong community support. Ideal for rapid development with declarative syntax and unidirectional data flow. | Vue.js (smaller ecosystem), Angular (steeper learning curve) |
 | **React Context API** | [React Context](https://react.dev/reference/react/createContext) | Lightweight global state management without external dependencies. Perfect for authentication state, eliminates prop drilling, zero bundle size impact. | Redux (too complex), Zustand (unnecessary dependency) |
 | **React Router** | [React Router](https://reactrouter.com/) | Industry standard for React routing. Provides declarative routing, protected routes, and seamless React integration. | Next.js (requires migration), Reach Router (merged into React Router) |
-| **Firebase Auth** | [Firebase Auth](https://firebase.google.com/docs/auth) | Production-ready authentication with minimal setup. Handles password hashing, JWT tokens, session management automatically. Seamless React integration with real-time auth state. | Auth0 (cost/complexity), AWS Cognito (complex setup), Custom (security risks) |
-| **Cloud Firestore** | [Firestore](https://firebase.google.com/docs/firestore) | NoSQL database with real-time sync, automatic scaling, offline support. Real-time listeners eliminate polling. Security rules enable fine-grained access control. | MongoDB Atlas (no real-time), PostgreSQL (no real-time), Realtime DB (worse querying) |
+| **AWS Cognito** | [Cognito](https://aws.amazon.com/cognito/) | Managed user pools with SRP-based auth, email confirmation, and password-reset flows out of the box; server-side JWT verification via `aws-jwt-verify`. Chosen when migrating off Firebase to learn the AWS auth primitive directly rather than staying on a Google-managed equivalent. Permanent free tier (50k MAUs). | Firebase Auth (where this project started), Auth0 (cost), Custom JWT (more to get wrong securely) |
+| **AWS RDS (Postgres)** | [RDS](https://aws.amazon.com/rds/) | Relational schema (users, expenses, categories, budgets) fits the data better than a NoSQL document store once expenses need real joins/aggregates for reports and the AI's SQL-backed tool calls. Free tier for the account's first 12 months. | Firestore (no real joins, where this project started), Supabase (considered as a lower-cost alternative post-free-tier — see `ROADMAP.md`), MongoDB Atlas |
 | **Chart.js** | [Chart.js](https://www.chartjs.org/) | Simple, flexible charting with excellent React integration. Supports Pie/Bar/Line charts, responsive design, extensive customization. Lightweight with large community. | D3.js (steep learning curve), Recharts (less customization), Victory (heavier) |
 | **date-fns** | [date-fns](https://date-fns.org/) | Modern, tree-shakeable date utilities. Immutable functions, smaller bundle size than Moment.js, excellent TypeScript support. | Moment.js (maintenance mode, large bundle), Luxon (larger), Day.js (fewer features) |
 | **jsPDF + html2canvas** | [jsPDF](https://github.com/parallax/jsPDF) / [html2canvas](https://html2canvas.hertzen.com/) | Client-side PDF generation without server. Captures DOM elements as images for charts. Simple, no backend required. | Server-side (Puppeteer/PDFKit - adds complexity), pdfmake (poor chart support) |
 | **Jest + RTL** | [Jest](https://jestjs.io/) / [RTL](https://testing-library.com/docs/react-testing-library/intro/) | Industry standard React testing. Jest provides test runner, mocking, coverage. RTL encourages behavior-based testing for maintainable tests. | Mocha (more setup), Jasmine (older), Vitest (less ecosystem) |
 | **Cypress** | [Cypress](https://www.cypress.io/) | E2E testing in real browsers with excellent DX. Time-travel debugging, automatic waiting, screenshot/video capture. Multi-browser support with CI/CD integration. | Selenium (slower, complex), Playwright (less community), Puppeteer (Chrome-only) |
 | **ESLint** | [ESLint](https://eslint.org/) | Industry standard JavaScript linter. Maintains code quality, catches bugs early, enforces standards. Seamless React integration with extensive rule set. | Prettier (formatting only), JSHint (deprecated), TSLint (deprecated) |
-| **Vercel** | [Vercel](https://vercel.com/) | Zero-config React deployment. Automatic Git deployments, preview URLs, global CDN, built-in SSL. Excellent React optimization with generous free tier. | Netlify (less React optimization), AWS Amplify (more config), Traditional hosting (no CDN/scaling) |
+| **Express** | [Express](https://expressjs.com/) | The REST API (`server/`) replacing direct Firestore access from the client — CRUD routes for expenses/categories/budgets/settings, plus the AI tool-calling endpoints. Chosen to match the frontend's language (one less new thing to learn) over introducing a second backend language. | Fastify (less familiar), NestJS (more structure than needed here), Firebase Cloud Functions (where this started) |
+| **Vercel** | [Vercel](https://vercel.com/) | Deploys both the CRA frontend and the Express API — the API runs as a Vercel serverless function (`api/index.js`) that directly imports `server/index.js`'s exported Express app (`module.exports = app`; `app.listen()` only runs for local dev, guarded by `require.main === module`). The `pg` pool is capped at 3 connections since serverless containers can run concurrently against RDS's connection limit. A move to self-managed **EC2 + Docker Compose** is still planned (`ROADMAP.md` Phase 6) for the transferable fundamentals (SSH, security groups, Nginx) — Vercel serverless is the live deployment in the meantime, not a placeholder. | EC2 + Docker Compose (planned), ECS/Fargate (more than needed for a personal project) |
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
-| **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM (Large Language Model — AI that understands natural language) for the AI chat feature. Handles expense intent detection, auto-categorization, and spending queries. Calls are proxied through `api/ai.js` (a Vercel serverless function) so the API key stays server-side and is never compiled into the browser bundle. | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
+| **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM for the AI chat feature, called with real function-calling (tools run scoped SQL against Postgres, a RAG pattern — not vector search, since the data is structured transactions). All calls go through `server/routes/ai.js`; the API key lives only in the server's `.env` and is never compiled into the browser bundle. See [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md). | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
 | **react-icons (Lucide)** | [react-icons](https://react-icons.github.io/react-icons/) | Provides a consistent SVG icon library (`react-icons/lu` — Lucide set) used throughout the app. Replaces emoji with properly sized, theme-aware vector icons. Tree-shakeable so only imported icons are included in the bundle. | Heroicons (separate package), Phosphor Icons (larger), Font Awesome (icon font, not SVG) |
 
 
@@ -211,21 +214,21 @@ Status: ✅ **100% feature + infrastructure scope complete**
 
 ### System Architecture Overview
 
-Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application:
+Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application. *(Diagrams below are from the original Firebase-based design and are out of date — see the [Component Structure](#component-structure) and [Data Architecture](#data-architecture) sections just below for the current stack.)*
 
 **Primary Architecture Pattern: Client-Server**
-- **Client**: React running in the browser
-- **Server**: Firebase cloud services (Authentication, Firestore Database)
+- **Client**: React running in the browser, calling the API with a Cognito ID token
+- **Server**: A self-hosted Node/Express API (`server/`) backed by AWS RDS Postgres, with AWS Cognito handling auth independently
 
 **Secondary Architecture Pattern: Layered Architecture (within Client)**
 - **Presentation Layer**: React components, pages, UI elements
 - **Business Logic Layer**: Services, utilities, validation, context
-- **Data Access Layer**: Firebase SDK integration, API calls
+- **Data Access Layer**: `src/services/apiClient.js` (REST calls to `server/`, Cognito token attached automatically)
 
 ![System Architecture](Documents/UML/High_Level_System_Architecture.png)
 
 **Architecture Pattern Justification**:
-- **Client-Server**: Clear separation between client (React) and server (Firebase), enabling scalability, security, and independent deployment
+- **Client-Server**: Clear separation between client (React) and server (Express + Postgres), enabling scalability, security, and independent deployment
 - **Layered Architecture (Client)**: Separation of concerns within the client application promotes maintainability, testability, and code organization
 
 ### Detailed Flowchart of System Architecture Overview
@@ -234,15 +237,28 @@ Budget Buddy follows a **Client-Server Architecture** with **Layered Architectur
 ### Component Structure
 
 ```
-api/
-└── ai.js              # Vercel serverless Gemini proxy (key stays server-side)
+server/
+├── index.js           # Express app entry point, mounts routes + auth middleware
+├── db.js              # Postgres pool (pg), with type-parser fixes for DATE/NUMERIC columns
+├── constants.js        # Shared server-side constants (e.g. default category names)
+├── middleware/
+│   ├── auth.js         # Verifies Cognito ID tokens (aws-jwt-verify), JIT-provisions the users row
+│   └── asyncHandler.js  # Wraps async route handlers so thrown errors reach Express's error middleware
+├── routes/
+│   ├── expenses.js, categories.js, budgets.js, settings.js  # CRUD REST endpoints
+│   └── ai.js            # AI chat (tool-calling loop) + report-summary endpoints
+└── services/
+    ├── aiTools.js        # SQL-backed tools Gemini can call (get_spending_summary, find_expenses, ...)
+    ├── aiPrompts.js       # Prompt construction (chat + report-summary)
+    ├── geminiClient.js    # Gemini API calls: model fallback chain, retry, token-usage logging
+    └── aiUsage.js         # DB-backed daily AI rate limit
 src/
 ├── components/
 │   ├── AI/            # AIChat, ChatMessage, ExpenseCard, EditableExpenseCard,
 │   │                  #   MessageText — floating AI chat widget (Gemini)
 │   ├── BudgetProgressPanel/ # BudgetRow, BudgetRowNoGoal — sub-components of
 │   │                  #   the BudgetProgressPanel dashboard widget
-│   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword,
+│   ├── Auth/          # Login, Signup, ForgotPassword, ResetPassword, ConfirmSignUp,
 │   │                  #   AuthLayout, AuthSubmitButton
 │   ├── Categories/    # CategoryCard, CategoryBudgetControl, CategoryKebabMenu,
 │   │                  #   CategoryDeleteMessage — sub-components of the Categories page
@@ -268,11 +284,14 @@ src/
 │                      #   useExpenses, useToast, useBudgets, useBudgetProgress,
 │                      #   useGlobalSearch, useCategories, useClickOutside
 ├── services/
-│   ├── expenseService.js    # Expense CRUD + real-time listener
-│   ├── categoryService.js   # Category CRUD + real-time listener
-│   ├── settingsService.js   # User settings (read/write preferences)
-│   ├── aiService.js         # Gemini API — processMessage, generateSummary
-│   └── budgetService.js     # Budget goals — read/write per-category monthly limits
+│   ├── apiClient.js         # apiFetch() — attaches the Cognito ID token, calls the Express API
+│   ├── expenseService.js    # Expense CRUD (REST) + pubsub-based "live" subscription
+│   ├── categoryService.js   # Category CRUD (REST) + pubsub-based "live" subscription
+│   ├── settingsService.js   # User settings (REST read/write)
+│   ├── budgetService.js     # Budget goals — REST read/write per-category monthly limits
+│   ├── pubsub.js            # Custom pub/sub: refetches + notifies subscribers after each mutation
+│   │                        #   (replaces Firestore's onSnapshot; syncs within one tab, not across tabs)
+│   └── aiService.js         # Thin client for server/routes/ai.js — processMessage, generateSummary
 ├── styles/            # CSS partials loaded via main.css:
 │   │                  #   tokens.css (design tokens), styles-landing.css,
 │   │                  #   styles-auth.css, styles-components.css,
@@ -291,37 +310,38 @@ src/
 │   ├── categorySuggester.js # Keyword-to-category mapping for AI auto-categorization
 │   ├── categoryUtils.js     # Shared category validators (e.g. validCategory guard)
 │   ├── dateFilterLabel.js   # Converts a date-filter preset key into a human-readable label
-│   ├── firebaseUtils.js     # snapshotToArray helper for Firestore query results
 │   └── forecastUtils.js     # getMonthEndForecast — projects month-end spend from daily average
-└── firebaseConfig.js  # Firebase initialization
+└── cognito.js         # CognitoUserPool instance + getIdToken() helper (auto-refreshes session)
 ```
 
-### Firebase Architecture
+### Data Architecture
 
-**Authentication**: Email/Password with JWT tokens, automatic refresh, protected routes
+**Authentication**: AWS Cognito User Pool, SRP-based sign-in via `amazon-cognito-identity-js`. Sign-up requires confirming an emailed code before login (`/confirm-signup`); forgot-password is an email+code flow rather than a clickable link. `AuthContext.js` wraps all of this behind the same shape the rest of the app already used (`currentUser.uid/.email/.displayName`, async `.getIdToken()`), so most call sites needed zero changes when this replaced Firebase Auth.
 
-**Firestore Structure**:
-
-![Firestore Structure](Documents/UML/Firestore_Structure.png)
-
-All user data is nested under subcollections — no cross-user access is possible:
+**Postgres schema** (`schema.sql`, run once against the RDS instance):
 
 ```
-users/{userId}/
-  expenses/{expenseId}/   → title, amount, category, date
-  categories/{categoryId}/ → name
-  settings/preferences    → defaultDateFilter
+users(id, email, display_name, created_at)              -- id = Cognito sub
+expenses(id, user_id, title, amount, category_name, expense_date, notes, ...)
+categories(id, user_id, name, ...)                       -- custom categories only
+budgets(user_id, monthly)                                -- overall monthly limit
+budget_category_limits(user_id, category_name, monthly_limit)
+preferences(user_id, hidden_default_categories)
+settings(user_id, currency, home_currency, default_date_filter)
+ai_usage(user_id, usage_date, request_count)             -- server-side daily AI rate limit
 ```
 
-**Security Rules**: User-level data isolation, authenticated access only
+Every table is scoped by `user_id` (a foreign key to `users.id`, `ON DELETE CASCADE`) — the Express API enforces isolation with `WHERE user_id = req.uid` on every query, the equivalent of what Firestore Security Rules did before. See [`Documents/API_Reference.md`](Documents/API_Reference.md) for the full REST surface.
 
-**Real-time Sync**: `onSnapshot()` listeners for automatic UI updates
+**Live updates**: no more Firestore `onSnapshot()`. A small custom pub/sub (`src/services/pubsub.js`) refetches from the API and notifies subscribers after every mutation — a deliberate tradeoff: it keeps the UI feeling "live" within one browser tab, but (unlike Firestore) doesn't sync across multiple open tabs/devices.
+
+**AI chat**: real Gemini function-calling (RAG) against the Postgres data — see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md) for the full design.
 
 ### State Management
-- **`AuthContext`** — global authentication state (current user, login/logout, display-name update, password reset)
-- **`DateRangeContext`** — global date-filter state shared across all dashboard views; loads the user's saved preference from Firestore on login
+- **`AuthContext`** — global authentication state (current user, login/logout, display-name update, password reset) — now backed by Cognito instead of Firebase Auth
+- **`DateRangeContext`** — global date-filter state shared across all dashboard views; loads the user's saved preference from the API on login
 - **Local component state** for UI interactions
-- **Firestore real-time listeners** for data state
+- **`pubsub.js`-driven service subscriptions** for data state (see [Data Architecture](#data-architecture) above)
 
 > 📋 **Detailed Architecture**: [`Documents/Architecture_Diagrams.md`](Documents/Architecture_Diagrams.md)
 
@@ -329,12 +349,15 @@ users/{userId}/
 
 ## 🚀 How to Run the Project
 
+The app is now two processes: the React frontend (`npm start`, port 3000) and a separate Express API (`server/`, port 4000). Both need to be running. You'll also need your own AWS Cognito User Pool, an AWS RDS (or any reachable) Postgres instance, and a free Gemini API key — none of these are bundled with the repo since they're real cloud resources tied to an account.
+
 ### Prerequisites
 - **Node.js** 20 LTS or newer
 - **npm** (comes with Node.js)
 - **Git**
-
-## Installation
+- An **AWS Cognito User Pool** + a public (no-secret) app client
+- A **Postgres database** reachable from your machine (AWS RDS free tier works, or any local/hosted Postgres)
+- A free **Gemini API key** — [Google AI Studio](https://aistudio.google.com/) → Create API Key
 
 ### 1. Clone the repository
 
@@ -343,22 +366,68 @@ git clone https://github.com/JasleenMinhas578/BudgetBuddy.git
 cd BudgetBuddy
 ```
 
-### 2. Install dependencies
+### 2. Install dependencies (both packages)
 
 ```bash
-npm install
+npm install          # frontend
+cd server && npm install && cd ..   # backend
 ```
 
-### 3. Start development server
+### 3. Create the database schema
+
+Run [`schema.sql`](schema.sql) once against your Postgres instance, e.g.:
+
+```bash
+psql "postgresql://<user>:<password>@<host>:5432/<database>" -f schema.sql
+```
+
+### 4. Set up `.env`
+
+Create a `.env` file at the project root (**gitignored — never commit real credentials**) with:
+
+```bash
+# Cognito — client-side (CRA only inlines REACT_APP_* vars)
+REACT_APP_COGNITO_USER_POOL_ID=...
+REACT_APP_COGNITO_CLIENT_ID=...
+REACT_APP_COGNITO_REGION=...
+
+# Cognito — server-side (same values, no REACT_APP_ prefix)
+COGNITO_USER_POOL_ID=...
+COGNITO_CLIENT_ID=...
+COGNITO_REGION=...
+
+# Postgres (standard libpq env vars, read automatically by the `pg` driver)
+PGHOST=...
+PGPORT=5432
+PGDATABASE=...
+PGUSER=...
+PGPASSWORD=...
+PGSSLMODE=require
+
+# Gemini — server-side only, never exposed to the browser
+GEMINI_API_KEY=...
+```
+
+### 5. Start the backend
+
+```bash
+cd server
+npm start          # or `npm run dev` for auto-restart on file changes
+```
+
+Runs at **http://localhost:4000**. Verify it's up: `curl http://localhost:4000/health` should return `{"ok":true,"db":"connected"}`.
+
+### 6. Start the frontend (in a separate terminal)
 
 ```bash
 npm start
 ```
 
-The application will open at:
-👉 **[http://localhost:3000](http://localhost:3000)**
+👉 **[http://localhost:3000](http://localhost:3000)** — the app calls the API at `http://localhost:4000` by default (override with `REACT_APP_API_BASE_URL`).
 
-> **Note:** The `.env` file containing Firebase configuration is included in the repo.
+### Production deployment (Vercel)
+
+The live site (link at the top of this README) deploys the same repo to Vercel: the CRA frontend as static hosting, and the Express API as a serverless function (`api/index.js`, routed via the rewrite in `vercel.json`) that imports `server/index.js` directly — same code, same Postgres/Cognito backend, no separate deployment artifact to keep in sync. `apiClient.js` defaults to same-origin requests when `NODE_ENV=production`, so no `REACT_APP_API_BASE_URL` is needed there. All the same `.env` variables from step 4 above need to be set in the Vercel project's environment variable settings (both the `REACT_APP_*` build-time ones and the server-side ones).
 
 ---
 
@@ -366,10 +435,19 @@ The application will open at:
 
 ### **Development**
 
+**Frontend** (project root):
+
 | Command         | Purpose                                                                     |
 | --------------- | --------------------------------------------------------------------------- |
 | `npm start`     | Runs the development server with hot reloading.                             |
 | `npm run build` | Builds an optimized production version of the app into the `/build` folder. |
+
+**Backend** (`server/`):
+
+| Command | Purpose |
+| ------- | ------- |
+| `npm start` | Runs the Express API once (`node index.js`). |
+| `npm run dev` | Runs the Express API with `node --watch` — auto-restarts on file changes. |
 
 ---
 
@@ -396,11 +474,16 @@ The application will open at:
 
 ```
 budget-buddy/
-├── src/                    # Source code
+├── src/                    # Frontend source (React)
 │   ├── components/        # React components
-│   ├── context/           # AuthContext
-│   ├── services/          # Firebase services
+│   ├── context/           # AuthContext, DateRangeContext, CurrencyContext
+│   ├── services/          # REST API clients (apiClient, expenseService, aiService, ...)
 │   └── __tests__/         # Unit tests
+├── server/                 # Backend (Express + Postgres + AI tool-calling)
+│   ├── routes/            # expenses, categories, budgets, settings, ai
+│   ├── services/          # AI tools/prompts/Gemini client, rate limiting
+│   └── middleware/        # Cognito auth verification, async error handling
+├── schema.sql              # Postgres DDL — run once against your database
 ├── cypress/               # E2E tests
 │   ├── e2e/              # Test specs
 │   ├── fixtures/         # Test data
@@ -408,17 +491,23 @@ budget-buddy/
 ├── Documents/            # Documentation
 │   ├── Cypress_E2E_Testing/
 │   ├── Jest_Unit_Testing/
+│   ├── API_Reference.md   # Current REST + AI endpoint reference
+│   ├── AI_Chat_Feature.md # Current AI tool-calling design
 │   └── ...
+├── ROADMAP.md              # Migration history: Firebase → AWS Postgres/Cognito/RAG
 ├── .github/workflows/    # CI/CD workflows
 └── eslint-report/        # ESLint reports
 ```
 
 ### Troubleshooting
 
-- **Port 3000 in use**: App will suggest alternative port
-- **Dependencies issues**: Run `npm install` again
-- **Firebase errors**: Check internet connection
-- **Test failures**: Run `npm test -- --watchAll=false` for detailed errors
+- **Port 3000 or 4000 in use**: kill whatever's holding the port (`lsof -ti:3000,4000 | xargs kill -9` on macOS/Linux) — the frontend needs 3000, the backend needs 4000.
+- **Dependencies issues**: Run `npm install` again (and `cd server && npm install` — it has its own `package.json`).
+- **"Failed to fetch" in the browser**: the backend isn't running, isn't on port 4000, or `REACT_APP_API_BASE_URL` points somewhere else. Check `curl http://localhost:4000/health`.
+- **401 Unauthorized from the API**: check `COGNITO_USER_POOL_ID`/`COGNITO_CLIENT_ID` (server) match `REACT_APP_COGNITO_USER_POOL_ID`/`REACT_APP_COGNITO_CLIENT_ID` (client) — they must point at the same User Pool/app client.
+- **RDS connection errors**: check the RDS security group allows inbound Postgres (5432) from your IP, and that `PGSSLMODE=require` is set (RDS requires SSL).
+- **AI chat says "busy right now"**: the free Gemini API tier has low per-minute/per-day request limits — this is usually transient; see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md#model-selection-and-fallback-servicesgeminiclientjs).
+- **Test failures**: Run `npm test -- --watchAll=false` for detailed errors.
 
 ---
 
@@ -441,7 +530,7 @@ budget-buddy/
 - Budget goals (Goals page, useBudgetProgress)
 - Charts & visualization (PieChart, BarChart, LineChart)
 - UI components (Modal, Toast)
-- Utilities (database, firebaseConfig)
+- Utilities (`database.test.js` now covers the REST `expenseService`/`categoryService`, mocking Cognito instead of Firebase)
 
 > 📋 **Detailed Test Catalog**: [`Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md`](Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md)
 
@@ -503,7 +592,9 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 ### E2E Testing (Cypress)
 
-**Coverage**: Complete user journey coverage
+> ⚠️ **Known gap**: these suites were written against the original Firebase Auth login/signup flow and haven't been updated for the Cognito migration (different error messages, a mandatory email-confirmation step, an email+code password reset instead of a link). They have not been re-verified since and should be assumed stale until updated — unlike the Jest unit suite, which was fully rewritten for Cognito and is confirmed passing (305/305, see `ROADMAP.md`).
+
+**Coverage**: Complete user journey coverage (as of the original Firebase-based app)
 
 | Test Suite | # Tests | Coverage |
 |------------|---------|----------|
