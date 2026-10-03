@@ -7,11 +7,14 @@ const router = express.Router();
 // Shapes the response like the old Firestore budgets/config doc
 // ({ monthly, categories: { name: limit } }) so it's a direct comparison.
 router.get('/', asyncHandler(async (req, res) => {
-  const budgetRes = await pool.query('SELECT monthly FROM budgets WHERE user_id = $1', [req.uid]);
-  const limitsRes = await pool.query(
-    'SELECT category_name, monthly_limit FROM budget_category_limits WHERE user_id = $1',
-    [req.uid]
-  );
+  // Independent reads — run them concurrently (one DB round trip of wait, not two).
+  const [budgetRes, limitsRes] = await Promise.all([
+    pool.query('SELECT monthly FROM budgets WHERE user_id = $1', [req.uid]),
+    pool.query(
+      'SELECT category_name, monthly_limit FROM budget_category_limits WHERE user_id = $1',
+      [req.uid]
+    ),
+  ]);
   const categories = {};
   limitsRes.rows.forEach((r) => { categories[r.category_name] = Number(r.monthly_limit); });
   res.json({ monthly: budgetRes.rows[0]?.monthly ?? null, categories });

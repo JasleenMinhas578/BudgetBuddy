@@ -506,7 +506,8 @@ budget-buddy/
 - **Dependencies issues**: Run `npm install` again (and `cd server && npm install` — it has its own `package.json`).
 - **"Failed to fetch" in the browser**: the backend isn't running, isn't on port 4000, or `REACT_APP_API_BASE_URL` points somewhere else. Check `curl http://localhost:4000/health`.
 - **401 Unauthorized from the API**: check `SUPABASE_URL` (server) matches `REACT_APP_SUPABASE_URL` (client) — they must point at the same Supabase project.
-- **Database connection errors**: use the **transaction pooler** string from Supabase's **Connect** dialog (port 6543) — the direct connection is IPv6-only on the free plan. Free projects also pause after 7 days with no activity; restore from the Supabase dashboard.
+- **Supabase project paused**: free projects pause after 7 days idle. `.github/workflows/supabase-keepalive.yml` prevents this by pinging `/api/health` every Monday and Thursday — if that workflow ever fails, GitHub emails you; restore the project from the Supabase dashboard.
+- **Database connection errors**: use the **transaction pooler** string from Supabase's **Connect** dialog (port 6543) — the direct connection is IPv6-only on the free plan.
 - **No confirmation / reset email arrives**: Supabase's built-in email only sends to your own team members, 2/hour — set up custom SMTP (see How to Run step 3).
 - **AI chat says "busy right now"**: the free Gemini API tier has low per-minute/per-day request limits — this is usually transient; see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md#model-selection-and-fallback-servicesgeminiclientjs).
 - **Test failures**: Run `npm test -- --watchAll=false` for detailed errors.

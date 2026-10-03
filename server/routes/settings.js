@@ -7,14 +7,17 @@ const router = express.Router();
 // Combines the old settings/preferences and preferences/general Firestore
 // docs into one response, since the frontend always read them together.
 router.get('/', asyncHandler(async (req, res) => {
-  const settingsRes = await pool.query(
-    'SELECT currency, home_currency, default_date_filter FROM settings WHERE user_id = $1',
-    [req.uid]
-  );
-  const prefsRes = await pool.query(
-    'SELECT hidden_default_categories FROM preferences WHERE user_id = $1',
-    [req.uid]
-  );
+  // Independent reads — run them concurrently (one DB round trip of wait, not two).
+  const [settingsRes, prefsRes] = await Promise.all([
+    pool.query(
+      'SELECT currency, home_currency, default_date_filter FROM settings WHERE user_id = $1',
+      [req.uid]
+    ),
+    pool.query(
+      'SELECT hidden_default_categories FROM preferences WHERE user_id = $1',
+      [req.uid]
+    ),
+  ]);
   res.json({
     currency: settingsRes.rows[0]?.currency ?? 'USD',
     homeCurrency: settingsRes.rows[0]?.home_currency ?? 'USD',

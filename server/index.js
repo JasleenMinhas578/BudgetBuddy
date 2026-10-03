@@ -15,14 +15,19 @@ const app = express();
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
-// Unauthenticated — for checking the server + DB are up.
-app.get('/health', async (req, res) => {
+// Unauthenticated — for checking the server + DB are up. Also mounted under
+// /api so it's reachable on Vercel (only /api/* is routed to this app there);
+// the weekly keep-alive workflow (.github/workflows/supabase-keepalive.yml)
+// calls it so the free Supabase project never sits idle long enough to pause.
+app.get(['/health', '/api/health'], async (req, res) => {
   const pool = require('./db');
   try {
     await pool.query('SELECT 1');
     res.json({ ok: true, db: 'connected' });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    // Public endpoint — log the real driver error, don't echo it.
+    console.error('[health]', err);
+    res.status(500).json({ ok: false, error: 'Database unreachable' });
   }
 });
 

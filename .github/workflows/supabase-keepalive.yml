@@ -1,0 +1,47 @@
+name: Supabase keep-alive
+
+# Free Supabase projects pause after 7 days with no activity. This makes real
+# requests twice a week so that never happens: Monday as the main ping, plus
+# Thursday as a margin — GitHub can run scheduled jobs late (or occasionally
+# skip one), so a once-a-week ping exactly 7 days apart could land too late.
+# A failed run here also emails the repo owner, so it doubles as a basic
+# uptime check for the live site.
+on:
+  schedule:
+    - cron: '0 14 * * 1,4'   # Mondays and Thursdays, 14:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write   # for the "keep this workflow enabled" step below
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      # Goes through the whole live stack: Vercel function → Supabase Postgres
+      # (`SELECT 1` via the pooler).
+      - name: Ping live API health check (runs a DB query)
+        run: |
+          body=$(curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
+            https://budget-buddy-mun.vercel.app/api/health)
+          echo "$body"
+          echo "$body" | grep -q '"ok":true'
+
+      # Also hit the Supabase project's own API, so activity is recorded even
+      # if the request above is ever served without reaching the database.
+      - name: Ping Supabase Auth API
+        env:
+          SUPABASE_URL: ${{ secrets.REACT_APP_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.REACT_APP_SUPABASE_ANON_KEY }}
+        run: |
+          curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
+            -H "apikey: $SUPABASE_ANON_KEY" "$SUPABASE_URL/auth/v1/health"
+
+      # GitHub disables scheduled workflows in a public repo after 60 days
+      # with no commits. Re-enabling it on every run keeps the schedule alive
+      # even during quiet stretches with no pushes.
+      - name: Keep this workflow enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"

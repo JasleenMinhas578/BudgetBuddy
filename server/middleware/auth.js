@@ -10,6 +10,13 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
+// uid → the claims last written to the DB by this server instance. Lets us
+// skip the provisioning write (a DB round trip) on every request after the
+// first, and only write again when the email/name actually changed. Per warm
+// instance only — a cold start just re-runs the idempotent upsert once.
+const provisioned = new Map();
+const MAX_PROVISIONED = 1000;
+
 module.exports = async function requireAuth(req, res, next) {
   const accessToken = req.headers.authorization?.replace('Bearer ', '');
   if (!accessToken) return res.status(401).json({ error: 'Unauthorized' });
@@ -30,9 +37,13 @@ module.exports = async function requireAuth(req, res, next) {
     // on their very first API call. The same statement seeds their settings
     // row from the home currency picked at signup — only if they don't have
     // one yet, so it never overrides a later change made in Settings.
+    const displayName = claims.user_metadata?.name || null;
     const homeCurrency = SUPPORTED_CURRENCIES.includes(claims.user_metadata?.home_currency)
       ? claims.user_metadata.home_currency
       : null;
+    const signature = JSON.stringify([claims.email, displayName, homeCurrency]);
+    if (provisioned.get(req.uid) === signature) return next();
+
     await pool.query(
       `WITH u AS (
          INSERT INTO users (id, email, display_name)
@@ -43,8 +54,10 @@ module.exports = async function requireAuth(req, res, next) {
        INSERT INTO settings (user_id, currency, home_currency)
        SELECT id, $4, $4 FROM u WHERE $4::text IS NOT NULL
        ON CONFLICT (user_id) DO NOTHING`,
-      [claims.sub, claims.email, claims.user_metadata?.name || null, homeCurrency]
+      [claims.sub, claims.email, displayName, homeCurrency]
     );
+    if (provisioned.size >= MAX_PROVISIONED) provisioned.clear();
+    provisioned.set(req.uid, signature);
 
     next();
   } catch {
