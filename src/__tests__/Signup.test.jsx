@@ -369,7 +369,7 @@ describe('Signup Component', () => {
       // With "Confirm email" on, Supabase returns no session until the
       // emailed code is entered — signup doesn't land in the dashboard yet.
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/confirm-signup', { state: { email: 'test@example.com' } });
+        expect(mockNavigate).toHaveBeenCalledWith('/confirm-signup', { state: { email: 'test@example.com', justSent: true } });
       });
     });
 

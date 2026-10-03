@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { LuLogIn, LuEye, LuEyeOff } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
+import { clearSignedOutReason, signedOutReason } from '../../utils/idleSession';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 
@@ -14,6 +15,15 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Signed out by the idle timer — say so, once.
+  useEffect(() => {
+    const reason = signedOutReason();
+    if (reason) {
+      setMessage(reason);
+      clearSignedOutReason();
+    }
+  }, [setMessage]);
 
   useEffect(() => {
     if (location.state?.message) {

@@ -15,6 +15,7 @@ import Goals from './components/Dashboard/Goals';
 import Settings from './components/Dashboard/Settings';
 import NotFound from './pages/NotFound';
 import AIChat from './components/AI/AIChat';
+import IdleLogout from './components/Layout/IdleLogout';
 import { DateRangeProvider } from './context/DateRangeContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import './styles/main.css';
@@ -58,6 +59,8 @@ function App() {
         </Routes>
         {/* AI chat widget — only mounted when logged in */}
         <AuthenticatedAIChat />
+        {/* Signs out after 30 idle minutes, warning for the last 10 */}
+        <IdleLogout />
       </DateRangeProvider>
       </CurrencyProvider>
       </AuthProvider>

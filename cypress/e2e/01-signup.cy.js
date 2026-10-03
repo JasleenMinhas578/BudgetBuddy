@@ -12,13 +12,13 @@
  * - AC4: System requires password confirmation to match
  * - AC5: System prevents duplicate email registrations
  * - AC6: System provides clear error messages for validation failures
- * - AC7: System redirects to dashboard upon successful registration
+ * - AC7: System asks the user to confirm their email upon successful registration
  * - AC8: Password visibility can be toggled for better UX
  * - AC9: Form maintains data when user switches between fields
  * - AC10: Submit button shows loading state during registration
  * 
  * User Flows Covered:
- * 1. Happy Path: Valid registration → Dashboard access
+ * 1. Happy Path: Valid registration → Confirm-your-email screen
  * 2. Validation Errors: Invalid email, weak password, mismatched passwords
  * 3. Duplicate Registration: Attempting to register with existing email
  * 4. UX Features: Password visibility toggle, form persistence, loading states
@@ -106,17 +106,12 @@ describe('User Signup Flow', () => {
     // Submit form
     cy.get('button[type="submit"]').click();
     
-    // Wait for Firebase authentication
-    cy.wait(5000);
-    
-    // Should redirect to dashboard after successful signup
-    cy.url({ timeout: 15000 }).should('include', '/dashboard');
-    
-    // Dashboard should be visible
-    cy.contains(/dashboard|overview|expenses/i, { timeout: 10000 }).should('be.visible');
-    
-    // Clean up - logout
-    cy.logout();
+    // Email confirmation is on, so signup lands on "Confirm Your Email"
+    // (the Supabase call is stubbed in support/e2e.js — no real email sent)
+    cy.wait('@supabaseSignup').its('request.body.email').should('eq', email);
+    cy.url({ timeout: 15000 }).should('include', '/confirm-signup');
+    cy.contains(/confirm your email/i).should('be.visible');
+    cy.get('input[type="email"]').should('have.value', email);
   });
 
   it('should show error when trying to register with existing email', () => {
@@ -179,7 +174,7 @@ describe('User Signup Flow', () => {
   });
 
   it('should disable submit button during form submission', () => {
-    // Use unique email so Firebase takes time creating a new account (keeps button disabled longer)
+    // The stubbed signup call is delayed, which keeps the button disabled long enough to check
     const email = `test.button.${Date.now()}@budgetbuddy.test`;
     const password = 'TestPassword123!';
 
@@ -191,7 +186,7 @@ describe('User Signup Flow', () => {
 
     cy.get('button[type="submit"]').click();
 
-    // Button should be disabled or show loading text while Firebase call is in flight
+    // Button should be disabled or show loading text while the signup call is in flight
     cy.get('button[type="submit"]').should('satisfy', ($btn) => {
       const isDisabled = $btn.prop('disabled');
       const hasSpinner = $btn.find('.loading-spinner').length > 0;

@@ -3,7 +3,7 @@
 // - Mocks @supabase/supabase-js (see src/__mocks__/) and navigation.
 // - Verifies a signed-in user (i.e. the link worked) is sent to the dashboard.
 // - Verifies resending the link calls Supabase with the right redirect, and
-//   shows success / rate-limit messages.
+//   shows success / rate-limit messages with a "Resend in Ns" countdown.
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -33,9 +33,9 @@ jest.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-function renderPage() {
+function renderPage(state = { email: 'new@example.com' }) {
   render(
-    <MemoryRouter initialEntries={[{ pathname: '/confirm-signup', state: { email: 'new@example.com' } }]}>
+    <MemoryRouter initialEntries={[{ pathname: '/confirm-signup', state }]}>
       <AuthProvider>
         <ConfirmSignUp />
       </AuthProvider>
@@ -79,14 +79,47 @@ describe('ConfirmSignUp', () => {
     });
   });
 
-  it('explains the email rate limit', async () => {
-    __mockAuth.resend.mockResolvedValue({ data: {}, error: { code: 'over_email_send_rate_limit' } });
+  it('counts down before allowing another resend', async () => {
+    __mockAuth.resend.mockResolvedValue({ data: {}, error: null });
     renderPage();
 
     fireEvent.click(screen.getByRole('button', { name: /resend confirmation link/i }));
 
-    await waitFor(() => {
-      expect(screen.getByText('Too many emails sent. Please wait a while and try again.')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /resend in 60s/i })).toBeDisabled();
+  });
+
+  it('starts the countdown straight away when signup just sent the email', () => {
+    renderPage({ email: 'new@example.com', justSent: true });
+    expect(screen.getByRole('button', { name: /resend in 60s/i })).toBeDisabled();
+  });
+
+  it('turns the "wait N seconds" error into a countdown', async () => {
+    __mockAuth.resend.mockResolvedValue({
+      data: {},
+      error: {
+        code: 'over_email_send_rate_limit',
+        status: 429,
+        message: 'For security purposes, you can only request this after 42 seconds.',
+      },
     });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /resend confirmation link/i }));
+
+    expect(await screen.findByRole('button', { name: /resend in 42s/i })).toBeDisabled();
+    expect(screen.getByText(/we can only send one email a minute/i)).toBeInTheDocument();
+  });
+
+  it('explains the hourly email limit, which has no countdown', async () => {
+    __mockAuth.resend.mockResolvedValue({
+      data: {},
+      error: { code: 'over_email_send_rate_limit', status: 429, message: 'email rate limit exceeded' },
+    });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /resend confirmation link/i }));
+
+    expect(await screen.findByText(/please wait a few minutes and try again/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /resend confirmation link/i })).toBeEnabled();
   });
 });

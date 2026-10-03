@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { LuLock } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
+import { useCountdown } from '../../hooks/useCountdown';
+import { EMAIL_COOLDOWN_SECONDS, isRateLimitError, rateLimitMessage, retryAfterSeconds } from '../../utils/emailRateLimit';
 
 export default function PasswordCard() {
   const { currentUser, resetPassword } = useAuth();
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState({ text: '', type: '' });
+  // Supabase allows one reset email per minute per address.
+  const [cooldown, startCooldown] = useCountdown();
 
   const handleSend = async () => {
     setLoading(true);
@@ -16,8 +20,15 @@ export default function PasswordCard() {
         text: `A password reset link has been sent to ${currentUser.email}. Open it to choose a new password.`,
         type: 'success',
       });
-    } catch {
-      setMsg({ text: 'Failed to send reset link. Please try again.', type: 'error' });
+      startCooldown(EMAIL_COOLDOWN_SECONDS);
+    } catch (error) {
+      if (isRateLimitError(error)) {
+        const wait = retryAfterSeconds(error);
+        if (wait) startCooldown(wait);
+        setMsg({ text: rateLimitMessage(wait), type: 'error' });
+      } else {
+        setMsg({ text: 'Failed to send reset link. Please try again.', type: 'error' });
+      }
     } finally {
       setLoading(false);
     }
@@ -35,8 +46,8 @@ export default function PasswordCard() {
         </div>
       </div>
       {msg.text && <p className={`settings-feedback ${msg.type}`}>{msg.text}</p>}
-      <button className="btn btn-primary settings-btn" onClick={handleSend} disabled={loading}>
-        {loading ? 'Sending...' : 'Send Reset Link'}
+      <button className="btn btn-primary settings-btn" onClick={handleSend} disabled={loading || cooldown > 0}>
+        {loading ? 'Sending...' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Send Reset Link'}
       </button>
     </div>
   );

@@ -2,15 +2,20 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import '../../styles/confirm-dialog.css';
 
-export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel, variant = 'danger' }) {
+// onDismiss (Escape / clicking the backdrop) defaults to onCancel; dialogs
+// whose Cancel button does something drastic can point it elsewhere.
+export default function ConfirmDialog({
+  isOpen, title, message, onConfirm, onCancel, onDismiss = onCancel,
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel', variant = 'danger',
+}) {
   const boxRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleKey = (e) => { if (e.key === 'Escape') onCancel(); };
+    const handleKey = (e) => { if (e.key === 'Escape') onDismiss(); };
     document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
-  }, [isOpen, onCancel]);
+  }, [isOpen, onDismiss]);
 
   useEffect(() => {
     if (!isOpen || !boxRef.current) return;
@@ -33,7 +38,7 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="cd-overlay" onClick={onCancel}>
+    <div className="cd-overlay" onClick={onDismiss}>
       <div
         className="cd-box"
         ref={boxRef}
@@ -46,7 +51,7 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
         <div className="cd-message">{message}</div>
         <div className="cd-actions">
           <button type="button" className="cd-btn-cancel" onClick={onCancel}>
-            Cancel
+            {cancelLabel}
           </button>
           <button
             type="button"
@@ -54,7 +59,7 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
             onClick={onConfirm}
             autoFocus
           >
-            Confirm
+            {confirmLabel}
           </button>
         </div>
       </div>

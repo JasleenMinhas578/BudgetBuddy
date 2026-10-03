@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
 import { CURRENCIES, guessHomeCurrency } from '../../utils/currencyUtils';
+import { retryAfterSeconds } from '../../utils/emailRateLimit';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 import PasswordInput from '../UI/PasswordInput';
@@ -47,10 +48,10 @@ export default function Signup() {
     try {
       setLoading(true);
       const { needsConfirmation } = await signup(email, password, displayName.trim(), homeCurrency);
-      // With "Confirm email" on in Supabase, the emailed code has to be
-      // entered before the account can log in; with it off, we're signed in.
+      // With "Confirm email" on in Supabase, the emailed link has to be
+      // clicked before the account can log in; with it off, we're signed in.
       if (needsConfirmation) {
-        navigate('/confirm-signup', { state: { email } });
+        navigate('/confirm-signup', { state: { email, justSent: true } });
       } else {
         navigate('/dashboard');
       }
@@ -68,9 +69,13 @@ export default function Signup() {
           setError('Password is too weak. Please choose a stronger password');
           break;
         case 'over_email_send_rate_limit':
-        case 'over_request_rate_limit':
-          setError('Too many attempts. Please try again later.');
+        case 'over_request_rate_limit': {
+          const wait = retryAfterSeconds(error);
+          setError(wait
+            ? `We just sent an email to this address. Please wait ${wait} seconds and try again.`
+            : 'Too many attempts. Please wait a few minutes and try again.');
           break;
+        }
         default:
           setError('Failed to create an account');
           break;

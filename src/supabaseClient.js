@@ -1,11 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
+import { recordActivity } from './utils/idleSession';
 
 // Email confirmation / password-reset links land back on the app with the
 // result in the URL fragment. A bad or expired link carries an error there
 // instead of a session; capture it before supabase-js processes the URL so
 // the landing page can explain what happened.
-export const authLinkError =
-  new URLSearchParams(window.location.hash.slice(1)).get('error_description');
+const authLinkParams = new URLSearchParams(window.location.hash.slice(1));
+export const authLinkError = authLinkParams.get('error_description');
+
+// A working link is a fresh sign-in — start the idle clock now, so an old
+// last-activity time left in this browser doesn't sign them straight out.
+if (authLinkParams.has('access_token')) recordActivity();
 
 // The anon/publishable key is safe to ship to the browser — it only grants
 // what Supabase Auth allows anonymously (sign up, sign in, reset password).

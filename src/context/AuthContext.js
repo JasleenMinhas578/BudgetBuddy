@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, getIdToken } from '../supabaseClient';
+import {
+  INACTIVITY_MESSAGE, clearSignedOutReason, isIdleExpired, recordActivity, setSignedOutReason,
+} from '../utils/idleSession';
 
 const AuthContext = createContext();
 
@@ -49,7 +52,18 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Fires once immediately with the restored session (INITIAL_SESSION),
     // then on every sign-in/out/refresh after that.
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      // A session restored after 30+ idle minutes (tab left open while the
+      // laptop slept, browser reopened later) is signed out before the app
+      // ever shows it. signOut is deferred: supabase-js can deadlock if it's
+      // awaited from inside its own auth callback.
+      if (event === 'INITIAL_SESSION' && session && isIdleExpired()) {
+        setSignedOutReason(INACTIVITY_MESSAGE);
+        setTimeout(() => supabase.auth.signOut({ scope: 'local' }), 0);
+        applyUser(null);
+        setLoading(false);
+        return;
+      }
       applyUser(session?.user);
       setLoading(false);
     });
@@ -79,7 +93,7 @@ export function AuthProvider({ children }) {
     }
     // No session back means the project requires clicking the emailed
     // confirmation link first; with confirmation off the user is signed in.
-    if (data.session) applyUser(data.user);
+    if (data.session) startSession(data.user);
     return { needsConfirmation: !data.session };
   }
 
@@ -93,12 +107,30 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     const data = unwrap(await supabase.auth.signInWithPassword({ email, password }));
-    applyUser(data.user);
+    startSession(data.user);
+  }
+
+  // A fresh sign-in restarts the idle clock (see utils/idleSession.js).
+  function startSession(user) {
+    recordActivity();
+    clearSignedOutReason();
+    applyUser(user);
   }
 
   async function logout() {
+    clearSignedOutReason();
     await supabase.auth.signOut();
     setCurrentUser(null);
+  }
+
+  // Used by the idle timer. Signs out this browser only — "local" scope —
+  // so walking away from one device doesn't sign the user out on the others
+  // (a manual logout() still ends every session). The login page then
+  // explains why they're there.
+  async function signOutForInactivity() {
+    setSignedOutReason(INACTIVITY_MESSAGE);
+    setCurrentUser(null);
+    await supabase.auth.signOut({ scope: 'local' });
   }
 
   // Emails a link that signs the user in on /reset-password, where they
@@ -132,6 +164,7 @@ export function AuthProvider({ children }) {
     resendConfirmation,
     login,
     logout,
+    signOutForInactivity,
     resetPassword,
     updatePassword,
     updateDisplayName,

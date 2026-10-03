@@ -3,7 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { LuMail } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
+import { useCountdown } from '../../hooks/useCountdown';
 import { authLinkError } from '../../supabaseClient';
+import { EMAIL_COOLDOWN_SECONDS, isRateLimitError, rateLimitMessage, retryAfterSeconds } from '../../utils/emailRateLimit';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 
@@ -16,6 +18,14 @@ export default function ConfirmSignUp() {
   const { currentUser, resendConfirmation } = useAuth();
   const [email, setEmail] = useState(location.state?.email || '');
   const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
+  // Supabase sends one email per address per minute. Signup just sent one,
+  // so start the "Resend in 59s" countdown instead of letting the first
+  // click fail with a rate-limit error.
+  const [cooldown, startCooldown] = useCountdown();
+  const justSent = !!location.state?.justSent;
+  useEffect(() => {
+    if (justSent) startCooldown(EMAIL_COOLDOWN_SECONDS);
+  }, [justSent, startCooldown]);
 
   useEffect(() => {
     if (currentUser) navigate('/dashboard', { replace: true });
@@ -35,14 +45,14 @@ export default function ConfirmSignUp() {
       setLoading(true);
       await resendConfirmation(email);
       setMessage('A new confirmation link has been sent to your email.');
+      startCooldown(EMAIL_COOLDOWN_SECONDS);
     } catch (error) {
-      switch (error.code) {
-        case 'over_email_send_rate_limit':
-        case 'over_request_rate_limit':
-          setError('Too many emails sent. Please wait a while and try again.');
-          break;
-        default:
-          setError('Failed to resend the link. Please check the email address.');
+      if (isRateLimitError(error)) {
+        const wait = retryAfterSeconds(error);
+        if (wait) startCooldown(wait);
+        setError(rateLimitMessage(wait));
+      } else {
+        setError('Failed to resend the link. Please check the email address.');
       }
     } finally {
       setLoading(false);
@@ -72,9 +82,9 @@ export default function ConfirmSignUp() {
           </div>
         </div>
 
-        <AuthSubmitButton loading={loading} loadingText="Sending...">
+        <AuthSubmitButton loading={loading} loadingText="Sending..." disabled={cooldown > 0}>
           <LuMail size={16} />
-          Resend Confirmation Link
+          {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Confirmation Link'}
         </AuthSubmitButton>
       </form>
     </AuthLayout>
