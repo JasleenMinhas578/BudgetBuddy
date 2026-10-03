@@ -4,6 +4,7 @@ import { LuUserPlus } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
+import { CURRENCIES, guessHomeCurrency } from '../../utils/currencyUtils';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 import PasswordInput from '../UI/PasswordInput';
@@ -13,6 +14,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [homeCurrency, setHomeCurrency] = useState(() => guessHomeCurrency());
   const { error, setError, loading, setLoading } = useAuthForm();
   const { signup } = useAuth();
   const navigate = useNavigate();
@@ -44,20 +46,30 @@ export default function Signup() {
 
     try {
       setLoading(true);
-      await signup(email, password, displayName.trim());
-      // Cognito requires confirming the emailed code before the account can
-      // log in — unlike Firebase, which considered signup immediately complete.
-      navigate('/confirm-signup', { state: { email } });
+      const { needsConfirmation } = await signup(email, password, displayName.trim(), homeCurrency);
+      // With "Confirm email" on in Supabase, the emailed code has to be
+      // entered before the account can log in; with it off, we're signed in.
+      if (needsConfirmation) {
+        navigate('/confirm-signup', { state: { email } });
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       switch (error.code) {
-        case 'UsernameExistsException':
+        case 'user_already_exists':
+        case 'email_exists':
           setError('An account with this email already exists');
           break;
-        case 'InvalidParameterException':
+        case 'email_address_invalid':
+        case 'validation_failed':
           setError('Please enter a valid email address');
           break;
-        case 'InvalidPasswordException':
+        case 'weak_password':
           setError('Password is too weak. Please choose a stronger password');
+          break;
+        case 'over_email_send_rate_limit':
+        case 'over_request_rate_limit':
+          setError('Too many attempts. Please try again later.');
           break;
         default:
           setError('Failed to create an account');
@@ -104,6 +116,23 @@ export default function Signup() {
               required
             />
           </div>
+        </div>
+
+        {/* Asked up front because amounts are stored as plain numbers in this
+            currency — switching it later relabels past expenses instead of
+            converting them. Display currency stays a Settings preference. */}
+        <div className="form-group">
+          <label htmlFor="homeCurrency">Home Currency</label>
+          <select
+            id="homeCurrency"
+            value={homeCurrency}
+            onChange={(e) => setHomeCurrency(e.target.value)}
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</option>
+            ))}
+          </select>
+          <p className="auth-hint">The currency you'll enter expenses in. You can change how amounts are displayed later in Settings.</p>
         </div>
 
         <PasswordInput

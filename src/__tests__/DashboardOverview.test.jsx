@@ -1,5 +1,5 @@
 // Integration-style tests for the `DashboardOverview` component.
-// - Mocks Cognito (for AuthContext), the expense/category/budget services, and framer-motion to focus on data calculations and UI rendering.
+// - Mocks Supabase Auth (for AuthContext), the expense/category/budget services, and framer-motion to focus on data calculations and UI rendering.
 // - Verifies welcome messaging for first-time users vs returning users with existing expenses.
 // - Checks summary cards for total, monthly, average, and top-category computations across various datasets (including empty and zero cases).
 // - Ensures the "Recent Expenses" widget shows the correct number of items, orders them by date, and formats details properly.
@@ -13,9 +13,9 @@ import { BrowserRouter } from 'react-router-dom';
 import DashboardOverview from '../components/Dashboard/DashboardOverview';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Cognito so the real AuthContext resolves to a logged-in (or logged-out) user
-jest.mock('amazon-cognito-identity-js');
-const { __mockUserPoolInstance } = require('amazon-cognito-identity-js');
+// Mock Supabase Auth so the real AuthContext resolves to a logged-in (or logged-out) user
+jest.mock('@supabase/supabase-js');
+const { __setMockSession, __mockSession } = require('@supabase/supabase-js');
 
 jest.mock('../services/expenseService', () => ({
   subscribeToExpenses: jest.fn(),
@@ -71,13 +71,7 @@ function dateInCurrentMonth(day) {
 }
 
 function mockLoggedIn(mockUser) {
-  __mockUserPoolInstance.getCurrentUser.mockReturnValue({
-    getSession: (cb) => cb(null, { isValid: () => true }),
-    getUserAttributes: (cb) => cb(null, [
-      { getName: () => 'email', getValue: () => mockUser.email },
-    ]),
-    getUsername: () => mockUser.uid,
-  });
+  __setMockSession(__mockSession({ id: mockUser.uid, email: mockUser.email }));
 }
 
 describe('DashboardOverview Component', () => {
@@ -473,7 +467,7 @@ describe('DashboardOverview Component', () => {
     });
 
     it('does not subscribe when there is no authenticated user', async () => {
-      __mockUserPoolInstance.getCurrentUser.mockReturnValue(null);
+      __setMockSession(null);
 
       render(
         <TestWrapper>

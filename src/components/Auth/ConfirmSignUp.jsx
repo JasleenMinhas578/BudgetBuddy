@@ -1,52 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LuShieldCheck } from 'react-icons/lu';
+import { LuMail } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
+import { authLinkError } from '../../supabaseClient';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 
+// Shown after signup ("check your email"), and also where the emailed
+// confirmation link lands: a valid link signs the user in, so go straight
+// to the dashboard; an expired one shows an error and a way to resend.
 export default function ConfirmSignUp() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { confirmSignup, resendConfirmationCode } = useAuth();
+  const { currentUser, resendConfirmation } = useAuth();
   const [email, setEmail] = useState(location.state?.email || '');
-  const [code, setCode] = useState('');
   const { error, setError, message, setMessage, loading, setLoading } = useAuthForm();
 
-  async function handleSubmit(e) {
+  useEffect(() => {
+    if (currentUser) navigate('/dashboard', { replace: true });
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    if (authLinkError) {
+      setError('That confirmation link is invalid or has expired. Enter your email to get a new one.');
+    }
+  }, [setError]);
+
+  async function handleResend(e) {
     e.preventDefault();
     try {
       setError('');
+      setMessage('');
       setLoading(true);
-      await confirmSignup(email, code);
-      navigate('/login', {
-        state: { message: 'Email confirmed! Please sign in.' },
-      });
+      await resendConfirmation(email);
+      setMessage('A new confirmation link has been sent to your email.');
     } catch (error) {
       switch (error.code) {
-        case 'CodeMismatchException':
-          setError('Incorrect code. Please check your email and try again.');
-          break;
-        case 'ExpiredCodeException':
-          setError('This code has expired. Request a new one below.');
+        case 'over_email_send_rate_limit':
+        case 'over_request_rate_limit':
+          setError('Too many emails sent. Please wait a while and try again.');
           break;
         default:
-          setError('Failed to confirm your account. Please try again.');
+          setError('Failed to resend the link. Please check the email address.');
       }
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleResend() {
-    try {
-      setError('');
-      setMessage('');
-      await resendConfirmationCode(email);
-      setMessage('A new code has been sent to your email.');
-    } catch {
-      setError('Failed to resend code. Please check the email address.');
     }
   }
 
@@ -54,24 +53,11 @@ export default function ConfirmSignUp() {
     <AuthLayout
       backTo="/login"
       title="Confirm Your Email"
-      subtitle="Enter the code we emailed you to finish creating your account"
+      subtitle="We emailed you a confirmation link — click it to finish creating your account"
       error={error}
       message={message}
-      footer={
-        <p>
-          Didn't get a code?{' '}
-          <button
-            type="button"
-            className="auth-link"
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
-            onClick={handleResend}
-          >
-            Resend code
-          </button>
-        </p>
-      }
     >
-      <form onSubmit={handleSubmit} className="auth-form">
+      <form onSubmit={handleResend} className="auth-form">
         <div className="form-group">
           <label htmlFor="email">Email Address</label>
           <div className="input-wrapper">
@@ -86,24 +72,9 @@ export default function ConfirmSignUp() {
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="code">Confirmation Code</label>
-          <div className="input-wrapper">
-            <input
-              type="text"
-              id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="6-digit code"
-              inputMode="numeric"
-              required
-            />
-          </div>
-        </div>
-
-        <AuthSubmitButton loading={loading} loadingText="Confirming...">
-          <LuShieldCheck size={16} />
-          Confirm Account
+        <AuthSubmitButton loading={loading} loadingText="Sending...">
+          <LuMail size={16} />
+          Resend Confirmation Link
         </AuthSubmitButton>
       </form>
     </AuthLayout>

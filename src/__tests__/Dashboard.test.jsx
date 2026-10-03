@@ -8,7 +8,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 
 import Dashboard from '../pages/Dashboard';
 
-// ── Auth — mocked directly at the module level, so the real Cognito-backed
+// ── Auth — mocked directly at the module level, so the real Supabase-backed
 // AuthContext never loads and doesn't need its own mock here ───────────────────
 jest.mock('../context/AuthContext', () => ({
   useAuth: jest.fn(() => ({

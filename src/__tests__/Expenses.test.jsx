@@ -1,5 +1,5 @@
 // High-level tests for the `Expenses` dashboard page.
-// - Mocks Cognito (for AuthContext), expenseService, chart components, Toast, Modal, ExpenseForm, and framer-motion to isolate page logic.
+// - Mocks Supabase Auth (for AuthContext), expenseService, chart components, Toast, Modal, ExpenseForm, and framer-motion to isolate page logic.
 // - Verifies base layout (headers, summary cards, and empty-state messaging) for users with no expenses.
 // - Exercises opening/closing the expense entry modal from both the header "Add Expense" and empty-state "Add First Expense" CTAs.
 // - Confirms correct wiring to the subscribeToExpenses pub/sub, including unsubscribe cleanup on unmount and graceful handling of connection errors.
@@ -12,9 +12,9 @@ import { BrowserRouter } from 'react-router-dom';
 import Expenses from '../components/Dashboard/Expenses';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Cognito so the real AuthContext resolves to a logged-in user
-jest.mock('amazon-cognito-identity-js');
-const { __mockUserPoolInstance } = require('amazon-cognito-identity-js');
+// Mock Supabase Auth so the real AuthContext resolves to a logged-in user
+jest.mock('@supabase/supabase-js');
+const { __setMockSession, __mockSession } = require('@supabase/supabase-js');
 
 // Mock Chart.js components to prevent DOM errors
 jest.mock('react-chartjs-2', () => ({
@@ -140,14 +140,8 @@ describe('Expenses Component', () => {
       return () => {};
     });
 
-    // Real AuthContext + mocked Cognito resolves to a logged-in user on mount.
-    __mockUserPoolInstance.getCurrentUser.mockReturnValue({
-      getSession: (cb) => cb(null, { isValid: () => true }),
-      getUserAttributes: (cb) => cb(null, [
-        { getName: () => 'email', getValue: () => mockUser.email },
-      ]),
-      getUsername: () => mockUser.uid,
-    });
+    // Real AuthContext + mocked Supabase Auth resolves to a logged-in user on mount.
+    __setMockSession(__mockSession({ id: mockUser.uid, email: mockUser.email }));
   });
 
   afterAll(() => {

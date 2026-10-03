@@ -13,11 +13,11 @@ export default function PasswordCard() {
     try {
       await resetPassword(currentUser.email);
       setMsg({
-        text: `A password reset code has been sent to ${currentUser.email}. Use it on the "Reset Password" page to set a new one.`,
+        text: `A password reset link has been sent to ${currentUser.email}. Open it to choose a new password.`,
         type: 'success',
       });
     } catch {
-      setMsg({ text: 'Failed to send reset code. Please try again.', type: 'error' });
+      setMsg({ text: 'Failed to send reset link. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -30,13 +30,13 @@ export default function PasswordCard() {
         <div>
           <h2 className="settings-card-title">Change Password</h2>
           <p className="settings-card-desc">
-            We'll send a code to <strong>{currentUser?.email}</strong>. Use it on the "Reset Password" page to choose a new one.
+            We'll email a link to <strong>{currentUser?.email}</strong> where you can choose a new one.
           </p>
         </div>
       </div>
       {msg.text && <p className={`settings-feedback ${msg.type}`}>{msg.text}</p>}
       <button className="btn btn-primary settings-btn" onClick={handleSend} disabled={loading}>
-        {loading ? 'Sending...' : 'Send Reset Code'}
+        {loading ? 'Sending...' : 'Send Reset Link'}
       </button>
     </div>
   );

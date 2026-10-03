@@ -11,7 +11,8 @@ export function validatePassword(password) {
   if (!/\d/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one number' };
   }
-  // Matches Cognito's default password policy, which requires a symbol.
+  // Kept from the Cognito-era policy, which required a symbol. Supabase's
+  // own server-side check is looser by default, so this is the stricter gate.
   if (!/[\^$*.[\]{}()?"!@#%&/\\,><':;|_~`+=-]/.test(password)) {
     return { isValid: false, message: 'Password must contain at least one special character' };
   }

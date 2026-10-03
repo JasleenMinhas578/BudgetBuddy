@@ -1,22 +1,22 @@
 /* istanbul ignore file */
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LuShieldCheck } from 'react-icons/lu';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthForm } from '../../hooks/useAuthForm';
 import { validatePassword } from '../../utils/validatePassword';
+import { authLinkError } from '../../supabaseClient';
 import AuthLayout from './AuthLayout';
 import AuthSubmitButton from './AuthSubmitButton';
 import PasswordInput from '../UI/PasswordInput';
 
+// Where the emailed reset link lands. A valid link signs the user in, so
+// all that's left is choosing the new password for that session.
 export default function ResetPassword() {
-  const location = useLocation();
-  const [email, setEmail] = useState(location.state?.email || '');
-  const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const { error, setError, loading, setLoading } = useAuthForm();
-  const { resetPasswordWithCode } = useAuth();
+  const { currentUser, updatePassword } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -35,26 +35,18 @@ export default function ResetPassword() {
         return;
       }
 
-      if (!email || !code) {
-        setError('Email and code are required.');
-        return;
-      }
-
       setLoading(true);
-      await resetPasswordWithCode(email, code, password);
+      await updatePassword(password);
       navigate('/login', {
         state: { message: 'Password reset successful! Please login with your new password.' }
       });
     } catch (error) {
       switch (error.code) {
-        case 'ExpiredCodeException':
-          setError('This code has expired. Please request a new one.');
-          break;
-        case 'CodeMismatchException':
-          setError('Incorrect code. Please check your email and try again.');
-          break;
-        case 'InvalidPasswordException':
+        case 'weak_password':
           setError('Password is too weak. Please choose a stronger password');
+          break;
+        case 'same_password':
+          setError('New password must be different from your current one');
           break;
         default:
           setError('Failed to reset password. Please try again.');
@@ -64,44 +56,27 @@ export default function ResetPassword() {
     }
   }
 
+  if (!currentUser) {
+    return (
+      <AuthLayout
+        backTo="/login"
+        title="Set New Password"
+        subtitle="Open the reset link from your email to choose a new password"
+        error={authLinkError ? 'That reset link is invalid or has expired. Please request a new one.' : ''}
+        footer={<p><Link to="/forgot-password" className="auth-link">Send a new reset link</Link></p>}
+      />
+    );
+  }
+
   return (
     <AuthLayout
       backTo="/login"
       title="Set New Password"
-      subtitle="Enter the code we emailed you and your new password"
+      subtitle={`Choose a new password for ${currentUser.email}`}
       error={error}
       footer={<p>Remember your password? <Link to="/login" className="auth-link">Sign In</Link></p>}
     >
       <form onSubmit={handleSubmit} className="auth-form">
-        <div className="form-group">
-          <label htmlFor="email">Email Address</label>
-          <div className="input-wrapper">
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="code">Reset Code</label>
-          <div className="input-wrapper">
-            <input
-              type="text"
-              id="code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="6-digit code"
-              inputMode="numeric"
-              required
-            />
-          </div>
-        </div>
-
         <PasswordInput
           id="password"
           label="New Password"

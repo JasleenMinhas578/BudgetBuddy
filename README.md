@@ -1,8 +1,8 @@
 # 💸 Budget Buddy
 
-> **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/) — the frontend and the Express API both deploy from this one Vercel project. The API runs as a Vercel serverless function (`api/index.js`) that directly imports and calls `server/index.js`'s Express app (no adapter needed — Express apps are valid `(req, res)` handlers), talking to the same AWS RDS Postgres + AWS Cognito backend as local dev.
+> **Live Application**: [https://budget-buddy-mun.vercel.app/](https://budget-buddy-mun.vercel.app/) — the frontend and the Express API both deploy from this one Vercel project. The API runs as a Vercel serverless function (`api/index.js`) that directly imports and calls `server/index.js`'s Express app (no adapter needed — Express apps are valid `(req, res)` handlers), talking to the same Supabase (Postgres + Auth) backend as local dev.
 
-> 📖 **Project evolution**: sections below describing sprints, story points, and the original Firebase/Firestore architecture document the original academic group project. The tech stack has since evolved into a solo portfolio project — see [`ROADMAP.md`](ROADMAP.md) for the full migration history (self-hosted Postgres on AWS RDS, AWS Cognito auth, and a RAG-based AI chat rebuild). The **Architecture** and **How to Run** sections below reflect the current stack. A learning-focused move to a fully self-managed **EC2 + Docker Compose** deployment is still planned (see ROADMAP.md Phase 6) — Vercel serverless is the real, live deployment in the meantime, not a placeholder.
+> 📖 **Project evolution**: sections below describing sprints, story points, and the original Firebase/Firestore architecture document the original academic group project. The tech stack has since evolved into a solo portfolio project — see [`ROADMAP.md`](ROADMAP.md) for the full migration history (Postgres + auth on AWS RDS/Cognito, then moved to Supabase's free tier to stop AWS billing, and a RAG-based AI chat rebuild). The **Architecture** and **How to Run** sections below reflect the current stack. The whole stack now runs on free tiers (Vercel + Supabase + Gemini) — see ROADMAP.md Phase 8.
 
 ---
 
@@ -33,7 +33,7 @@
 Budget Buddy is a **free, easy-to-use web application** for managing personal expenses. Unlike many market apps that become paid after trial, Budget Buddy focuses on **cost-effectiveness, accessibility, and simplicity**.
 
 ### Core Features
-- ✅ Secure authentication (AWS Cognito)
+- ✅ Secure authentication (Supabase Auth)
 - ✅ Expense and category management (CRUD operations, via a self-hosted Express + Postgres API)
 - ✅ Data visualization (Pie, Bar, Line charts)
 - ✅ Report generation (PDF & CSV export)
@@ -158,9 +158,10 @@ In particular, we adopted **four core XP practices** throughout the project:
 - **US-008**: AI Chat Assistant [Status: Done]
   - Add, edit, and delete expenses in plain English via Google Gemini
   - Auto-categorize expenses; query spending data with natural-language date ranges
-  - Rebuilt in the AWS migration around real Gemini tool-calling (RAG) against Postgres, with the API key living only in `server/.env` — see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md)
+  - Rebuilt during the Postgres migration around real Gemini tool-calling (RAG) against Postgres, with the API key living only in `server/.env` — see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md)
 - **US-009**: User Settings [Status: Done]
   - Update display name, trigger password-reset email, save a default date-range preference
+  - Home currency is chosen at sign-up (pre-selected from the browser locale), since amounts are stored as plain numbers in it — changing it later relabels past expenses rather than converting them. Display currency stays a Settings preference
 - **US-010**: Budget Goals [Status: Done]
   - Set monthly per-category spending limits; real-time progress bars with on-track / near-limit / over-budget alerts on the Goals page and dashboard
 - **US-011**: Multi-Currency Support [Status: Done]
@@ -194,8 +195,8 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **React.js** | [React.dev](https://react.dev/) | Component-based architecture, virtual DOM for efficient rendering, extensive ecosystem, strong community support. Ideal for rapid development with declarative syntax and unidirectional data flow. | Vue.js (smaller ecosystem), Angular (steeper learning curve) |
 | **React Context API** | [React Context](https://react.dev/reference/react/createContext) | Lightweight global state management without external dependencies. Perfect for authentication state, eliminates prop drilling, zero bundle size impact. | Redux (too complex), Zustand (unnecessary dependency) |
 | **React Router** | [React Router](https://reactrouter.com/) | Industry standard for React routing. Provides declarative routing, protected routes, and seamless React integration. | Next.js (requires migration), Reach Router (merged into React Router) |
-| **AWS Cognito** | [Cognito](https://aws.amazon.com/cognito/) | Managed user pools with SRP-based auth, email confirmation, and password-reset flows out of the box; server-side JWT verification via `aws-jwt-verify`. Chosen when migrating off Firebase to learn the AWS auth primitive directly rather than staying on a Google-managed equivalent. Permanent free tier (50k MAUs). | Firebase Auth (where this project started), Auth0 (cost), Custom JWT (more to get wrong securely) |
-| **AWS RDS (Postgres)** | [RDS](https://aws.amazon.com/rds/) | Relational schema (users, expenses, categories, budgets) fits the data better than a NoSQL document store once expenses need real joins/aggregates for reports and the AI's SQL-backed tool calls. Free tier for the account's first 12 months. | Firestore (no real joins, where this project started), Supabase (considered as a lower-cost alternative post-free-tier — see `ROADMAP.md`), MongoDB Atlas |
+| **Supabase Auth** | [Supabase Auth](https://supabase.com/docs/guides/auth) | Email/password auth with emailed confirmation and password-reset codes; the server verifies access tokens against the project's public keys (`getClaims()`). Free tier with no 12-month expiry (50k MAUs). | AWS Cognito (used before this — moved off to stop AWS billing), Firebase Auth (where this project started), Custom JWT (more to get wrong securely) |
+| **Supabase Postgres** | [Supabase](https://supabase.com/docs/guides/database) | Relational schema (users, expenses, categories, budgets) fits the data better than a NoSQL document store once expenses need real joins/aggregates for reports and the AI's SQL-backed tool calls. Plain Postgres, reached with the same `pg` driver via Supabase's connection pooler. Free tier (500 MB) with no 12-month expiry. | AWS RDS (used before this — free only for an account's first 12 months), Firestore (no real joins, where this project started), Neon |
 | **Chart.js** | [Chart.js](https://www.chartjs.org/) | Simple, flexible charting with excellent React integration. Supports Pie/Bar/Line charts, responsive design, extensive customization. Lightweight with large community. | D3.js (steep learning curve), Recharts (less customization), Victory (heavier) |
 | **date-fns** | [date-fns](https://date-fns.org/) | Modern, tree-shakeable date utilities. Immutable functions, smaller bundle size than Moment.js, excellent TypeScript support. | Moment.js (maintenance mode, large bundle), Luxon (larger), Day.js (fewer features) |
 | **jsPDF + html2canvas** | [jsPDF](https://github.com/parallax/jsPDF) / [html2canvas](https://html2canvas.hertzen.com/) | Client-side PDF generation without server. Captures DOM elements as images for charts. Simple, no backend required. | Server-side (Puppeteer/PDFKit - adds complexity), pdfmake (poor chart support) |
@@ -203,7 +204,7 @@ Status: ✅ **100% feature + infrastructure scope complete**
 | **Cypress** | [Cypress](https://www.cypress.io/) | E2E testing in real browsers with excellent DX. Time-travel debugging, automatic waiting, screenshot/video capture. Multi-browser support with CI/CD integration. | Selenium (slower, complex), Playwright (less community), Puppeteer (Chrome-only) |
 | **ESLint** | [ESLint](https://eslint.org/) | Industry standard JavaScript linter. Maintains code quality, catches bugs early, enforces standards. Seamless React integration with extensive rule set. | Prettier (formatting only), JSHint (deprecated), TSLint (deprecated) |
 | **Express** | [Express](https://expressjs.com/) | The REST API (`server/`) replacing direct Firestore access from the client — CRUD routes for expenses/categories/budgets/settings, plus the AI tool-calling endpoints. Chosen to match the frontend's language (one less new thing to learn) over introducing a second backend language. | Fastify (less familiar), NestJS (more structure than needed here), Firebase Cloud Functions (where this started) |
-| **Vercel** | [Vercel](https://vercel.com/) | Deploys both the CRA frontend and the Express API — the API runs as a Vercel serverless function (`api/index.js`) that directly imports `server/index.js`'s exported Express app (`module.exports = app`; `app.listen()` only runs for local dev, guarded by `require.main === module`). The `pg` pool is capped at 3 connections since serverless containers can run concurrently against RDS's connection limit. A move to self-managed **EC2 + Docker Compose** is still planned (`ROADMAP.md` Phase 6) for the transferable fundamentals (SSH, security groups, Nginx) — Vercel serverless is the live deployment in the meantime, not a placeholder. | EC2 + Docker Compose (planned), ECS/Fargate (more than needed for a personal project) |
+| **Vercel** | [Vercel](https://vercel.com/) | Deploys both the CRA frontend and the Express API — the API runs as a Vercel serverless function (`api/index.js`) that directly imports `server/index.js`'s exported Express app (`module.exports = app`; `app.listen()` only runs for local dev, guarded by `require.main === module`). The `pg` pool is capped at 3 connections and points at Supabase's transaction pooler, since serverless containers can run concurrently. Functions are pinned to Montréal (`yul1` in `vercel.json`), the same AWS region as the Supabase database (`ca-central-1`), so the several DB round trips per request stay in-region. Free Hobby tier. | EC2 + Docker Compose (was planned; dropped to stay on free tiers), ECS/Fargate (more than needed for a personal project) |
 | **GitHub Actions** | [GitHub Actions](https://docs.github.com/en/actions) | CI/CD integrated with GitHub. Matrix builds, artifact management, workflow automation. Version-controlled YAML config with generous free tier. | Jenkins (server setup), CircleCI/Travis (external services) |
 | **npm** | [npm](https://www.npmjs.com/) | Default Node.js package manager, pre-installed. Largest registry, excellent docs, lock file ensures consistency. | Yarn (adds tool), pnpm (compatibility issues) |
 | **Google Gemini API** | [Gemini API](https://ai.google.dev/) | Free-tier LLM for the AI chat feature, called with real function-calling (tools run scoped SQL against Postgres, a RAG pattern — not vector search, since the data is structured transactions). All calls go through `server/routes/ai.js`; the API key lives only in the server's `.env` and is never compiled into the browser bundle. See [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md). | OpenAI GPT (paid), Claude API (paid free tier limited), Llama (requires self-hosting) |
@@ -217,13 +218,13 @@ Status: ✅ **100% feature + infrastructure scope complete**
 Budget Buddy follows a **Client-Server Architecture** with **Layered Architecture** within the client application. *(Diagrams below are from the original Firebase-based design and are out of date — see the [Component Structure](#component-structure) and [Data Architecture](#data-architecture) sections just below for the current stack.)*
 
 **Primary Architecture Pattern: Client-Server**
-- **Client**: React running in the browser, calling the API with a Cognito ID token
-- **Server**: A self-hosted Node/Express API (`server/`) backed by AWS RDS Postgres, with AWS Cognito handling auth independently
+- **Client**: React running in the browser, signing in with Supabase Auth and calling the API with the Supabase access token
+- **Server**: A Node/Express API (`server/`) backed by Supabase Postgres, verifying that token on every request
 
 **Secondary Architecture Pattern: Layered Architecture (within Client)**
 - **Presentation Layer**: React components, pages, UI elements
 - **Business Logic Layer**: Services, utilities, validation, context
-- **Data Access Layer**: `src/services/apiClient.js` (REST calls to `server/`, Cognito token attached automatically)
+- **Data Access Layer**: `src/services/apiClient.js` (REST calls to `server/`, Supabase access token attached automatically)
 
 ![System Architecture](Documents/UML/High_Level_System_Architecture.png)
 
@@ -242,7 +243,7 @@ server/
 ├── db.js              # Postgres pool (pg), with type-parser fixes for DATE/NUMERIC columns
 ├── constants.js        # Shared server-side constants (e.g. default category names)
 ├── middleware/
-│   ├── auth.js         # Verifies Cognito ID tokens (aws-jwt-verify), JIT-provisions the users row
+│   ├── auth.js         # Verifies Supabase access tokens (getClaims), JIT-provisions the users + settings rows
 │   └── asyncHandler.js  # Wraps async route handlers so thrown errors reach Express's error middleware
 ├── routes/
 │   ├── expenses.js, categories.js, budgets.js, settings.js  # CRUD REST endpoints
@@ -284,7 +285,7 @@ src/
 │                      #   useExpenses, useToast, useBudgets, useBudgetProgress,
 │                      #   useGlobalSearch, useCategories, useClickOutside
 ├── services/
-│   ├── apiClient.js         # apiFetch() — attaches the Cognito ID token, calls the Express API
+│   ├── apiClient.js         # apiFetch() — attaches the Supabase access token, calls the Express API
 │   ├── expenseService.js    # Expense CRUD (REST) + pubsub-based "live" subscription
 │   ├── categoryService.js   # Category CRUD (REST) + pubsub-based "live" subscription
 │   ├── settingsService.js   # User settings (REST read/write)
@@ -311,17 +312,17 @@ src/
 │   ├── categoryUtils.js     # Shared category validators (e.g. validCategory guard)
 │   ├── dateFilterLabel.js   # Converts a date-filter preset key into a human-readable label
 │   └── forecastUtils.js     # getMonthEndForecast — projects month-end spend from daily average
-└── cognito.js         # CognitoUserPool instance + getIdToken() helper (auto-refreshes session)
+└── supabaseClient.js  # Supabase client + getIdToken() helper (auto-refreshes session)
 ```
 
 ### Data Architecture
 
-**Authentication**: AWS Cognito User Pool, SRP-based sign-in via `amazon-cognito-identity-js`. Sign-up requires confirming an emailed code before login (`/confirm-signup`); forgot-password is an email+code flow rather than a clickable link. `AuthContext.js` wraps all of this behind the same shape the rest of the app already used (`currentUser.uid/.email/.displayName`, async `.getIdToken()`), so most call sites needed zero changes when this replaced Firebase Auth.
+**Authentication**: Supabase Auth, email/password via `@supabase/supabase-js`. With "Confirm email" on (the default), sign-up requires clicking an emailed confirmation link, which lands back on `/confirm-signup` signed in; forgot-password emails a link that opens `/reset-password` signed in, where the user picks a new password. (Code-based emails would need custom email templates, which Supabase's free plan only allows with your own SMTP provider.) `AuthContext.js` wraps all of this behind the same shape the rest of the app already used (`currentUser.uid/.email/.displayName`, async `.getIdToken()`), so call sites needed zero changes across Firebase → Cognito → Supabase.
 
-**Postgres schema** (`schema.sql`, run once against the RDS instance):
+**Postgres schema** (`schema.sql`, run once against the Supabase database):
 
 ```
-users(id, email, display_name, created_at)              -- id = Cognito sub
+users(id, email, display_name, created_at)              -- id = Supabase Auth user id
 expenses(id, user_id, title, amount, category_name, expense_date, notes, ...)
 categories(id, user_id, name, ...)                       -- custom categories only
 budgets(user_id, monthly)                                -- overall monthly limit
@@ -338,7 +339,7 @@ Every table is scoped by `user_id` (a foreign key to `users.id`, `ON DELETE CASC
 **AI chat**: real Gemini function-calling (RAG) against the Postgres data — see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md) for the full design.
 
 ### State Management
-- **`AuthContext`** — global authentication state (current user, login/logout, display-name update, password reset) — now backed by Cognito instead of Firebase Auth
+- **`AuthContext`** — global authentication state (current user, login/logout, display-name update, password reset) — now backed by Supabase Auth (previously Cognito, originally Firebase Auth)
 - **`DateRangeContext`** — global date-filter state shared across all dashboard views; loads the user's saved preference from the API on login
 - **Local component state** for UI interactions
 - **`pubsub.js`-driven service subscriptions** for data state (see [Data Architecture](#data-architecture) above)
@@ -349,14 +350,13 @@ Every table is scoped by `user_id` (a foreign key to `users.id`, `ON DELETE CASC
 
 ## 🚀 How to Run the Project
 
-The app is now two processes: the React frontend (`npm start`, port 3000) and a separate Express API (`server/`, port 4000). Both need to be running. You'll also need your own AWS Cognito User Pool, an AWS RDS (or any reachable) Postgres instance, and a free Gemini API key — none of these are bundled with the repo since they're real cloud resources tied to an account.
+The app is now two processes: the React frontend (`npm start`, port 3000) and a separate Express API (`server/`, port 4000). Both need to be running. You'll also need a free Supabase project (Postgres + Auth) and a free Gemini API key — none of these are bundled with the repo since they're real cloud resources tied to an account.
 
 ### Prerequisites
-- **Node.js** 20 LTS or newer
+- **Node.js** 22 or newer (`@supabase/supabase-js` requires it)
 - **npm** (comes with Node.js)
 - **Git**
-- An **AWS Cognito User Pool** + a public (no-secret) app client
-- A **Postgres database** reachable from your machine (AWS RDS free tier works, or any local/hosted Postgres)
+- A free **Supabase project** — [supabase.com](https://supabase.com/) → New project (its Postgres database and Auth are both used)
 - A free **Gemini API key** — [Google AI Studio](https://aistudio.google.com/) → Create API Key
 
 ### 1. Clone the repository
@@ -373,36 +373,37 @@ npm install          # frontend
 cd server && npm install && cd ..   # backend
 ```
 
-### 3. Create the database schema
+### 3. Set up Supabase
 
-Run [`schema.sql`](schema.sql) once against your Postgres instance, e.g.:
+1. **Schema** — run [`schema.sql`](schema.sql) once, either pasted into the Supabase dashboard's **SQL Editor**, or with `psql` using the connection string from **Connect**:
 
-```bash
-psql "postgresql://<user>:<password>@<host>:5432/<database>" -f schema.sql
-```
+   ```bash
+   psql "postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres" -f schema.sql
+   ```
+
+   It enables row-level security on every table with no policies, which blocks Supabase's auto-generated Data API — all data access goes through the Express API instead.
+
+2. **Auth URLs** — in **Authentication → URL Configuration**, set **Site URL** to your deployed URL and add `http://localhost:3000/**` (plus your deployed URL with `/**`) to **Redirect URLs**, so the emailed confirmation/reset links can land back on the app.
+
+3. **Email sending** — Supabase's built-in email only delivers to your own Supabase team members, 2 emails/hour. For real users, add a free SMTP provider under **Authentication → Emails → SMTP Settings** (e.g. Resend or Brevo free tiers), or turn off **Confirm email** under **Authentication → Sign In / Providers** (sign-up then logs straight in; password reset still needs email).
 
 ### 4. Set up `.env`
 
 Create a `.env` file at the project root (**gitignored — never commit real credentials**) with:
 
 ```bash
-# Cognito — client-side (CRA only inlines REACT_APP_* vars)
-REACT_APP_COGNITO_USER_POOL_ID=...
-REACT_APP_COGNITO_CLIENT_ID=...
-REACT_APP_COGNITO_REGION=...
+# Supabase Auth — client-side (CRA only inlines REACT_APP_* vars).
+# Project Settings → API: the project URL and the anon/publishable key.
+REACT_APP_SUPABASE_URL=https://<project-ref>.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=...
 
-# Cognito — server-side (same values, no REACT_APP_ prefix)
-COGNITO_USER_POOL_ID=...
-COGNITO_CLIENT_ID=...
-COGNITO_REGION=...
+# Supabase Auth — server-side (same values, no REACT_APP_ prefix)
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_ANON_KEY=...
 
-# Postgres (standard libpq env vars, read automatically by the `pg` driver)
-PGHOST=...
-PGPORT=5432
-PGDATABASE=...
-PGUSER=...
-PGPASSWORD=...
-PGSSLMODE=require
+# Supabase Postgres — Connect → "Transaction pooler" connection string
+# (port 6543). Don't append ?sslmode=... — server/db.js handles SSL.
+DATABASE_URL=postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres
 
 # Gemini — server-side only, never exposed to the browser
 GEMINI_API_KEY=...
@@ -427,7 +428,7 @@ npm start
 
 ### Production deployment (Vercel)
 
-The live site (link at the top of this README) deploys the same repo to Vercel: the CRA frontend as static hosting, and the Express API as a serverless function (`api/index.js`, routed via the rewrite in `vercel.json`) that imports `server/index.js` directly — same code, same Postgres/Cognito backend, no separate deployment artifact to keep in sync. `apiClient.js` defaults to same-origin requests when `NODE_ENV=production`, so no `REACT_APP_API_BASE_URL` is needed there. All the same `.env` variables from step 4 above need to be set in the Vercel project's environment variable settings (both the `REACT_APP_*` build-time ones and the server-side ones).
+The live site (link at the top of this README) deploys the same repo to Vercel: the CRA frontend as static hosting, and the Express API as a serverless function (`api/index.js`, routed via the rewrite in `vercel.json`) that imports `server/index.js` directly — same code, same Supabase backend, no separate deployment artifact to keep in sync. `apiClient.js` defaults to same-origin requests when `NODE_ENV=production`, so no `REACT_APP_API_BASE_URL` is needed there. All the same `.env` variables from step 4 above need to be set in the Vercel project's environment variable settings (both the `REACT_APP_*` build-time ones and the server-side ones).
 
 ---
 
@@ -482,7 +483,7 @@ budget-buddy/
 ├── server/                 # Backend (Express + Postgres + AI tool-calling)
 │   ├── routes/            # expenses, categories, budgets, settings, ai
 │   ├── services/          # AI tools/prompts/Gemini client, rate limiting
-│   └── middleware/        # Cognito auth verification, async error handling
+│   └── middleware/        # Supabase token verification, async error handling
 ├── schema.sql              # Postgres DDL — run once against your database
 ├── cypress/               # E2E tests
 │   ├── e2e/              # Test specs
@@ -494,7 +495,7 @@ budget-buddy/
 │   ├── API_Reference.md   # Current REST + AI endpoint reference
 │   ├── AI_Chat_Feature.md # Current AI tool-calling design
 │   └── ...
-├── ROADMAP.md              # Migration history: Firebase → AWS Postgres/Cognito/RAG
+├── ROADMAP.md              # Migration history: Firebase → AWS → Supabase, plus RAG
 ├── .github/workflows/    # CI/CD workflows
 └── eslint-report/        # ESLint reports
 ```
@@ -504,8 +505,9 @@ budget-buddy/
 - **Port 3000 or 4000 in use**: kill whatever's holding the port (`lsof -ti:3000,4000 | xargs kill -9` on macOS/Linux) — the frontend needs 3000, the backend needs 4000.
 - **Dependencies issues**: Run `npm install` again (and `cd server && npm install` — it has its own `package.json`).
 - **"Failed to fetch" in the browser**: the backend isn't running, isn't on port 4000, or `REACT_APP_API_BASE_URL` points somewhere else. Check `curl http://localhost:4000/health`.
-- **401 Unauthorized from the API**: check `COGNITO_USER_POOL_ID`/`COGNITO_CLIENT_ID` (server) match `REACT_APP_COGNITO_USER_POOL_ID`/`REACT_APP_COGNITO_CLIENT_ID` (client) — they must point at the same User Pool/app client.
-- **RDS connection errors**: check the RDS security group allows inbound Postgres (5432) from your IP, and that `PGSSLMODE=require` is set (RDS requires SSL).
+- **401 Unauthorized from the API**: check `SUPABASE_URL` (server) matches `REACT_APP_SUPABASE_URL` (client) — they must point at the same Supabase project.
+- **Database connection errors**: use the **transaction pooler** string from Supabase's **Connect** dialog (port 6543) — the direct connection is IPv6-only on the free plan. Free projects also pause after 7 days with no activity; restore from the Supabase dashboard.
+- **No confirmation / reset email arrives**: Supabase's built-in email only sends to your own team members, 2/hour — set up custom SMTP (see How to Run step 3).
 - **AI chat says "busy right now"**: the free Gemini API tier has low per-minute/per-day request limits — this is usually transient; see [`Documents/AI_Chat_Feature.md`](Documents/AI_Chat_Feature.md#model-selection-and-fallback-servicesgeminiclientjs).
 - **Test failures**: Run `npm test -- --watchAll=false` for detailed errors.
 
@@ -530,7 +532,7 @@ budget-buddy/
 - Budget goals (Goals page, useBudgetProgress)
 - Charts & visualization (PieChart, BarChart, LineChart)
 - UI components (Modal, Toast)
-- Utilities (`database.test.js` now covers the REST `expenseService`/`categoryService`, mocking Cognito instead of Firebase)
+- Utilities (`database.test.js` now covers the REST `expenseService`/`categoryService`, mocking the Supabase client)
 
 > 📋 **Detailed Test Catalog**: [`Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md`](Documents/Jest_Unit_Testing/Jest_Unit_Test_Catalog.md)
 
@@ -592,7 +594,7 @@ Acceptance testing is implemented primarily via **Cypress E2E tests** and mapped
 
 ### E2E Testing (Cypress)
 
-> ⚠️ **Known gap**: these suites were written against the original Firebase Auth login/signup flow and haven't been updated for the Cognito migration (different error messages, a mandatory email-confirmation step, an email+code password reset instead of a link). They have not been re-verified since and should be assumed stale until updated — unlike the Jest unit suite, which was fully rewritten for Cognito and is confirmed passing (305/305, see `ROADMAP.md`).
+> ⚠️ **Known gap**: these suites were written against the original Firebase Auth login/signup flow and haven't been updated for the Cognito/Supabase migrations (different error messages, an email-confirmation step, an email+code password reset instead of a link). They have not been re-verified since and should be assumed stale until updated — unlike the Jest unit suite, which was rewritten for Supabase Auth and is confirmed passing (308/308, see `ROADMAP.md`).
 
 **Coverage**: Complete user journey coverage (as of the original Firebase-based app)
 

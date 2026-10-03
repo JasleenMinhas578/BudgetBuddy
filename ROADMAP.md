@@ -1,26 +1,23 @@
-# BudgetBuddy — AWS / AI Upgrade Roadmap
+# BudgetBuddy — Backend / AI Upgrade Roadmap
 
-Working checklist for moving off Vercel+Firebase to a self-deployed AWS stack,
-and turning the AI chat into a real RAG pipeline. Goal is learning, not
+Working checklist for moving off Firebase (first to AWS, then to Supabase's
+free tier — see Phase 8), and turning the AI chat into a real RAG pipeline. Goal is learning, not
 resume-padding — keep each phase as simple as it can be while still being real.
 
 ## Decisions locked in
 - Backend language: **Node/Express** (matches frontend, one less new thing to learn)
-- Auth: **AWS Cognito** (replaces Firebase Auth, once everything else works)
-- Compute: **EC2 t2.micro (free tier) + Docker Compose** — not ECS/Fargate, for
-  the transferable fundamentals (SSH, security groups, Nginx, systemd). **Current
-  actual deployment**: the Express API runs as a Vercel serverless function
-  (`api/index.js` → `server/index.js`'s exported app) alongside the CRA frontend,
-  added to get the live URL working again against real Postgres/Cognito without
-  waiting on Phase 6. This is the real, live deployment right now, not a
-  placeholder — EC2 + Docker Compose remains the planned learning-focused move
-  in Phase 6, not yet started.
+- Auth: ~~**AWS Cognito**~~ → **Supabase Auth** (Phase 8)
+- Database: ~~**AWS RDS Postgres**~~ → **Supabase Postgres** (Phase 8) — same schema, same `pg` driver
+- Compute: **Vercel serverless** — the Express API runs as a Vercel serverless
+  function (`api/index.js` → `server/index.js`'s exported app) alongside the CRA
+  frontend. EC2 + Docker Compose (Phase 6) was the original plan, but dropped
+  in Phase 8 to keep the whole stack on free tiers with no 12-month expiry.
 - RAG approach: **tool-calling / text-to-SQL**, not vector-embedding RAG —
   the data is structured (transactions), so retrieval = scoped SQL query, not
   similarity search. (pgvector can be bolted on later for free-text notes if wanted.)
 
-## Open questions
-- **Possible move from AWS RDS/Cognito to Supabase** — not decided, just flagged for later. Motivation is cost: AWS RDS (db.t4g.micro) and EC2 (t2.micro) are only free for the account's first 12 months, then start billing; Supabase's free tier (Postgres + its own auth) has no such time limit, so it'd stay free indefinitely for a small personal project. Caveats to weigh before actually doing this: Cognito itself has a separate, permanent free tier (50,000 MAUs), so the cost pressure is really about RDS/EC2, not Cognito specifically; and this would undo two migrations just finished (Phase 1 Postgres-on-RDS, Phase 7 Cognito) in favor of a third auth/DB system, which cuts against the "learn things, don't just churn" goal unless the AWS free-tier clock actually becomes a real constraint. Revisit if/when that 12-month window is approaching, rather than pre-emptively.
+## Resolved questions
+- **Move from AWS RDS/Cognito to Supabase** — **done in Phase 8 (October 2026)**; the user decided to stop paying for/depending on AWS now rather than wait out the free-tier clock. Original reasoning, kept for context: Motivation is cost: AWS RDS (db.t4g.micro) and EC2 (t2.micro) are only free for the account's first 12 months, then start billing; Supabase's free tier (Postgres + its own auth) has no such time limit, so it'd stay free indefinitely for a small personal project. Caveats to weigh before actually doing this: Cognito itself has a separate, permanent free tier (50,000 MAUs), so the cost pressure is really about RDS/EC2, not Cognito specifically; and this would undo two migrations just finished (Phase 1 Postgres-on-RDS, Phase 7 Cognito) in favor of a third auth/DB system, which cuts against the "learn things, don't just churn" goal unless the AWS free-tier clock actually becomes a real constraint. Revisit if/when that 12-month window is approaching, rather than pre-emptively.
 
 ## Phases
 
@@ -73,7 +70,7 @@ resume-padding — keep each phase as simple as it can be while still being real
   - [ ] Dockerfile for the Express API
   - [ ] `docker-compose.yml` (API + Postgres) for local dev
 
-- [ ] **6. Deploy to AWS**
+- [ ] ~~**6. Deploy to AWS**~~ — dropped in Phase 8 (staying on free tiers)
   - [ ] EC2 t2.micro, Docker Compose stack
   - [ ] Nginx reverse proxy, HTTPS via Let's Encrypt
 
@@ -89,6 +86,24 @@ resume-padding — keep each phase as simple as it can be while still being real
   - [x] Verified signup → email confirmation → login all work end-to-end in the real browser with a real account
   - [ ] Old Firebase-era Postgres test data (4 expenses, 3 categories, tied to the old Firebase UID) was deleted rather than remapped to the new Cognito ID — user decided it wasn't worth preserving
   - [x] Confirmed adding an expense works — new Cognito user auto-provisioned in `users` table, expense saved correctly (verified directly in Postgres)
+
+- [ ] **8. Move off AWS entirely → Supabase (free tier)** — October 2026, to stop AWS billing
+  - [x] Backed up RDS before touching anything: full `pg_dump` + data-only dump in `backups/` (gitignored — contains real user data). Data at time of backup: 1 user, 4 expenses, 3 budget limits, 2 ai_usage rows.
+  - [x] Frontend auth: `src/cognito.js` → `src/supabaseClient.js`; `AuthContext.js` rewritten on `@supabase/supabase-js` behind the same exposed shape (`currentUser.uid/.email/.displayName`, `.getIdToken()`) — zero call-site changes again.
+  - [x] Email flows switched from codes (Cognito-style) to links: first built on `verifyOtp` codes, but **Supabase's free plan refuses email-template edits unless you bring your own SMTP**, and the default templates only contain a link. So confirm-signup and reset-password are link-based now — the link lands on `/confirm-signup` or `/reset-password` already signed in (supabase-js picks the session out of the URL), and a bad/expired link's error is read from the URL fragment (`authLinkError` in `supabaseClient.js`). No extra email provider needed.
+  - [x] Supabase quirk handled: `signUp` for an already-registered email returns a user with `identities: []` instead of an error (anti-enumeration) — mapped to the existing "account already exists" message. Signup also works with "Confirm email" turned off (goes straight to the dashboard).
+  - [x] Supabase quirk handled: it re-emits auth events on token refresh / tab focus; `AuthContext` keeps the same `currentUser` object unless id/email/name changed, so the ~10 hooks keyed on `currentUser` don't refetch every time.
+  - [x] Server auth: `aws-jwt-verify` → supabase-js `auth.getClaims()` (local JWKS verification), requiring `role: "authenticated"` so the public anon key (itself a signed JWT) can't pass. Display-name changes now force a session refresh, since the JIT `users` upsert copies the name from the token.
+  - [x] `server/db.js` takes `DATABASE_URL` (Supabase transaction pooler, port 6543 — built for serverless; the direct connection is IPv6-only on the free plan).
+  - [x] `schema.sql` enables RLS on every table with no policies — Supabase auto-exposes `public` tables through its Data API to anyone with the anon key; the Express API connects as the table owner and bypasses RLS.
+  - [x] Node 22+ now required (`@supabase/supabase-js` engines) — `.nvmrc` bumped from 18; CI already used 22.
+  - [x] Tests: new manual mock `src/__mocks__/@supabase/supabase-js.js` (session state as plain module state, since CRA's `resetMocks` wipes jest.fn defaults); all auth tests ported, plus new ones for signup-without-confirmation, the `identities: []` case, and the display-name refresh — **308/308 pass**.
+  - [x] Created Supabase project `BudgetBuddy` — first in us-west-2 (Oregon), then **recreated in `ca-central-1` (Montréal, `jwzonagchqmvsrlteecv`)** since the user is in Canada and a Supabase project's region can't be changed after creation; Vercel functions get pinned to the matching `yul1` region so API↔DB round trips stay in-region. Ran `schema.sql` (8 tables, RLS on, 0 policies — verified the anon key gets `[]` from the Data API even with data present). Auth config set via the Management API: Site URL = the Vercel domain, redirect allow-list = localhost:3000 + Vercel domain, min password length 8, email confirmation on.
+  - [x] Migrated data with **no id remapping**: recreated the one real user in Supabase Auth via the admin API with the *same* UUID their Cognito `sub` had (Cognito subs are valid UUIDs, and GoTrue's admin create accepts an `id`), then restored the RDS data-only dump as-is. Counts verified identical (1 user, 4 expenses, 3 budget limits, 2 ai_usage). Since Cognito passwords can't be exported, the user sets a new one via an admin-generated recovery link.
+  - [x] **Gotcha found during the restore**: `pg_dump` output runs `set_config('search_path', '', false)`, and through Supabase's *transaction* pooler that session setting stuck to the pooled backend — the very next connection saw an empty `search_path`, which would have broken every unqualified query the app makes. Fixed by terminating the Supavisor backend (it reconnects clean). Next time, restore dumps via the session pooler or the Management API, never the transaction pooler.
+  - [ ] Swap Vercel env vars (remove `COGNITO_*`/`PG*`, add `SUPABASE_*`/`DATABASE_URL`/`REACT_APP_SUPABASE_*`), redeploy, verify live
+  - [ ] Delete AWS resources: RDS `budgetbuddy-db` (and its automated snapshots), Cognito pool `ca-central-1_1ijNng1NW`
+  - Caveat to remember: free Supabase projects pause after 7 days with no activity (restore from the dashboard; no data loss).
 
 ## Test suite cleanup (Cognito migration)
 - [x] All 10 test files that mocked Firebase (`Login.test.jsx`, `Signup.test.jsx`, `AuthFlow.test.jsx`, `Dashboard.test.jsx`, `Expenses.test.jsx`, `Categories.test.jsx`, `DashboardOverview.test.jsx`, `ExpenseForm.test.jsx`, `useAIChat.test.js`, `database.test.js`) rewritten to mock Cognito/the REST services instead — **all 305 tests across 26 suites pass**

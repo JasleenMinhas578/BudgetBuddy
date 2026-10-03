@@ -1,5 +1,5 @@
 CREATE TABLE users (
-  id            TEXT PRIMARY KEY,        -- Firebase uid for now, Cognito sub later
+  id            TEXT PRIMARY KEY,        -- Supabase Auth user id (auth.users.id)
   email         TEXT NOT NULL UNIQUE,
   display_name  TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -61,3 +61,17 @@ CREATE TABLE ai_usage (
   request_count  INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, usage_date)
 );
+
+-- Supabase auto-exposes every table in `public` through its Data API, which
+-- anyone holding the (public, shipped-to-the-browser) anon key can call.
+-- RLS with no policies denies all of that; the Express API connects as the
+-- tables' owner, which bypasses RLS, so it's unaffected. Harmless on plain
+-- local Postgres too.
+ALTER TABLE users                  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE expenses               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE budgets                ENABLE ROW LEVEL SECURITY;
+ALTER TABLE budget_category_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE preferences            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings               ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_usage               ENABLE ROW LEVEL SECURITY;

@@ -1,5 +1,5 @@
 // Unit tests for the REST-backed `expenseService`/`categoryService` functions.
-// - Mocks `../cognito`'s getIdToken and the global `fetch` so tests only verify
+// - Mocks `../supabaseClient`'s getIdToken and the global `fetch` so tests only verify
 //   request method/path/body and response handling, not a real network call.
 // - Covers CRUD operations for expenses and categories, including required-field
 //   validation (which happens before any network call) and error propagation.
@@ -18,7 +18,7 @@ import {
   subscribeToCategories,
 } from '../services/categoryService';
 
-jest.mock('../cognito', () => ({
+jest.mock('../supabaseClient', () => ({
   getIdToken: jest.fn(() => Promise.resolve('test-token')),
 }));
 

@@ -1,10 +1,10 @@
 # API Reference — Budget Buddy
 
 **Project**: Budget Buddy
-**Last Updated**: September 2026 (post Firebase → AWS/Postgres/Cognito migration — see [`ROADMAP.md`](../ROADMAP.md))
+**Last Updated**: October 2026 (post AWS → Supabase migration — see [`ROADMAP.md`](../ROADMAP.md))
 **Purpose**: Complete reference for the Express REST API and the AI endpoints
 
-Budget Buddy's backend is a self-hosted **Node/Express API** (`server/`) backed by **AWS RDS Postgres**, with **AWS Cognito** for auth. There is no Firestore and no client-side Firebase SDK anymore — the React app talks to this API over plain HTTPS/REST, authenticated with a Cognito ID token on every request.
+Budget Buddy's backend is a self-hosted **Node/Express API** (`server/`) backed by **Supabase Postgres**, with **Supabase Auth** for sign-in. The browser uses Supabase only for auth — all app data goes through this API over plain HTTPS/REST, authenticated with the Supabase access token on every request (Supabase's own Data API is locked off by RLS; see `schema.sql`).
 
 ---
 
@@ -26,20 +26,20 @@ Budget Buddy's backend is a self-hosted **Node/Express API** (`server/`) backed 
 Every route below except `GET /health` is mounted behind `requireAuth` (`server/middleware/auth.js`):
 
 ```
-Authorization: Bearer <Cognito ID token>
+Authorization: Bearer <Supabase access token>
 ```
 
 `requireAuth`:
-1. Verifies the token via `aws-jwt-verify`'s `CognitoJwtVerifier` (checks signature against the User Pool's JWKS, expiry, issuer, audience).
-2. Sets `req.uid` to the token's `sub` claim (a Cognito UUID) — every query below is scoped to this value.
-3. **Just-in-time provisions** the `users` row: `INSERT ... ON CONFLICT (id) DO UPDATE` using `sub`/`email`/`name` from the token claims. This runs on *every* authenticated request, not just signup, so a newly confirmed Cognito user works immediately on their first API call without any separate provisioning step.
+1. Verifies the token via supabase-js's `auth.getClaims()` (checks the signature against the project's JWKS, cached, and expiry), and requires `role: "authenticated"` so the anon key — itself a signed JWT — can't pass.
+2. Sets `req.uid` to the token's `sub` claim (the Supabase Auth user id) — every query below is scoped to this value.
+3. **Just-in-time provisions** the `users` row: `INSERT ... ON CONFLICT (id) DO UPDATE` using `sub`/`email`/`user_metadata.name` from the token claims. This runs on *every* authenticated request, not just signup, so a newly confirmed user works immediately on their first API call without any separate provisioning step. The same statement (a data-modifying CTE, one round trip) also seeds the `settings` row from the home currency picked at signup (`user_metadata.home_currency`, validated against `SUPPORTED_CURRENCIES` in `server/constants.js`) — `ON CONFLICT DO NOTHING`, so it only ever applies to a brand-new user and never overrides a later change in Settings.
 
-On the client, `src/services/apiClient.js`'s `apiFetch()` reads the current ID token via `getIdToken()` (`src/cognito.js`, backed by `amazon-cognito-identity-js`) and attaches it automatically — call sites never handle the token directly.
+On the client, `src/services/apiClient.js`'s `apiFetch()` reads the current access token via `getIdToken()` (`src/supabaseClient.js`, backed by `@supabase/supabase-js`, which refreshes it as needed) and attaches it automatically — call sites never handle the token directly.
 
 A request with a missing/invalid/expired token gets `401 { "error": "Unauthorized" }`.
 
-**Cognito env vars** (server): `COGNITO_USER_POOL_ID`, `COGNITO_CLIENT_ID`, `COGNITO_REGION`
-**Cognito env vars** (client, CRA-prefixed): `REACT_APP_COGNITO_USER_POOL_ID`, `REACT_APP_COGNITO_CLIENT_ID`, `REACT_APP_COGNITO_REGION`
+**Supabase env vars** (server): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, plus `DATABASE_URL` for Postgres
+**Supabase env vars** (client, CRA-prefixed): `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`
 
 ---
 
@@ -159,7 +159,7 @@ Full DDL in [`schema.sql`](../schema.sql) at the project root.
 
 ### `users`
 ```ts
-{ id: string /* Cognito sub */, email: string, display_name: string | null, created_at: timestamptz }
+{ id: string /* Supabase Auth user id */, email: string, display_name: string | null, created_at: timestamptz }
 ```
 
 ### `Expense` (`expenses` table; API shape after the column-alias mapping in `expenses.js`)
@@ -201,5 +201,5 @@ Every error response is `{ "error": "<message>" }`. The Express error middleware
 
 > 📋 **Related documents**:
 > - [`Documents/AI_Chat_Feature.md`](AI_Chat_Feature.md) — end-to-end AI chat flow, tool-calling design, and prompt structure
-> - [`ROADMAP.md`](../ROADMAP.md) — the Firebase → AWS/Postgres/Cognito/RAG migration history and current known limitations
+> - [`ROADMAP.md`](../ROADMAP.md) — the Firebase → AWS → Supabase/RAG migration history and current known limitations
 > - [`schema.sql`](../schema.sql) — full Postgres schema

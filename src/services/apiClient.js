@@ -1,4 +1,4 @@
-import { getIdToken } from '../cognito';
+import { getIdToken } from '../supabaseClient';
 
 // In production the API is served from the same Vercel deployment as the
 // frontend (see /api/[...path].js), so relative paths ('') are correct —

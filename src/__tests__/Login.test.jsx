@@ -1,11 +1,11 @@
 // Detailed tests for the `Login` authentication form component.
-// - Mocks amazon-cognito-identity-js (see src/__mocks__/), framer-motion, and navigation
-//   to isolate form validation, UX, and routing behavior from a real Cognito call.
+// - Mocks @supabase/supabase-js (see src/__mocks__/), framer-motion, and navigation
+//   to isolate form validation, UX, and routing behavior from a real Supabase call.
 // - Verifies initial rendering, accessibility attributes, input wiring, and basic typing interactions.
 // - Covers navigation flows (to dashboard on success, back to home, and to signup) as well as reading and clearing messages from router state.
 // - Exercises loading state, disabling the submit button, and displaying "Signing in..." while a login is pending.
-// - Maps a variety of Cognito error codes to user-friendly messages and ensures generic errors are handled, then cleared on resubmission.
-// - Confirms the form forwards the correct credentials into `authenticateUser`, even when fields are empty.
+// - Maps a variety of Supabase Auth error codes to user-friendly messages and ensures generic errors are handled, then cleared on resubmission.
+// - Confirms the form forwards the correct credentials into `signInWithPassword`, even when fields are empty.
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
@@ -14,9 +14,12 @@ import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import Login from '../components/Auth/Login';
 import { AuthProvider } from '../context/AuthContext';
 
-jest.mock('amazon-cognito-identity-js');
-const { __mockUserInstance: mockUserInstance } = require('amazon-cognito-identity-js');
-const mockAuthenticateUser = mockUserInstance.authenticateUser;
+jest.mock('@supabase/supabase-js');
+const { __mockAuth, __setMockSession, __mockSession } = require('@supabase/supabase-js');
+const mockSignIn = __mockAuth.signInWithPassword;
+
+const signInOk = { data: { user: __mockSession().user }, error: null };
+const authError = (code) => ({ data: {}, error: { code } });
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
@@ -51,12 +54,7 @@ const TestWrapper = ({ children }) => (
 describe('Login Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Re-establish defaults every test — clearAllMocks() wipes out the
-    // baked-in default implementation from the manual mock module, not just
-    // call history, once enough tests have run.
-    mockUserInstance.getUserAttributes.mockImplementation((cb) => cb(null, [
-      { getName: () => 'email', getValue: () => 'test@example.com' },
-    ]));
+    __setMockSession(null);
 
     // Suppress console warnings for cleaner test output
     jest.spyOn(console, 'error').mockImplementation((message) => {
@@ -161,8 +159,8 @@ describe('Login Component', () => {
     });
 
     it('shows loading state when form is submitted', async () => {
-      // Never resolves — simulates a pending Cognito call.
-      mockAuthenticateUser.mockImplementation(() => {});
+      // Never resolves — simulates a pending Supabase call.
+      mockSignIn.mockImplementation(() => new Promise(() => {}));
 
       render(
         <TestWrapper>
@@ -181,7 +179,7 @@ describe('Login Component', () => {
 
   describe('Navigation Tests', () => {
     it('navigates to dashboard on successful login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+      mockSignIn.mockResolvedValue(signInOk);
 
       render(
         <TestWrapper>
@@ -237,9 +235,7 @@ describe('Login Component', () => {
 
   describe('Error Handling Tests', () => {
     it('displays user not found error', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'UserNotFoundException' })
-      );
+      mockSignIn.mockResolvedValue(authError('invalid_credentials'));
 
       render(
         <TestWrapper>
@@ -257,9 +253,7 @@ describe('Login Component', () => {
     });
 
     it('displays wrong password error', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'NotAuthorizedException' })
-      );
+      mockSignIn.mockResolvedValue(authError('invalid_credentials'));
 
       render(
         <TestWrapper>
@@ -277,9 +271,7 @@ describe('Login Component', () => {
     });
 
     it('displays invalid email error', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'InvalidParameterException' })
-      );
+      mockSignIn.mockResolvedValue(authError('validation_failed'));
 
       render(
         <TestWrapper>
@@ -297,9 +289,7 @@ describe('Login Component', () => {
     });
 
     it('displays generic error for unknown error codes', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'InternalErrorException' })
-      );
+      mockSignIn.mockResolvedValue(authError('unexpected_failure'));
 
       render(
         <TestWrapper>
@@ -317,9 +307,7 @@ describe('Login Component', () => {
     });
 
     it('clears error when form is resubmitted', async () => {
-      mockAuthenticateUser.mockImplementationOnce((details, { onFailure }) =>
-        onFailure({ code: 'UserNotFoundException' })
-      );
+      mockSignIn.mockResolvedValueOnce(authError('invalid_credentials'));
 
       render(
         <TestWrapper>
@@ -335,7 +323,7 @@ describe('Login Component', () => {
         expect(screen.getByText('Invalid email or password')).toBeInTheDocument();
       });
 
-      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+      mockSignIn.mockResolvedValue(signInOk);
       fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
@@ -355,15 +343,12 @@ describe('Login Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       // The form still attempts to submit with empty values — validation
-      // happens at the Cognito level, same as it did at the Firebase level before.
-      expect(mockAuthenticateUser).toHaveBeenCalled();
-      const [authDetails] = mockAuthenticateUser.mock.calls[0];
-      expect(authDetails.Username).toBe('');
-      expect(authDetails.Password).toBe('');
+      // happens at the Supabase level, same as it did at Cognito/Firebase before.
+      expect(mockSignIn).toHaveBeenCalledWith({ email: '', password: '' });
     });
 
-    it('calls authenticateUser with correct parameters', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+    it('calls signInWithPassword with correct parameters', async () => {
+      mockSignIn.mockResolvedValue(signInOk);
 
       render(
         <TestWrapper>
@@ -376,17 +361,14 @@ describe('Login Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
 
       await waitFor(() => {
-        expect(mockAuthenticateUser).toHaveBeenCalled();
+        expect(mockSignIn).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
       });
-      const [authDetails] = mockAuthenticateUser.mock.calls[0];
-      expect(authDetails.Username).toBe('test@example.com');
-      expect(authDetails.Password).toBe('password123');
     });
   });
 
   describe('Loading State Tests', () => {
     it('disables submit button during loading', async () => {
-      mockAuthenticateUser.mockImplementation(() => {});
+      mockSignIn.mockImplementation(() => new Promise(() => {}));
 
       render(
         <TestWrapper>
@@ -402,7 +384,7 @@ describe('Login Component', () => {
     });
 
     it('shows loading spinner during authentication', async () => {
-      mockAuthenticateUser.mockImplementation(() => {});
+      mockSignIn.mockImplementation(() => new Promise(() => {}));
 
       render(
         <TestWrapper>

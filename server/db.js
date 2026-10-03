@@ -1,6 +1,6 @@
-// Connection pool for the Express API. Reads standard PG* env vars
-// (PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD) automatically — no
-// config needed here beyond SSL, which RDS requires.
+// Connection pool for the Express API. Uses DATABASE_URL if set (Supabase's
+// pooler connection string), otherwise the standard PG* env vars (PGHOST,
+// PGPORT, PGDATABASE, PGUSER, PGPASSWORD), which `pg` reads automatically.
 const { Pool, types } = require('pg');
 
 // pg's default DATE (oid 1082) parser converts to a JS Date using local
@@ -17,9 +17,13 @@ types.setTypeParser(1700, (val) => parseFloat(val));
 
 // Small max: on Vercel this pool is created per warm serverless container,
 // not once for the whole process like a traditional long-running server —
-// the default of 10 could multiply across concurrent invocations and exceed
-// RDS's connection limit.
+// the default of 10 could multiply across concurrent invocations. Pair with
+// Supabase's transaction pooler (port 6543), which is built for exactly this.
+// SSL without CA verification: Supabase's certificate isn't signed by a CA
+// in Node's default trust store. Don't put `sslmode` in DATABASE_URL — pg
+// lets it override this setting.
 const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   max: 3,
 });

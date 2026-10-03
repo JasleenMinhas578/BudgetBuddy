@@ -3,10 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/user-event": "^13.5.0",
-    "amazon-cognito-identity-js": "^6.3.12",
-    "aws-jwt-verify": "^4.0.1",
     "chart.js": "^4.5.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",

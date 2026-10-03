@@ -1,4 +1,5 @@
 {
+  "regions": ["yul1"],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" }
   ]

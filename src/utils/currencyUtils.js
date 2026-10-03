@@ -11,6 +11,24 @@ export const CURRENCIES = [
   { code: 'SGD', symbol: 'S$',  name: 'Singapore Dollar',  fallbackRate: 1.34,   decimals: 2 },
 ];
 
+const EUROZONE = ['AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK'];
+const REGION_CURRENCY = {
+  US: 'USD', CA: 'CAD', GB: 'GBP', AU: 'AUD', IN: 'INR', JP: 'JPY', CH: 'CHF', MX: 'MXN', SG: 'SGD',
+  ...Object.fromEntries(EUROZONE.map((r) => [r, 'EUR'])),
+};
+
+// Best guess at a new user's home currency from the browser's locale
+// (e.g. en-CA → CAD, fr → FR → EUR), limited to the currencies above.
+// Only pre-selects the signup dropdown — the user can still change it.
+export function guessHomeCurrency(locale = navigator.languages?.[0] || navigator.language) {
+  try {
+    const region = new Intl.Locale(locale).maximize().region;
+    return REGION_CURRENCY[region] || 'USD';
+  } catch {
+    return 'USD';
+  }
+}
+
 // liveRates: optional map of { EUR: 0.91, GBP: 0.79, ... } from the API (USD base).
 // homeCurrencyCode: the currency expenses are entered in (default USD).
 // Converts: amount (home) → USD → displayCurrency via rate ratio.

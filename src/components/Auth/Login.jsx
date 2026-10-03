@@ -31,18 +31,17 @@ export default function Login() {
       navigate('/dashboard');
     } catch (error) {
       switch (error.code) {
-        case 'NotAuthorizedException':
-        case 'UserNotFoundException':
+        case 'invalid_credentials':
           setError('Invalid email or password');
           break;
-        case 'UserNotConfirmedException':
+        case 'email_not_confirmed':
           navigate('/confirm-signup', { state: { email } });
           break;
-        case 'InvalidParameterException':
+        case 'email_address_invalid':
+        case 'validation_failed':
           setError('Invalid email format');
           break;
-        case 'LimitExceededException':
-        case 'TooManyRequestsException':
+        case 'over_request_rate_limit':
           setError('Too many attempts. Please try again later.');
           break;
         default:

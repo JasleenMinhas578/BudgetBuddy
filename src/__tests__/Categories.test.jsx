@@ -1,5 +1,5 @@
 // High-level tests for the `Categories` dashboard widget.
-// - Mocks Cognito (for AuthContext), the category/expense/budget services, charts, toast, modal, and framer-motion to focus on UI logic and data wiring.
+// - Mocks Supabase Auth (for AuthContext), the category/expense/budget services, charts, toast, modal, and framer-motion to focus on UI logic and data wiring.
 // - Covers rendering basics, modal open/close behavior, form interaction, and resetting state between openings.
 // - Verifies happy-path category addition, loading behavior, success toasts, and correct service calls.
 // - Exercises error states for API failures, unauthenticated users, and listener errors.
@@ -13,9 +13,9 @@ import { BrowserRouter } from 'react-router-dom';
 import Categories from '../components/Dashboard/Categories';
 import { AuthProvider } from '../context/AuthContext';
 
-// Mock Cognito so the real AuthContext resolves to a logged-in (or logged-out) user
-jest.mock('amazon-cognito-identity-js');
-const { __mockUserPoolInstance } = require('amazon-cognito-identity-js');
+// Mock Supabase Auth so the real AuthContext resolves to a logged-in (or logged-out) user
+jest.mock('@supabase/supabase-js');
+const { __setMockSession, __mockSession } = require('@supabase/supabase-js');
 
 jest.mock('../services/categoryService', () => ({
   addCategory: jest.fn(),
@@ -123,13 +123,7 @@ const TestWrapper = ({ children }) => (
 );
 
 function mockLoggedIn(mockUser) {
-  __mockUserPoolInstance.getCurrentUser.mockReturnValue({
-    getSession: (cb) => cb(null, { isValid: () => true }),
-    getUserAttributes: (cb) => cb(null, [
-      { getName: () => 'email', getValue: () => mockUser.email },
-    ]),
-    getUsername: () => mockUser.uid,
-  });
+  __setMockSession(__mockSession({ id: mockUser.uid, email: mockUser.email }));
 }
 
 describe('Categories Component', () => {
@@ -471,7 +465,7 @@ describe('Categories Component', () => {
     });
 
     it('handles user not logged in error', async () => {
-      __mockUserPoolInstance.getCurrentUser.mockReturnValue(null);
+      __setMockSession(null);
 
       render(
         <TestWrapper>
@@ -553,7 +547,7 @@ describe('Categories Component', () => {
     });
 
     it('does not call services when no user is authenticated', async () => {
-      __mockUserPoolInstance.getCurrentUser.mockReturnValue(null);
+      __setMockSession(null);
 
       render(
         <TestWrapper>

@@ -1,10 +1,10 @@
 // Detailed tests for the `Signup` registration form component.
-// - Mocks amazon-cognito-identity-js (see src/__mocks__/), framer-motion, and navigation
-//   to isolate validation and UX behavior from a real Cognito call.
+// - Mocks @supabase/supabase-js (see src/__mocks__/), framer-motion, and navigation
+//   to isolate validation and UX behavior from a real Supabase call.
 // - Verifies initial rendering, accessibility attributes, password visibility toggles (click + keyboard), and basic typing interactions.
 // - Exercises password strength validation rules (length, uppercase, lowercase, numeric, special character, confirm match) and appropriate error messages.
-// - Confirms successful signups navigate to the email-confirmation page (Cognito requires this; Firebase didn't) and that navigation helpers (back to home, link to login) point to the right routes.
-// - Maps various Cognito error codes (username exists, invalid parameter, weak password) to human-readable errors, including a generic fallback.
+// - Confirms successful signups navigate to the email-confirmation page when Supabase requires it (or straight to the dashboard when it doesn't) and that navigation helpers (back to home, link to login) point to the right routes.
+// - Maps various Supabase Auth error codes (user exists, invalid email, weak password) to human-readable errors, including a generic fallback.
 // - Checks loading state during signup, disabling the submit button, and that calling signUp uses the correct arguments.
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -14,9 +14,16 @@ import { BrowserRouter } from 'react-router-dom';
 import Signup from '../components/Auth/Signup';
 import { AuthProvider } from '../context/AuthContext';
 
-jest.mock('amazon-cognito-identity-js');
-const { __mockUserPoolInstance: mockUserPoolInstance } = require('amazon-cognito-identity-js');
-const mockSignUp = mockUserPoolInstance.signUp;
+jest.mock('@supabase/supabase-js');
+const { __mockAuth, __setMockSession, __mockSession } = require('@supabase/supabase-js');
+const mockSignUp = __mockAuth.signUp;
+
+// "Confirm email" on: a user comes back but no session until the code is entered.
+const signUpNeedsConfirm = {
+  data: { user: { ...__mockSession().user, identities: [{}] }, session: null },
+  error: null,
+};
+const authError = (code) => ({ data: {}, error: { code } });
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
@@ -52,17 +59,15 @@ const TestWrapper = ({ children }) => (
 const fillDisplayName = (name = 'Test User') =>
   fireEvent.change(screen.getByLabelText('Display Name'), { target: { value: name } });
 
-// Cognito's default password policy requires a special character, which
-// src/utils/validatePassword.js now also enforces client-side — every
-// "should succeed" password in these tests needs one.
+// src/utils/validatePassword.js requires a special character (kept from the
+// Cognito-era policy) — every "should succeed" password in these tests needs one.
 const VALID_PASSWORD = 'Password123!';
 
 describe('Signup Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockSignUp.mockImplementation((email, password, attrs, _, callback) => {
-      callback(null, { userSub: 'mock-sub' });
-    });
+    __setMockSession(null);
+    mockSignUp.mockResolvedValue(signUpNeedsConfirm);
 
     // Suppress console warnings for cleaner test output
     jest.spyOn(console, 'error').mockImplementation((message) => {
@@ -218,7 +223,7 @@ describe('Signup Component', () => {
     });
 
     it('shows loading state when form is submitted', async () => {
-      mockSignUp.mockImplementation(() => {}); // never calls back — simulates pending
+      mockSignUp.mockImplementation(() => new Promise(() => {})); // never resolves — simulates pending
 
       render(
         <TestWrapper>
@@ -361,10 +366,34 @@ describe('Signup Component', () => {
       fillDisplayName();
       fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
-      // Cognito requires confirming an emailed code before login — unlike
-      // Firebase, signup does not land the user in the dashboard directly.
+      // With "Confirm email" on, Supabase returns no session until the
+      // emailed code is entered — signup doesn't land in the dashboard yet.
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/confirm-signup', { state: { email: 'test@example.com' } });
+      });
+    });
+
+    it('navigates straight to the dashboard when email confirmation is off', async () => {
+      const session = __mockSession();
+      mockSignUp.mockResolvedValue({
+        data: { user: { ...session.user, identities: [{}] }, session },
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: VALID_PASSWORD } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: VALID_PASSWORD } });
+      fillDisplayName();
+      fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
       });
     });
 
@@ -393,9 +422,7 @@ describe('Signup Component', () => {
 
   describe('Error Handling Tests', () => {
     it('displays email already in use error', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'UsernameExistsException' })
-      );
+      mockSignUp.mockResolvedValue(authError('user_already_exists'));
 
       render(
         <TestWrapper>
@@ -415,9 +442,7 @@ describe('Signup Component', () => {
     });
 
     it('displays invalid email error', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'InvalidParameterException' })
-      );
+      mockSignUp.mockResolvedValue(authError('validation_failed'));
 
       render(
         <TestWrapper>
@@ -436,10 +461,33 @@ describe('Signup Component', () => {
       });
     });
 
-    it('displays weak password error rejected by Cognito', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'InvalidPasswordException' })
+    it('treats a user with no identities as an already-registered email', async () => {
+      // Supabase's anti-enumeration response for an existing, confirmed address.
+      mockSignUp.mockResolvedValue({
+        data: { user: { ...__mockSession().user, identities: [] }, session: null },
+        error: null,
+      });
+
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
       );
+
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: VALID_PASSWORD } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: VALID_PASSWORD } });
+      fillDisplayName();
+      fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText('An account with this email already exists')).toBeInTheDocument();
+      });
+      expect(mockNavigate).not.toHaveBeenCalledWith('/confirm-signup', expect.anything());
+    });
+
+    it('displays weak password error rejected by Supabase', async () => {
+      mockSignUp.mockResolvedValue(authError('weak_password'));
 
       render(
         <TestWrapper>
@@ -459,9 +507,7 @@ describe('Signup Component', () => {
     });
 
     it('displays generic error for unknown error codes', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'InternalErrorException' })
-      );
+      mockSignUp.mockResolvedValue(authError('unexpected_failure'));
 
       render(
         <TestWrapper>
@@ -481,9 +527,7 @@ describe('Signup Component', () => {
     });
 
     it('clears error when form is resubmitted', async () => {
-      mockSignUp.mockImplementationOnce((email, password, attrs, _, callback) =>
-        callback({ code: 'UsernameExistsException' })
-      );
+      mockSignUp.mockResolvedValueOnce(authError('user_already_exists'));
 
       render(
         <TestWrapper>
@@ -501,11 +545,47 @@ describe('Signup Component', () => {
         expect(screen.getByText('An account with this email already exists')).toBeInTheDocument();
       });
 
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) => callback(null, { userSub: 'mock-sub' }));
+      mockSignUp.mockResolvedValue(signUpNeedsConfirm);
       fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
       await waitFor(() => {
         expect(screen.queryByText('An account with this email already exists')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Home Currency Tests', () => {
+    it('pre-selects a home currency from the browser locale', () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      // jsdom reports en-US.
+      expect(screen.getByLabelText('Home Currency')).toHaveValue('USD');
+    });
+
+    it('sends the chosen home currency with the signup', async () => {
+      render(
+        <TestWrapper>
+          <Signup />
+        </TestWrapper>
+      );
+
+      fireEvent.change(screen.getByLabelText('Email Address'), { target: { value: 'test@example.com' } });
+      fireEvent.change(screen.getByLabelText('Home Currency'), { target: { value: 'CAD' } });
+      fireEvent.change(screen.getByLabelText('Password'), { target: { value: VALID_PASSWORD } });
+      fireEvent.change(screen.getByLabelText('Confirm Password'), { target: { value: VALID_PASSWORD } });
+      fillDisplayName();
+      fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+
+      await waitFor(() => {
+        expect(mockSignUp).toHaveBeenCalledWith(expect.objectContaining({
+          options: expect.objectContaining({
+            data: { name: 'Test User', home_currency: 'CAD' },
+          }),
+        }));
       });
     });
   });
@@ -525,20 +605,21 @@ describe('Signup Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith(
-          'test@example.com',
-          VALID_PASSWORD,
-          expect.anything(),
-          null,
-          expect.any(Function)
-        );
+        expect(mockSignUp).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          password: VALID_PASSWORD,
+          options: {
+            data: { name: 'Test User', home_currency: 'USD' },
+            emailRedirectTo: 'http://localhost/confirm-signup',
+          },
+        });
       });
     });
   });
 
   describe('Loading State Tests', () => {
     it('disables submit button during loading', async () => {
-      mockSignUp.mockImplementation(() => {});
+      mockSignUp.mockImplementation(() => new Promise(() => {}));
 
       render(
         <TestWrapper>
@@ -556,7 +637,7 @@ describe('Signup Component', () => {
     });
 
     it('shows loading spinner during authentication', async () => {
-      mockSignUp.mockImplementation(() => {});
+      mockSignUp.mockImplementation(() => new Promise(() => {}));
 
       render(
         <TestWrapper>

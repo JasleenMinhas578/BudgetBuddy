@@ -1,8 +1,8 @@
 // Comprehensive integration tests for the authentication flow and `AuthContext`.
-// - Mocks `amazon-cognito-identity-js` to isolate UI and context behavior from a real Cognito call.
+// - Mocks `@supabase/supabase-js` to isolate UI and context behavior from a real Supabase call.
 // - Exercises successful and failing login/signup/logout flows, including error messaging and navigation.
 // - Verifies password validation rules, reset/update password helpers, session restore, loading states, and concurrency protection.
-// - Confirms the context exposes the correct helper functions and that they call the underlying Cognito APIs with expected arguments.
+// - Confirms the context exposes the correct helper functions and that they call the underlying Supabase Auth APIs with expected arguments.
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
@@ -12,17 +12,21 @@ import Login from '../components/Auth/Login';
 import Signup from '../components/Auth/Signup';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
-// See src/__mocks__/amazon-cognito-identity-js.js for why this is a manual
-// mock using real classes rather than an inline jest.fn() factory.
-jest.mock('amazon-cognito-identity-js');
-const cognitoMock = require('amazon-cognito-identity-js');
-const mockSignUp = cognitoMock.__mockUserPoolInstance.signUp;
-const mockGetCurrentUser = cognitoMock.__mockUserPoolInstance.getCurrentUser;
-const mockAuthenticateUser = cognitoMock.__mockUserInstance.authenticateUser;
-const mockForgotPassword = cognitoMock.__mockUserInstance.forgotPassword;
-const mockConfirmPassword = cognitoMock.__mockUserInstance.confirmPassword;
-const mockGetUserAttributes = cognitoMock.__mockUserInstance.getUserAttributes;
-const mockGetSession = cognitoMock.__mockUserInstance.getSession;
+// See src/__mocks__/@supabase/supabase-js.js for how session state and the
+// auth action mocks are set up.
+jest.mock('@supabase/supabase-js');
+const { __mockAuth, __setMockSession, __mockSession } = require('@supabase/supabase-js');
+const mockSignUp = __mockAuth.signUp;
+const mockSignIn = __mockAuth.signInWithPassword;
+
+const ok = { data: {}, error: null };
+const signInOk = { data: { user: __mockSession().user }, error: null };
+// "Confirm email" on: a user comes back but no session until the code is entered.
+const signUpNeedsConfirm = {
+  data: { user: { ...__mockSession().user, identities: [{}] }, session: null },
+  error: null,
+};
+const authError = (code) => ({ data: {}, error: { code } });
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
@@ -56,13 +60,19 @@ const TestWrapper = ({ children }) => (
 
 // Component to test AuthContext directly
 function AuthTestComponent() {
-  const { currentUser, login, signup, logout, resetPassword, resetPasswordWithCode } = useAuth();
+  const {
+    currentUser, login, signup, logout, resetPassword, updatePassword, updateDisplayName,
+  } = useAuth();
 
   return (
     <div>
       <div data-testid="current-user">
         {currentUser ? `Logged in as: ${currentUser.email}` : 'Not logged in'}
       </div>
+      <div data-testid="display-name">{currentUser?.displayName}</div>
+      <button onClick={() => updateDisplayName('New Name')}>
+        Rename
+      </button>
       <button onClick={() => login('test@example.com', 'password123')}>
         Login
       </button>
@@ -75,7 +85,7 @@ function AuthTestComponent() {
       <button onClick={() => resetPassword('reset@example.com')}>
         Reset Password
       </button>
-      <button onClick={() => resetPasswordWithCode('reset@example.com', '123456', 'NewPass123!')}>
+      <button onClick={() => updatePassword('NewPass123!')}>
         Update Password
       </button>
     </div>
@@ -85,11 +95,7 @@ function AuthTestComponent() {
 describe('Authentication Flow Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetCurrentUser.mockReturnValue(null);
-    mockGetUserAttributes.mockImplementation((cb) => cb(null, [
-      { getName: () => 'email', getValue: () => 'test@example.com' },
-    ]));
-    mockGetSession.mockImplementation((cb) => cb(null, { isValid: () => true }));
+    __setMockSession(null);
 
     // Suppress console warnings for cleaner test output
     jest.spyOn(console, 'error').mockImplementation((message) => {
@@ -116,7 +122,7 @@ describe('Authentication Flow Tests', () => {
 
   describe('Valid Authentication Flow', () => {
     it('should handle successful login flow', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+      mockSignIn.mockResolvedValue(signInOk);
 
       render(
         <TestWrapper>
@@ -133,7 +139,7 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockAuthenticateUser).toHaveBeenCalled();
+        expect(mockSignIn).toHaveBeenCalled();
       });
 
       await waitFor(() => {
@@ -142,9 +148,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should handle successful signup flow (navigates to email confirmation)', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) => {
-        callback(null, { userSub: '123' });
-      });
+      mockSignUp.mockResolvedValue(signUpNeedsConfirm);
 
       render(
         <TestWrapper>
@@ -164,29 +168,25 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockSignUp).toHaveBeenCalledWith(
-          'test@example.com',
-          'Password123!',
-          expect.anything(),
-          null,
-          expect.any(Function)
-        );
+        expect(mockSignUp).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          password: 'Password123!',
+          options: {
+            data: { name: 'Test User', home_currency: 'USD' },
+            emailRedirectTo: 'http://localhost/confirm-signup',
+          },
+        });
       });
 
-      // Cognito requires confirming an emailed code before login — unlike
-      // Firebase, signup does not land the user in the dashboard directly.
+      // With "Confirm email" on, Supabase returns no session until the
+      // emailed code is entered — signup doesn't land in the dashboard yet.
       await waitFor(() => {
         expect(mockNavigate).toHaveBeenCalledWith('/confirm-signup', { state: { email: 'test@example.com' } });
       });
     });
 
     it('should handle successful logout flow', async () => {
-      mockGetCurrentUser.mockReturnValue({
-        getSession: mockGetSession,
-        getUserAttributes: mockGetUserAttributes,
-        signOut: cognitoMock.__mockUserInstance.signOut,
-        getUsername: () => 'mock-uid',
-      });
+      __setMockSession(__mockSession());
 
       render(
         <TestWrapper>
@@ -209,9 +209,7 @@ describe('Authentication Flow Tests', () => {
 
   describe('Invalid Input Handling', () => {
     it('should handle invalid email format during login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'InvalidParameterException' })
-      );
+      mockSignIn.mockResolvedValue(authError('validation_failed'));
 
       render(
         <TestWrapper>
@@ -229,9 +227,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should handle wrong password during login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'NotAuthorizedException' })
-      );
+      mockSignIn.mockResolvedValue(authError('invalid_credentials'));
 
       render(
         <TestWrapper>
@@ -249,9 +245,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should handle user not found during login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'UserNotFoundException' })
-      );
+      mockSignIn.mockResolvedValue(authError('invalid_credentials'));
 
       render(
         <TestWrapper>
@@ -269,9 +263,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should redirect to confirmation page if login is attempted before confirming email', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'UserNotConfirmedException' })
-      );
+      mockSignIn.mockResolvedValue(authError('email_not_confirmed'));
 
       render(
         <TestWrapper>
@@ -289,9 +281,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should handle email already in use during signup', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'UsernameExistsException' })
-      );
+      mockSignUp.mockResolvedValue(authError('user_already_exists'));
 
       render(
         <TestWrapper>
@@ -310,10 +300,8 @@ describe('Authentication Flow Tests', () => {
       });
     });
 
-    it('should handle weak password rejected by Cognito during signup', async () => {
-      mockSignUp.mockImplementation((email, password, attrs, _, callback) =>
-        callback({ code: 'InvalidPasswordException' })
-      );
+    it('should handle weak password rejected by Supabase during signup', async () => {
+      mockSignUp.mockResolvedValue(authError('weak_password'));
 
       render(
         <TestWrapper>
@@ -378,7 +366,7 @@ describe('Authentication Flow Tests', () => {
         expect(screen.getByText('Password must contain at least one number')).toBeInTheDocument();
       });
 
-      // Test password without special character (matches Cognito's default policy)
+      // Test password without special character (kept from the Cognito-era policy)
       fireEvent.change(passwordInput, { target: { value: 'Password123' } });
       fireEvent.change(confirmPasswordInput, { target: { value: 'Password123' } });
       fireEvent.click(submitButton);
@@ -398,12 +386,7 @@ describe('Authentication Flow Tests', () => {
 
   describe('Session Restore and State Management', () => {
     it('should restore an already-logged-in session on load', async () => {
-      mockGetCurrentUser.mockReturnValue({
-        getSession: mockGetSession,
-        getUserAttributes: mockGetUserAttributes,
-        signOut: cognitoMock.__mockUserInstance.signOut,
-        getUsername: () => 'mock-uid',
-      });
+      __setMockSession(__mockSession());
 
       render(
         <TestWrapper>
@@ -417,8 +400,8 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should show nothing while the session check is still pending', () => {
-      // getSession never calls back — simulates a still-pending session check.
-      mockGetCurrentUser.mockReturnValue({ getSession: jest.fn() });
+      // No INITIAL_SESSION event yet — simulates a still-pending session check.
+      __setMockSession(undefined);
 
       render(
         <TestWrapper>
@@ -430,10 +413,8 @@ describe('Authentication Flow Tests', () => {
       expect(screen.queryByTestId('current-user')).not.toBeInTheDocument();
     });
 
-    it('should treat an invalid persisted session as logged out', async () => {
-      mockGetCurrentUser.mockReturnValue({
-        getSession: (cb) => cb(null, { isValid: () => false }),
-      });
+    it('should log out when the session ends outside the app (e.g. refresh token revoked)', async () => {
+      __setMockSession(__mockSession());
 
       render(
         <TestWrapper>
@@ -442,14 +423,18 @@ describe('Authentication Flow Tests', () => {
       );
 
       await waitFor(() => {
+        expect(screen.getByTestId('current-user')).toHaveTextContent('Logged in as: test@example.com');
+      });
+
+      act(() => __setMockSession(null));
+
+      await waitFor(() => {
         expect(screen.getByTestId('current-user')).toHaveTextContent('Not logged in');
       });
     });
 
-    it('should handle a generic Cognito failure during login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'InternalErrorException' })
-      );
+    it('should handle a generic Supabase failure during login', async () => {
+      mockSignIn.mockResolvedValue(authError('unexpected_failure'));
 
       render(
         <TestWrapper>
@@ -467,9 +452,7 @@ describe('Authentication Flow Tests', () => {
     });
 
     it('should handle too many requests error', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'LimitExceededException' })
-      );
+      mockSignIn.mockResolvedValue(authError('over_request_rate_limit'));
 
       render(
         <TestWrapper>
@@ -500,8 +483,8 @@ describe('Authentication Flow Tests', () => {
       expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
     });
 
-    it('exposes resetPassword helper that calls the Cognito API', () => {
-      mockForgotPassword.mockImplementation(({ onSuccess }) => onSuccess());
+    it('exposes resetPassword helper that calls the Supabase API', () => {
+      __mockAuth.resetPasswordForEmail.mockResolvedValue(ok);
       render(
         <TestWrapper>
           <AuthTestComponent />
@@ -509,13 +492,13 @@ describe('Authentication Flow Tests', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /reset password/i }));
-      expect(mockForgotPassword).toHaveBeenCalledWith(
-        expect.objectContaining({ onSuccess: expect.any(Function) })
-      );
+      expect(__mockAuth.resetPasswordForEmail).toHaveBeenCalledWith('reset@example.com', {
+        redirectTo: 'http://localhost/reset-password',
+      });
     });
 
-    it('exposes resetPasswordWithCode helper that calls the Cognito API', () => {
-      mockConfirmPassword.mockImplementation((code, password, { onSuccess }) => onSuccess());
+    it('exposes updatePassword helper that sets the new password, then signs out', async () => {
+      __mockAuth.updateUser.mockResolvedValue(signInOk);
       render(
         <TestWrapper>
           <AuthTestComponent />
@@ -523,15 +506,35 @@ describe('Authentication Flow Tests', () => {
       );
 
       fireEvent.click(screen.getByRole('button', { name: /update password/i }));
-      expect(mockConfirmPassword).toHaveBeenCalledWith(
-        '123456',
-        'NewPass123!',
-        expect.objectContaining({ onSuccess: expect.any(Function) })
+      await waitFor(() => {
+        expect(__mockAuth.updateUser).toHaveBeenCalledWith({ password: 'NewPass123!' });
+      });
+      await waitFor(() => {
+        expect(__mockAuth.signOut).toHaveBeenCalled();
+      });
+    });
+
+    it('refreshes the session after a display-name change so the API sees the new name', async () => {
+      __setMockSession(__mockSession({ name: 'Old Name' }));
+      __mockAuth.updateUser.mockResolvedValue(signInOk);
+      __mockAuth.refreshSession.mockResolvedValue(ok);
+      render(
+        <TestWrapper>
+          <AuthTestComponent />
+        </TestWrapper>
       );
+
+      fireEvent.click(screen.getByRole('button', { name: /rename/i }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('display-name')).toHaveTextContent('New Name');
+      });
+      expect(__mockAuth.updateUser).toHaveBeenCalledWith({ data: { name: 'New Name' } });
+      expect(__mockAuth.refreshSession).toHaveBeenCalled();
     });
 
     it('should handle concurrent authentication attempts', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onSuccess }) => onSuccess());
+      mockSignIn.mockResolvedValue(signInOk);
 
       render(
         <TestWrapper>
@@ -550,14 +553,12 @@ describe('Authentication Flow Tests', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockAuthenticateUser).toHaveBeenCalledTimes(1);
+        expect(mockSignIn).toHaveBeenCalledTimes(1);
       });
     });
 
     it('should link to the signup page from login', async () => {
-      mockAuthenticateUser.mockImplementation((details, { onFailure }) =>
-        onFailure({ code: 'UserNotFoundException' })
-      );
+      mockSignIn.mockResolvedValue(authError('invalid_credentials'));
 
       render(
         <TestWrapper>

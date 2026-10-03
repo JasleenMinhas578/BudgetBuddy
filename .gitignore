@@ -56,3 +56,9 @@ serviceAccountKey.json
 
 # downloaded artifacts
 global-bundle.pem
+
+# Claude Code personal settings
+.claude/settings.local.json
+
+# Local database backups (contain personal data)
+backups/

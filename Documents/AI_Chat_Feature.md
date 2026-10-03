@@ -22,7 +22,7 @@ AIChat.jsx (UI shell) → delegates all logic to useAIChat.js (custom hook)
     is renamed) — NOT sent to the AI; the server looks its own data up
         │
         ▼
-aiService.js → POST {API_BASE}/api/ai/chat  (Cognito-authenticated, via apiClient.js)
+aiService.js → POST {API_BASE}/api/ai/chat  (Supabase-authenticated, via apiClient.js)
   body: { message, sessionDateRange, currencyInfo }
         │
         ▼
@@ -160,7 +160,7 @@ export const generateSummary = async (expenses, filterLabel, currencyInfo) => {
 };
 ```
 
-`apiFetch` (`src/services/apiClient.js`) attaches the Cognito ID token automatically — no manual `getIdToken()` calls needed at the call site anymore.
+`apiFetch` (`src/services/apiClient.js`) attaches the Supabase access token automatically — no manual `getIdToken()` calls needed at the call site anymore.
 
 `useAIChat.js` no longer subscribes to the user's expenses at all (removed along with the `dataReady` load-gate it used to need) — nothing client-side has to pre-fetch expense data for the AI, since retrieval happens server-side per question. It still subscribes to `customCategories` (for the category dropdown on confirm cards) and `budgets` (to migrate a budget limit client-side when a category gets renamed via AI).
 
@@ -222,7 +222,7 @@ Chat messages are still saved to and restored from `sessionStorage` under `ai-ch
 
 ## Security Notes
 
-- **Auth**: every `/api/ai/*` request goes through the same `requireAuth` Cognito-JWT-verification middleware as the rest of the API (`server/middleware/auth.js`) — the AI can only ever see and act on the authenticated user's own data, enforced by `WHERE user_id = req.uid` in every tool's SQL, not by anything the client sends.
+- **Auth**: every `/api/ai/*` request goes through the same `requireAuth` Supabase-token-verification middleware as the rest of the API (`server/middleware/auth.js`) — the AI can only ever see and act on the authenticated user's own data, enforced by `WHERE user_id = req.uid` in every tool's SQL, not by anything the client sends.
 - **API key**: `GEMINI_API_KEY` lives only in the server's `.env` and is never sent to the browser — unlike the pre-Phase-3 design, which used `REACT_APP_GEMINI_API_KEY` and compiled the key straight into the client bundle.
 - **Rate limiting**: now server-enforced and DB-backed (see above), not a client-resettable `localStorage` counter.
 - **Data sent to Google**: still just the SQL tool results relevant to that one message (e.g. a spending-by-category breakdown, a handful of matching expense rows) — never the user's full expense history in one shot, and never anything beyond financial records (no name, email, or password).
