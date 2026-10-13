@@ -17,12 +17,15 @@ app.use(express.json());
 
 // Unauthenticated — for checking the server + DB are up. Also mounted under
 // /api so it's reachable on Vercel (only /api/* is routed to this app there);
-// the weekly keep-alive workflow (.github/workflows/supabase-keepalive.yml)
+// the every-2-days keep-alive workflow (.github/workflows/supabase-keepalive.yml)
 // calls it so the free Supabase project never sits idle long enough to pause.
+// Reads a real table rather than `SELECT 1` — a query that touches no table
+// didn't count as activity, and the project paused anyway. Nothing from the
+// row is returned, so the endpoint stays safe to leave public.
 app.get(['/health', '/api/health'], async (req, res) => {
   const pool = require('./db');
   try {
-    await pool.query('SELECT 1');
+    await pool.query('SELECT 1 FROM users LIMIT 1');
     res.json({ ok: true, db: 'connected' });
   } catch (err) {
     // Public endpoint — log the real driver error, don't echo it.

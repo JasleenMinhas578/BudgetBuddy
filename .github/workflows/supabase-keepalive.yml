@@ -1,14 +1,14 @@
 name: Supabase keep-alive
 
 # Free Supabase projects pause after 7 days with no activity. This makes real
-# requests twice a week so that never happens: Monday as the main ping, plus
-# Thursday as a margin — GitHub can run scheduled jobs late (or occasionally
-# skip one), so a once-a-week ping exactly 7 days apart could land too late.
+# requests every 2 days so that never happens. Twice a week wasn't enough (the
+# project still paused within 4 days of a successful ping), and GitHub can run
+# scheduled jobs late or occasionally skip one, so pinging often leaves margin.
 # A failed run here also emails the repo owner, so it doubles as a basic
 # uptime check for the live site.
 on:
   schedule:
-    - cron: '0 14 * * 1,4'   # Mondays and Thursdays, 14:00 UTC
+    - cron: '0 14 */2 * *'   # Odd days of the month (1st, 3rd, 5th, …), 14:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -20,23 +20,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Goes through the whole live stack: Vercel function → Supabase Postgres
-      # (`SELECT 1` via the pooler).
-      - name: Ping live API health check (runs a DB query)
+      # (reads the `users` table via the pooler).
+      - name: Ping live API health check (reads a real table)
         run: |
           body=$(curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
             https://budget-buddy-mun.vercel.app/api/health)
           echo "$body"
           echo "$body" | grep -q '"ok":true'
 
-      # Also hit the Supabase project's own API, so activity is recorded even
-      # if the request above is ever served without reaching the database.
-      - name: Ping Supabase Auth API
+      # Also query a real table through Supabase's own Data API, so activity is
+      # recorded on the project itself even if the request above never reaches
+      # it. (The old ping hit /auth/v1/health, a status endpoint, and the
+      # project paused anyway.) RLS with no policies (see schema.sql) means
+      # this always returns `[]` — no rows are ever exposed to the anon key.
+      - name: Query a table via Supabase Data API
         env:
           SUPABASE_URL: ${{ secrets.REACT_APP_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.REACT_APP_SUPABASE_ANON_KEY }}
         run: |
           curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
-            -H "apikey: $SUPABASE_ANON_KEY" "$SUPABASE_URL/auth/v1/health"
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/users?select=id&limit=1"
 
       # GitHub disables scheduled workflows in a public repo after 60 days
       # with no commits. Re-enabling it on every run keeps the schedule alive
