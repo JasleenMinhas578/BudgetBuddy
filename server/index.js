@@ -17,7 +17,7 @@ app.use(express.json());
 
 // Unauthenticated — for checking the server + DB are up. Also mounted under
 // /api so it's reachable on Vercel (only /api/* is routed to this app there);
-// the every-2-days keep-alive workflow (.github/workflows/supabase-keepalive.yml)
+// the daily keep-alive workflow (.github/workflows/supabase-keepalive.yml)
 // calls it so the free Supabase project never sits idle long enough to pause.
 // Reads a real table rather than `SELECT 1` — a query that touches no table
 // didn't count as activity, and the project paused anyway. Nothing from the

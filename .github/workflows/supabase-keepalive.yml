@@ -1,14 +1,16 @@
 name: Supabase keep-alive
 
-# Free Supabase projects pause after 7 days with no activity. This makes real
-# requests every 2 days so that never happens. Twice a week wasn't enough (the
-# project still paused within 4 days of a successful ping), and GitHub can run
-# scheduled jobs late or occasionally skip one, so pinging often leaves margin.
+# Free Supabase projects pause after 7 days with no activity. This runs every
+# day: a health check through the live stack, then a real sign-in.
+# Pinging less often, or only hitting anonymous endpoints, wasn't enough: a
+# health-endpoint ping twice a week got the project paused, and one anonymous
+# table read every 2 days still got a "going to be paused" warning (Oct 2026).
+# GitHub can also run scheduled jobs late or skip one, so daily leaves margin.
 # A failed run here also emails the repo owner, so it doubles as a basic
 # uptime check for the live site.
 on:
   schedule:
-    - cron: '0 14 */2 * *'   # Odd days of the month (1st, 3rd, 5th, …), 14:00 UTC
+    - cron: '0 14 * * *'   # Every day, 14:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -28,20 +30,31 @@ jobs:
           echo "$body"
           echo "$body" | grep -q '"ok":true'
 
-      # Also query a real table through Supabase's own Data API, so activity is
-      # recorded on the project itself even if the request above never reaches
-      # it. (The old ping hit /auth/v1/health, a status endpoint, and the
-      # project paused anyway.) RLS with no policies (see schema.sql) means
-      # this always returns `[]` — no rows are ever exposed to the anon key.
-      - name: Query a table via Supabase Data API
+      # A real sign-in, like the app's login screen, so the project sees Auth
+      # activity and not just anonymous pings. Signs straight back out so the
+      # daily runs don't pile up open sessions on the account.
+      - name: Sign in and sign out
         env:
           SUPABASE_URL: ${{ secrets.REACT_APP_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.REACT_APP_SUPABASE_ANON_KEY }}
+          KEEPALIVE_EMAIL: ${{ secrets.KEEPALIVE_EMAIL }}
+          KEEPALIVE_PASSWORD: ${{ secrets.KEEPALIVE_PASSWORD }}
         run: |
-          curl -fsS --retry 3 --retry-delay 10 --max-time 30 \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-            "$SUPABASE_URL/rest/v1/users?select=id&limit=1"
+          curl_() { curl -fsS --retry 3 --retry-delay 10 --max-time 30 "$@"; }
+
+          token=$(jq -n --arg email "$KEEPALIVE_EMAIL" --arg password "$KEEPALIVE_PASSWORD" \
+              '{email: $email, password: $password}' |
+            curl_ -X POST "$SUPABASE_URL/auth/v1/token?grant_type=password" \
+              -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" -d @- |
+            jq -r .access_token)
+          echo "::add-mask::$token"
+          echo "Signed in"
+
+          # scope=local ends only this session. The default (global) would also
+          # sign the account out on every other device, every day.
+          curl_ -X POST "$SUPABASE_URL/auth/v1/logout?scope=local" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $token"
+          echo "Signed out"
 
       # GitHub disables scheduled workflows in a public repo after 60 days
       # with no commits. Re-enabling it on every run keeps the schedule alive
